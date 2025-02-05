@@ -1,10 +1,10 @@
-import axios, { InternalAxiosRequestConfig, AxiosError } from 'axios';
-import { auth } from '../config/firebase';
+import axios, { InternalAxiosRequestConfig, AxiosError } from "axios";
+import { auth } from "../config/firebase";
 
 // const API_URL = import.meta.env.VITE_API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: '/api',  // This will work both locally and in production
+  baseURL: "/api", // This will work both locally and in production
   timeout: 10000,
 });
 
@@ -18,22 +18,22 @@ axiosInstance.interceptors.request.use(
       const token = await user.getIdToken();
       // Add it to the Authorization header
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[DEBUG] Making request:', {
-        method: config.method,
-        baseURL: config.baseURL,
-        url: config.url,
-        fullURL: `${config.baseURL}${config.url}`,
-        headers: config.headers,
-        params: config.params,
-        data: config.data
-      });
+      // console.log('[DEBUG] Making request:', {
+      //   method: config.method,
+      //   baseURL: config.baseURL,
+      //   url: config.url,
+      //   fullURL: `${config.baseURL}${config.url}`,
+      //   headers: config.headers,
+      //   params: config.params,
+      //   data: config.data
+      // });
     } else {
-      console.log('[DEBUG] No user is currently signed in');
+      console.log("[DEBUG] No user is currently signed in");
     }
     return config;
   },
   (error) => {
-    console.error('[DEBUG] Request interceptor error:', error);
+    console.error("[DEBUG] Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
@@ -41,35 +41,37 @@ axiosInstance.interceptors.request.use(
 // Add a response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log('[DEBUG] Response received:', {
-      status: response.status,
-      statusText: response.statusText,
-      config: {
-        method: response.config.method,
-        baseURL: response.config.baseURL,
-        url: response.config.url,
-        fullURL: `${response.config.baseURL}${response.config.url}`,
-      },
-      data: response.data,
-      headers: response.headers,
-    });
+    // console.log('[DEBUG] Response received:', {
+    //   status: response.status,
+    //   statusText: response.statusText,
+    //   config: {
+    //     method: response.config.method,
+    //     baseURL: response.config.baseURL,
+    //     url: response.config.url,
+    //     fullURL: `${response.config.baseURL}${response.config.url}`,
+    //   },
+    //   data: response.data,
+    //   headers: response.headers,
+    // });
     return response;
   },
   (error: AxiosError) => {
-    console.error('[DEBUG] Response error:', {
+    console.error("[DEBUG] Response error:", {
       message: error.message,
-      config: error.config ? {
-        method: error.config.method,
-        baseURL: error.config.baseURL,
-        url: error.config.url,
-        fullURL: `${error.config.baseURL}${error.config.url}`,
-      } : 'No config available',
+      config: error.config
+        ? {
+            method: error.config.method,
+            baseURL: error.config.baseURL,
+            url: error.config.url,
+            fullURL: `${error.config.baseURL}${error.config.url}`,
+          }
+        : "No config available",
       response: {
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data,
         headers: error.response?.headers,
-      }
+      },
     });
     return Promise.reject(error);
   }
