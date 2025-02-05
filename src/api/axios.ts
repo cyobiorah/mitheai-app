@@ -1,10 +1,10 @@
 import axios, { InternalAxiosRequestConfig, AxiosError } from "axios";
 import { auth } from "../config/firebase";
 
-// const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const axiosInstance = axios.create({
-  baseURL: "/api", // This will work both locally and in production
+  baseURL: API_URL, // This will work both locally and in production
   timeout: 10000,
 });
 
