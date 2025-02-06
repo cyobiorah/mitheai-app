@@ -25,6 +25,8 @@ export interface AIAssistantRequest {
     purpose: ContentPurpose;
     targetAudience: string;
     keywords: string[];
+    ctaType?: string;
+    contentStyle?: string;
     length?: {
       min: number;
       max: number;
