@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import { generateContent } from '../api/content';
-import { AIAssistantRequest, ContentTone, ContentPurpose, SocialPlatform } from '../api/types';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { generateContent } from "../api/content";
+import {
+  AIAssistantRequest,
+  ContentTone,
+  ContentPurpose,
+  SocialPlatform,
+} from "../api/types";
+import { toast } from "react-hot-toast";
 
 const ContentCreation: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,59 +17,93 @@ const ContentCreation: React.FC = () => {
     targetAudience: string;
     keywords: string;
     content?: string;
+    contentLengthType?: "short" | "medium" | "long";
+    ctaType?: string;
+    contentStyle?: string;
+    toneIntensity?: string;
+    hashtagStrategy?: string;
   }>({
-    platform: 'linkedin',
-    tone: 'professional',
-    purpose: 'engagement',
-    targetAudience: '',
-    keywords: '',
-    content: ''
+    platform: "linkedin",
+    tone: "professional",
+    purpose: "engagement",
+    targetAudience: "",
+    keywords: "",
+    content: "",
+    contentLengthType: "medium",
+    ctaType: "",
+    contentStyle: "",
+    toneIntensity: "",
+    hashtagStrategy: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
-      
+
       const request: AIAssistantRequest = {
-        type: 'caption',
+        type: "caption",
         content: formData.content,
         context: {
           platform: formData.platform,
           tone: formData.tone,
           purpose: formData.purpose,
           targetAudience: formData.targetAudience,
-          keywords: formData.keywords.split(',').map(k => k.trim()),
+          keywords: formData.keywords.split(",").map((k) => k.trim()),
+          ctaType: formData.ctaType,
+          contentStyle: formData.contentStyle,
+          length: {
+            ...(formData.contentLengthType === "short"
+              ? { min: 50, max: 100 }
+              : formData.contentLengthType === "medium"
+              ? { min: 100, max: 250 }
+              : { min: 250, max: 500 }),
+            unit: "characters",
+          },
         },
         constraints: {
-          hashtagCount: 3,
-          emojiUsage: 'minimal'
-        }
+          hashtagCount:
+            formData.hashtagStrategy === "minimal"
+              ? 3
+              : formData.hashtagStrategy === "moderate"
+              ? 5
+              : 10,
+          emojiUsage:
+            formData.toneIntensity === "light"
+              ? "minimal"
+              : formData.toneIntensity === "moderate"
+              ? "moderate"
+              : "heavy",
+        },
       };
 
       const response = await generateContent(request);
-      
+
       if (response.suggestions.length > 0) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          content: response.suggestions[0].content
+          content: response.suggestions[0].content,
         }));
-        
+
         // Show improvements if available
-        response.improvements?.forEach(improvement => {
+        response.improvements?.forEach((improvement) => {
           toast.success(improvement.suggestion);
         });
       }
     } catch (error) {
-      console.error('Error generating content:', error);
-      toast.error('Failed to generate content');
+      console.error("Error generating content:", error);
+      toast.error("Failed to generate content");
     } finally {
       setIsGenerating(false);
     }
@@ -72,14 +111,18 @@ const ContentCreation: React.FC = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-6">Create Content</h1>
+      <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-6">
+        Create Content
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Platform Selection */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">Platform Selection</h2>
+            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">
+              Platform Selection
+            </h2>
             <select
               name="platform"
               value={formData.platform}
@@ -95,10 +138,30 @@ const ContentCreation: React.FC = () => {
 
           {/* Content Details */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">Content Details</h2>
+            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">
+              Content Details
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-neutral-900 dark:text-white mb-2">Tone</label>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Content Length
+                </label>
+                <select
+                  name="contentLengthType"
+                  value={formData.contentLengthType}
+                  onChange={handleInputChange}
+                  className="w-full bg-neutral-50 dark:bg-gray-700 text-neutral-900 dark:text-white px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                >
+                  <option value="short">Short (50-100 characters)</option>
+                  <option value="medium">Medium (100-250 characters)</option>
+                  <option value="long">Long (250-500 characters)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Tone
+                </label>
                 <select
                   name="tone"
                   value={formData.tone}
@@ -113,9 +176,11 @@ const ContentCreation: React.FC = () => {
                   <option value="persuasive">Persuasive</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-neutral-900 dark:text-white mb-2">Purpose</label>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Purpose
+                </label>
                 <select
                   name="purpose"
                   value={formData.purpose}
@@ -132,7 +197,29 @@ const ContentCreation: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-neutral-900 dark:text-white mb-2">Target Audience</label>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Call-To-Action (CTA)
+                </label>
+                <select
+                  name="ctaType"
+                  value={formData.ctaType}
+                  onChange={handleInputChange}
+                  className="w-full bg-neutral-50 dark:bg-gray-700 text-neutral-900 dark:text-white px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                >
+                  <option value="question">Ask a Question</option>
+                  <option value="engagement">Encourage Likes & Comments</option>
+                  <option value="purchase">
+                    Drive Sales (Buy Now, Shop Here)
+                  </option>
+                  <option value="visit">Visit Link (Website/Blog)</option>
+                  <option value="tag">Tag Friends</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Target Audience
+                </label>
                 <input
                   type="text"
                   name="targetAudience"
@@ -144,7 +231,50 @@ const ContentCreation: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-neutral-900 dark:text-white mb-2">Keywords</label>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Content Style
+                </label>
+                <select
+                  name="contentStyle"
+                  value={formData.contentStyle}
+                  onChange={handleInputChange}
+                  className="w-full bg-neutral-50 dark:bg-gray-700 text-neutral-900 dark:text-white px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                >
+                  <option value="storytelling">
+                    Storytelling (Narrative-based)
+                  </option>
+                  <option value="listicle">
+                    Listicle (Bullet Points, Lists)
+                  </option>
+                  <option value="informative">
+                    Informative (Facts, Data, Insights)
+                  </option>
+                  <option value="direct">Direct & Persuasive</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Tone Intensity
+                </label>
+                <select
+                  name="toneIntensity"
+                  value={formData.toneIntensity}
+                  onChange={handleInputChange}
+                  className="w-full bg-neutral-50 dark:bg-gray-700 text-neutral-900 dark:text-white px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                >
+                  <option value="light">Lightly Expressive</option>
+                  <option value="moderate">
+                    Moderate (Balanced Personality)
+                  </option>
+                  <option value="strong">Strong & Expressive</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Keywords
+                </label>
                 <input
                   type="text"
                   name="keywords"
@@ -154,12 +284,32 @@ const ContentCreation: React.FC = () => {
                   placeholder="Enter keywords separated by commas"
                 />
               </div>
+
+              <div>
+                <label className="block text-neutral-900 dark:text-white mb-2">
+                  Hashtag Strategy
+                </label>
+                <select
+                  name="hashtagStrategy"
+                  value={formData.hashtagStrategy}
+                  onChange={handleInputChange}
+                  className="w-full bg-neutral-50 dark:bg-gray-700 text-neutral-900 dark:text-white px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400"
+                >
+                  <option value="minimal">Minimal (1-3 Hashtags)</option>
+                  <option value="moderate">Moderate (3-5 Hashtags)</option>
+                  <option value="maximized">
+                    Maximized (8+ Hashtags for Reach)
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Content Editor */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">Content Editor</h2>
+            <h2 className="text-xl text-neutral-900 dark:text-white mb-4">
+              Content Editor
+            </h2>
             <div className="space-y-4">
               <div className="flex gap-2 mb-4">
                 <button
@@ -167,7 +317,7 @@ const ContentCreation: React.FC = () => {
                   disabled={isGenerating}
                   className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isGenerating ? 'Generating...' : 'Generate Content'}
+                  {isGenerating ? "Generating..." : "Generate Content"}
                 </button>
               </div>
               <textarea
@@ -184,13 +334,18 @@ const ContentCreation: React.FC = () => {
 
         {/* Right Column - AI Suggestions */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm h-fit">
-          <h2 className="text-xl text-neutral-900 dark:text-white mb-4">AI Assistant</h2>
+          <h2 className="text-xl text-neutral-900 dark:text-white mb-4">
+            AI Assistant
+          </h2>
           <p className="text-neutral-600 dark:text-gray-400">
-            Our AI assistant will help you create engaging content based on your preferences.
-            Just fill in the details on the left and click "Generate Content".
+            Our AI assistant will help you create engaging content based on your
+            preferences. Just fill in the details on the left and click
+            "Generate Content".
           </p>
           <div className="mt-4 space-y-2">
-            <h3 className="font-medium text-neutral-900 dark:text-white">Tips:</h3>
+            <h3 className="font-medium text-neutral-900 dark:text-white">
+              Tips:
+            </h3>
             <ul className="list-disc list-inside text-neutral-600 dark:text-gray-400">
               <li>Be specific with your target audience</li>
               <li>Use relevant keywords</li>
