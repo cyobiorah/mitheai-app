@@ -2,16 +2,16 @@
 
 ## Brand Colors Palette
 
-| Color Name      | Hex Code | Purpose                              |
-|----------------|----------|--------------------------------------|
-| Primary Blue   | #6BA6F7  | Primary actions, buttons, highlights |
-| Secondary Green| #57D8A5  | Success messages, approvals, notifications |
-| Accent Purple  | #A78BFA  | Highlights, links, subtle emphasis |
-| Background Light| #F7FAFC  | Main background (light and clean) |
-| Text Dark Gray | #374151  | Primary text color |
-| Text Light Gray| #718096  | Secondary text, placeholders |
-| Warning Yellow | #FFD966  | Warnings and attention highlights |
-| Error Soft Red | #FC8181  | Error messages, warnings |
+| Color Name       | Hex Code | Purpose                                    |
+| ---------------- | -------- | ------------------------------------------ |
+| Primary Blue     | #6BA6F7  | Primary actions, buttons, highlights       |
+| Secondary Green  | #57D8A5  | Success messages, approvals, notifications |
+| Accent Purple    | #A78BFA  | Highlights, links, subtle emphasis         |
+| Background Light | #F7FAFC  | Main background (light and clean)          |
+| Text Dark Gray   | #374151  | Primary text color                         |
+| Text Light Gray  | #718096  | Secondary text, placeholders               |
+| Warning Yellow   | #FFD966  | Warnings and attention highlights          |
+| Error Soft Red   | #FC8181  | Error messages, warnings                   |
 
 ## Frontend Screens and Sections
 
@@ -20,6 +20,7 @@
 **Purpose**: Provide a quick overview of the user's content and activity.
 
 #### Sections:
+
 - **Welcome Header**
   - Displays the user's name and a quick action button (e.g., "Create Content")
 - **Content Summary**
@@ -40,6 +41,7 @@
 **Purpose**: Manage all content in one place.
 
 #### Sections:
+
 - **Content Filters**
   - Dropdowns to filter by category (e.g., Blogs, Ads) or status (e.g., Draft, Approved)
   - Search bar for keywords
@@ -54,6 +56,7 @@
 **Purpose**: Enable users to generate or upload content.
 
 #### Sections:
+
 - **Category Selection**
   - Dropdown to choose a content category (e.g., Blogs, Ads, SEO)
   - Preview of category-specific templates
@@ -73,6 +76,7 @@
 **Purpose**: Manage and automate content publishing.
 
 #### Sections:
+
 - **Platform Selection**
   - Toggle buttons for platforms (e.g., Facebook, Twitter)
   - Integration checklists to ensure accounts are linked
@@ -87,6 +91,7 @@
 **Purpose**: Allow admins and reviewers to approve or reject content.
 
 #### Sections:
+
 - **Pending Approvals**
   - List of content awaiting approval
   - Cards showing title, category, status, and submission date
@@ -101,6 +106,7 @@
 **Purpose**: Display performance metrics for content.
 
 #### Sections:
+
 - **Key Metrics Overview**
   - Total posts, average engagement rate, and category breakdown
 - **Engagement Trends**
@@ -117,6 +123,7 @@
 **Purpose**: Manage user preferences and integrations.
 
 #### Sections:
+
 - **User Profile**
   - Name, email, and role
 - **Integrations**
@@ -133,6 +140,7 @@
 **Purpose**: Display organization information and settings.
 
 #### Sections:
+
 - **Organization Info**
   - Organization logo, name, and description
   - Total teams and users
@@ -152,6 +160,7 @@
 **Purpose**: Display team-specific information and settings.
 
 #### Sections:
+
 - **Team Overview**
   - Team details
   - Member management
@@ -166,9 +175,11 @@
 ## Multi-Organization and Team Management
 
 ### Purpose
+
 Allow users to manage or switch between multiple organizations and teams effortlessly.
 
 ### Target Roles
+
 - Admins
 - Organization Owners
 - Team Managers
@@ -177,6 +188,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
 ### Sections and Features
 
 #### Organization Selector
+
 - Dropdown or sidebar navigation to switch between organizations
 - Displays current organization name and logo
 - Option to "Create New Organization" (Admins only)
@@ -185,6 +197,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
   - Restricted to Admins or Organization Owners for creating new organizations
 
 #### Team Selector
+
 - Available within an organization
 - Dropdown or tabs to switch between teams
 - Displays:
@@ -194,12 +207,12 @@ Allow users to manage or switch between multiple organizations and teams effortl
 
 #### User Roles and Permissions
 
-| Role | Scope | Capabilities |
-|------|-------|--------------|
-| Organization Owner | Organization-wide | Manage billing, create teams, manage users, oversee analytics |
-| Team Admin | Team-specific | Add/remove members, assign roles, manage team content and schedules |
-| Team Member | Team-specific | Create and edit content, participate in workflows |
-| Viewer | Team-specific | View content and analytics; no editing capabilities |
+| Role               | Scope             | Capabilities                                                        |
+| ------------------ | ----------------- | ------------------------------------------------------------------- |
+| Organization Owner | Organization-wide | Manage billing, create teams, manage users, oversee analytics       |
+| Team Admin         | Team-specific     | Add/remove members, assign roles, manage team content and schedules |
+| Team Member        | Team-specific     | Create and edit content, participate in workflows                   |
+| Viewer             | Team-specific     | View content and analytics; no editing capabilities                 |
 
 ## UI/UX Design Features
 
@@ -221,7 +234,9 @@ Allow users to manage or switch between multiple organizations and teams effortl
 ## Implementation Plan
 
 ### 1. Data Model & Types
+
 - Create new TypeScript interfaces:
+
   ```typescript
   interface Organization {
     id: string;
@@ -242,12 +257,13 @@ Allow users to manage or switch between multiple organizations and teams effortl
 
   interface UserRole {
     organizationId: string;
-    teamId?: string;  // Optional for org-wide roles
-    role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+    teamId?: string; // Optional for org-wide roles
+    role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
   }
   ```
 
 ### 2. State Management
+
 - Implement global state management:
   - Current organization context
   - Current team context
@@ -263,6 +279,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
 ### 3. Component Updates
 
 #### New Components
+
 - OrganizationSelector
   - Organization dropdown
   - Create organization modal
@@ -285,6 +302,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
   - Access control UI
 
 #### Existing Component Updates
+
 - Layout.tsx
   - Add organization selector to header
   - Add team selector to sidebar
@@ -298,6 +316,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
   - Update permission checks
 
 ### 4. Routing Structure
+
 ```typescript
 // New Routes
 /org/:orgId/dashboard
@@ -309,6 +328,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
 ```
 
 ### 5. Authorization System
+
 - Implement RBAC (Role-Based Access Control)
   - Define permission matrix
   - Create permission checking utilities
@@ -319,6 +339,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
 - Add permission checks to components
 
 ### 6. API Integration
+
 - Organization endpoints:
   - CRUD operations
   - Member management
@@ -329,6 +350,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
   - Activity tracking
 
 ### 7. Migration Strategy
+
 1. Implement data models and types
 2. Add state management system
 3. Create new components
@@ -339,6 +361,7 @@ Allow users to manage or switch between multiple organizations and teams effortl
 8. Test and validate
 
 ### 8. Testing Requirements
+
 - Unit tests for:
   - State management
   - Authorization logic
@@ -353,8 +376,52 @@ Allow users to manage or switch between multiple organizations and teams effortl
   - Data persistence
 
 ### 9. Documentation Needs
+
 - API documentation
 - Component documentation
 - State management guide
 - Authorization guide
 - Migration guide for existing users
+
+<!-- Firebase Cleanup/Seed -->
+
+node dist/scripts/cleanup.js
+node dist/scripts/seed.js
+
+=== Seeded Account Credentials ===
+Organization Accounts:
+Email: admin@mitheia.com
+Password: password123
+
+---
+
+Email: owner@test.com
+Password: password123
+
+---
+
+Email: manager@test.com
+Password: password123
+
+---
+
+Email: user@test.com
+Password: password123
+
+---
+
+Email: owner@small.com
+Password: password123
+
+---
+
+Individual Accounts:
+Email: john.doe@example.com
+Password: password123
+
+---
+
+Email: jane.smith@example.com
+Password: password123
+
+---

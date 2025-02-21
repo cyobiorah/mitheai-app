@@ -10,11 +10,18 @@ import OrganizationOverview from "./pages/OrganizationOverview";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { AcceptInvitation } from "./pages/AcceptInvitation";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ROUTES } from "./utils/contstants";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import Dashboard from "./pages/Dashboard";
+
+// Wrapper component to conditionally render dashboard
+const DashboardRouter: React.FC = () => {
+  const { user } = useAuth();
+  return user?.userType === 'individual' ? <Dashboard /> : <OrganizationOverview />;
+};
 
 function App() {
   return (
@@ -37,7 +44,7 @@ function App() {
                     <Routes>
                       <Route
                         path={ROUTES.DASHBOARD}
-                        element={<OrganizationOverview />}
+                        element={<DashboardRouter />}
                       />
                       <Route path={ROUTES.LIBRARY} element={<ContentLibrary />} />
                       <Route
