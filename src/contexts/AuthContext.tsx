@@ -27,6 +27,7 @@ interface RegisterData {
   lastName: string;
   email: string;
   password: string;
+  userType: 'individual' | 'organization';
   organizationName?: string;
 }
 
@@ -113,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         if (firebaseUser) {
           const userData = await fetchUserData(firebaseUser.uid);
-          if (userData?.organizationId) {
+          if (userData?.userType === 'organization' && userData?.organizationId) {
             await Promise.all([
               fetchOrganization(userData.organizationId),
               fetchTeams(userData.organizationId),
@@ -137,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
-    setError(null); // Clear any existing errors
+    setError(null);
     try {
       const { user: firebaseUser } = await signInWithEmailAndPassword(
         auth,
@@ -145,21 +146,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password
       );
 
-      // todo: add email verification note do not remove this
-      // if (!firebaseUser.emailVerified) {
-      //   await signOut(auth);
-      //   throw new Error("Please verify your email before logging in. Check your inbox for the verification link.");
-      // }
-
       const userData = await fetchUserData(firebaseUser.uid);
       if (!userData) {
         await signOut(auth);
-        // throw new Error("User account not fully set up. Please contact support.");
         toast.error("User account not fully set up. Please contact support.");
         return;
       }
 
-      if (userData.organizationId) {
+      // Handle individual users
+      if (userData.userType === 'individual') {
+        navigate(ROUTES.DASHBOARD);
+        return;
+      }
+
+      // Handle organization users
+      if (userData.userType === 'organization') {
+        if (!userData.organizationId) {
+          await signOut(auth);
+          throw new Error("Organization account not properly set up.");
+        }
+
         await Promise.all([
           fetchOrganization(userData.organizationId),
           fetchTeams(userData.organizationId),
@@ -173,11 +179,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           );
         }
 
-        // Only navigate if everything is successful
         navigate(ROUTES.DASHBOARD);
-      } else {
-        await signOut(auth);
-        throw new Error("User account not associated with an organization.");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -205,39 +207,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         data.password
       );
 
-      const orgRef = doc(collection(db, "organizations"));
-      const organization: Omit<Organization, "id"> = {
-        name: data.organizationName || `${data.firstName}'s Organization`,
-        type: "startup",
-        settings: {
-          permissions: [],
-          maxTeams: 5,
-          maxUsers: 10,
-          features: []
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const teamRef = doc(collection(db, "teams"));
-      const team: Omit<Team, "id"> = {
-        name: "Default Team",
-        organizationId: orgRef.id,
-        memberIds: [],
-        settings: {
-          permissions: []
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const userData: Omit<User, "id"> = {
+      let userData: Omit<User, "id"> = {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: "org_owner",
-        organizationId: orgRef.id,
-        teamIds: [teamRef.id],
+        userType: data.userType,
         status: "active",
         uid: firebaseUser.uid,
         settings: {
@@ -249,41 +223,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         updatedAt: new Date().toISOString(),
       };
 
-      await Promise.all([
-        setDoc(orgRef, organization),
-        setDoc(teamRef, team),
-        setDoc(doc(db, "users", firebaseUser.uid), userData),
-      ]);
+      // Handle organization user registration
+      if (data.userType === 'organization') {
+        const orgRef = doc(collection(db, "organizations"));
+        const organization: Omit<Organization, "id"> = {
+          name: data.organizationName || `${data.firstName}'s Organization`,
+          type: "startup",
+          settings: {
+            permissions: [],
+            maxTeams: 5,
+            maxUsers: 10,
+            features: []
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
 
-      // Send invitation email
-      try {
-        console.log("Sending invitation with data:", {
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
+        const teamRef = doc(collection(db, "teams"));
+        const team: Omit<Team, "id"> = {
+          name: "Default Team",
+          organizationId: orgRef.id,
+          memberIds: [],
+          settings: {
+            permissions: []
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        userData = {
+          ...userData,
           role: "org_owner",
           organizationId: orgRef.id,
           teamIds: [teamRef.id],
-        });
-        const response = await invitationsApi.sendInvitation({
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          role: "org_owner",
-          organizationId: orgRef.id,
-          teamIds: [teamRef.id],
-        });
-        console.log("Invitation API response:", response);
-      } catch (error: any) {
-        console.error("Error sending invitation email:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
-        // Don't throw error here, as the user is already created
+        };
+
+        await Promise.all([
+          setDoc(orgRef, organization),
+          setDoc(teamRef, team),
+          setDoc(doc(db, "users", firebaseUser.uid), userData),
+        ]);
+
+        // Send invitation email for organization users
+        try {
+          const response = await invitationsApi.sendInvitation({
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            role: "org_owner",
+            organizationId: orgRef.id,
+            teamIds: [teamRef.id],
+          });
+          console.log("Invitation API response:", response);
+        } catch (error: any) {
+          console.error("Error sending invitation email:", error);
+        }
+
+        await Promise.all([fetchOrganization(orgRef.id), fetchTeams(orgRef.id)]);
+      } else {
+        // Handle individual user registration
+        await setDoc(doc(db, "users", firebaseUser.uid), userData);
       }
-
-      await Promise.all([fetchOrganization(orgRef.id), fetchTeams(orgRef.id)]);
 
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
@@ -299,14 +299,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
     try {
       await signOut(auth);
-      setUser(null);
-      setOrganization(null);
-      setTeams([]);
       navigate(ROUTES.LOGIN);
     } catch (error) {
       console.error("Logout error:", error);
-      setError("Failed to logout");
-      throw error;
+      setError("Failed to log out");
     }
   };
 
