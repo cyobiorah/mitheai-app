@@ -23,7 +23,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const navigation = [
   { name: "Dashboard", href: ROUTES.DASHBOARD, icon: UsersIcon },
-  { name: "View Content", href: ROUTES.LIBRARY, icon: DocumentTextIcon },
+  // { name: "View Content", href: ROUTES.LIBRARY, icon: DocumentTextIcon },
   { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
   { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
   { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },

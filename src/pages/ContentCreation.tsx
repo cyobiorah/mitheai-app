@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { generateContent } from "../api/content";
+import { generateContent, createContent } from "../api/content";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import {
   AIAssistantRequest,
   ContentTone,
@@ -7,9 +9,13 @@ import {
   SocialPlatform,
 } from "../api/types";
 import { toast } from "react-hot-toast";
+import { ContentItem } from "../types";
 
 const ContentCreation: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<{
     platform: SocialPlatform;
     tone: ContentTone;
@@ -51,6 +57,7 @@ const ContentCreation: React.FC = () => {
   const handleGenerate = async () => {
     try {
       setIsGenerating(true);
+      toast.loading("Generating content...", { id: "content-generation" });
 
       const request: AIAssistantRequest = {
         type: "caption",
@@ -88,7 +95,13 @@ const ContentCreation: React.FC = () => {
         },
       };
 
+      console.log("Generating content with request:", request);
       const response = await generateContent(request);
+      console.log("Received response:", response);
+
+      if (!response || !response.suggestions) {
+        throw new Error("Invalid response format from AI service");
+      }
 
       if (response.suggestions.length > 0) {
         setFormData((prev) => ({
@@ -96,16 +109,126 @@ const ContentCreation: React.FC = () => {
           content: response.suggestions[0].content,
         }));
 
+        toast.success("Content generated successfully!", {
+          id: "content-generation",
+        });
+
         // Show improvements if available
         response.improvements?.forEach((improvement) => {
           toast.success(improvement.suggestion);
         });
+      } else {
+        toast.error("No content suggestions received", {
+          id: "content-generation",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating content:", error);
-      toast.error("Failed to generate content");
+      const errorMessage =
+        error.response?.data?.message ||
+        (error.message === "timeout of 60000ms exceeded"
+          ? "Content generation is taking longer than expected. Please try again."
+          : "Failed to generate content");
+      toast.error(errorMessage, { id: "content-generation" });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.content) {
+      toast.error("Please generate or enter content first");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      toast.loading("Saving content...", { id: "content-saving" });
+
+      const newContent: Omit<ContentItem, "id"> = {
+        title: formData.content.slice(0, 50) + "...", // Default title from content
+        description: `${formData.purpose} content for ${formData.platform}`,
+        type: "social_post",
+        url: null,
+        content: formData.content,
+        version: 1,
+        metadata: {
+          source: formData.content ? "manual" : "ai_generated",
+          sourceDetails: {
+            platform: formData.platform,
+            aiModel: "gpt-4",
+            importSource: null,
+            prompt: null,
+          },
+          language: "en",
+          tags: formData.keywords.split(",").map((k) => k.trim()).filter(Boolean),
+          collections: [],
+          visibility: user?.userType === "individual" ? "private" : "team",
+          customFields: {
+            platform: formData.platform,
+            tone: formData.tone,
+            purpose: formData.purpose,
+            targetAudience: formData.targetAudience || null,
+            contentLengthType: formData.contentLengthType || null,
+            ctaType: formData.ctaType || null,
+            contentStyle: formData.contentStyle || null,
+            toneIntensity: formData.toneIntensity || null,
+            hashtagStrategy: formData.hashtagStrategy || null,
+          },
+        },
+        status: "draft",
+        statusHistory: [
+          {
+            status: "draft",
+            timestamp: new Date().toISOString(),
+            updatedBy: user!.uid,
+            comment: "Initial creation",
+          },
+        ],
+        versionHistory: [
+          {
+            version: 1,
+            content: formData.content,
+            timestamp: new Date().toISOString(),
+            updatedBy: user!.uid,
+            comment: "Initial version",
+          },
+        ],
+        publishing: {
+          firstPublishedAt: null,
+          lastPublishedAt: null,
+          publishedBy: null,
+          scheduledPublishDate: null,
+          expiryDate: null,
+        },
+        analysis: {
+          sentiment: null,
+          keywords: null,
+          categories: null,
+          entities: null,
+          customAnalytics: null,
+        },
+        createdBy: user!.uid,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        analyzedAt: null,
+        teamId: user?.teamIds?.[0] || null,
+        organizationId: user?.organizationId || null,
+      };
+
+      const savedContent = await createContent(newContent);
+      console.log("Saved content:", savedContent);
+      toast.success("Content saved successfully!", { id: "content-saving" });
+
+      // Navigate to content view or library
+      navigate("/manage");
+    } catch (error: any) {
+      console.error("Error saving content:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to save content";
+      toast.error(errorMessage, { id: "content-saving" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -314,10 +437,17 @@ const ContentCreation: React.FC = () => {
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className="bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white px-4 py-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isGenerating || isSaving}
+                  className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
                 >
-                  {isGenerating ? "Generating..." : "Generate Content"}
+                  {isGenerating ? "Generating..." : "Generate"}
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={isGenerating || isSaving || !formData.content}
+                  className="flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Save"}
                 </button>
               </div>
               <textarea

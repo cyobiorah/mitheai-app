@@ -61,12 +61,58 @@ export interface ContentItem {
   type: 'article' | 'social_post' | 'video' | 'image' | 'document';
   url?: string;
   content: string;
+  version: number;
+  
   metadata: {
-    source: string;
+    source: 'ai_generated' | 'manual' | 'imported';
+    sourceDetails?: {
+      aiModel?: string;
+      importSource?: string;
+      prompt?: string;
+    };
     language: string;
     tags: string[];
+    collections: string[];  // Collection IDs this content belongs to
+    visibility: 'private' | 'team' | 'organization' | 'public';
     customFields: Record<string, any>;
   };
+
+  status: 'draft' | 'published' | 'archived' | 'pending_review' | 'rejected';
+  statusHistory: Array<{
+    status: ContentItem['status'];
+    timestamp: string;
+    updatedBy: string;
+    comment?: string;
+  }>;
+
+  versionHistory: Array<{
+    version: number;
+    content: string;
+    timestamp: string;
+    updatedBy: string;
+    comment?: string;
+  }>;
+
+  review?: {
+    requestedBy: string;
+    requestedAt: string;
+    reviewers: Array<{
+      userId: string;
+      status: 'pending' | 'approved' | 'rejected';
+      comment?: string;
+      timestamp?: string;
+    }>;
+    requiredApprovals: number;
+  };
+
+  publishing: {
+    firstPublishedAt?: string;
+    lastPublishedAt?: string;
+    publishedBy?: string;
+    scheduledPublishDate?: string;
+    expiryDate?: string;
+  };
+
   analysis: {
     sentiment?: number;
     keywords?: string[];
@@ -78,9 +124,12 @@ export interface ContentItem {
     }>;
     customAnalytics?: Record<string, any>;
   };
-  status: 'pending' | 'analyzed' | 'archived';
-  teamId: string;
-  organizationId: string;
+
+  // Organization context
+  teamId?: string;  // Optional for individual users
+  organizationId?: string;  // Optional for individual users
+  
+  // Audit fields
   createdBy: string;
   createdAt: string;
   updatedAt: string;

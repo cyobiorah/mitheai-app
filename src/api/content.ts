@@ -4,7 +4,9 @@ import { AIAssistantRequest, AIAssistantResponse } from "./types";
 
 // AI Content Generation
 export const generateContent = async (request: AIAssistantRequest): Promise<AIAssistantResponse> => {
-  const response = await axiosInstance.post("/content/generate", request);
+  const response = await axiosInstance.post("/content/generate", request, {
+    timeout: 60000, // 60 seconds specifically for AI generation
+  });
   return response.data;
 };
 
