@@ -31,15 +31,17 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  organizationId: string;
-  role: 'super_admin' | 'org_owner' | 'team_manager' | 'user';
-  teamIds: string[];
+  userType: 'individual' | 'organization';
+  organizationId?: string;  // Optional for individual users
+  role?: 'super_admin' | 'org_owner' | 'team_manager' | 'user';  // Optional for individual users
+  teamIds?: string[];  // Optional for individual users
   status: 'pending' | 'active' | 'inactive';
   invitationToken?: string;
   settings: {
     permissions: string[];
     theme: 'light' | 'dark';
     notifications: any[];
+    personalPreferences?: Record<string, any>;  // For individual user preferences
   };
   createdAt: string;
   updatedAt: string;

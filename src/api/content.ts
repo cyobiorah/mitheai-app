@@ -50,6 +50,17 @@ export const archiveContent = async (contentId: string) => {
   return response.data;
 };
 
+// Personal Content Management
+export const getPersonalContent = async () => {
+  const response = await axiosInstance.get("/content/personal");
+  return response.data;
+};
+
+export const getPersonalCollections = async () => {
+  const response = await axiosInstance.get("/content/personal/collections");
+  return response.data;
+};
+
 // Collection Management
 export const createCollection = async (
   collection: Omit<ContentCollection, "id">
