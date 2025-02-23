@@ -4,8 +4,7 @@ import { auth } from "../config/firebase";
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const axiosInstance = axios.create({
-  baseURL: API_URL, // This will work both locally and in production
-  timeout: 30000, // Increased to 30 seconds for AI operations
+  baseURL: API_URL,
 });
 
 // Add a request interceptor
@@ -18,15 +17,6 @@ axiosInstance.interceptors.request.use(
       const token = await user.getIdToken();
       // Add it to the Authorization header
       config.headers.Authorization = `Bearer ${token}`;
-      // console.log('[DEBUG] Making request:', {
-      //   method: config.method,
-      //   baseURL: config.baseURL,
-      //   url: config.url,
-      //   fullURL: `${config.baseURL}${config.url}`,
-      //   headers: config.headers,
-      //   params: config.params,
-      //   data: config.data
-      // });
     } else {
       console.log("[DEBUG] No user is currently signed in");
     }
@@ -41,18 +31,6 @@ axiosInstance.interceptors.request.use(
 // Add a response interceptor
 axiosInstance.interceptors.response.use(
   (response) => {
-    // console.log('[DEBUG] Response received:', {
-    //   status: response.status,
-    //   statusText: response.statusText,
-    //   config: {
-    //     method: response.config.method,
-    //     baseURL: response.config.baseURL,
-    //     url: response.config.url,
-    //     fullURL: `${response.config.baseURL}${response.config.url}`,
-    //   },
-    //   data: response.data,
-    //   headers: response.headers,
-    // });
     return response;
   },
   (error: AxiosError) => {

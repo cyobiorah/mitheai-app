@@ -138,11 +138,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ))}
           </nav>
 
-          {/* Team and Member Selectors */}
-          <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4 px-4">
-            <TeamSelector />
-            <MemberSelector />
-          </div>
+          {/* Team and Member Selectors - Only show for organization users */}
+          {user?.userType === 'organization' && (
+            <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4 px-4">
+              <TeamSelector />
+              <MemberSelector />
+            </div>
+          )}
 
           {/* User section */}
           <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-gray-700">
