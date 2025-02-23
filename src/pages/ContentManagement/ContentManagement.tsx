@@ -13,6 +13,8 @@ import {
   deleteContent,
   deleteCollection,
   deleteTemplate,
+  getPersonalContent,
+  getPersonalCollections,
 } from "../../api/content";
 import { ContentItem, ContentCollection, AnalysisTemplate } from "../../types";
 import ContentDialog from "./ContentDialog";
@@ -47,7 +49,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function ContentManagement() {
-  const { teams } = useAuth();
+  const { teams, user } = useAuth();
   const currentTeam = teams[0];
 
   const [tabIndex, setTabIndex] = useState(0);
@@ -80,18 +82,37 @@ export default function ContentManagement() {
   } | null>(null);
 
   const fetchData = async () => {
-    if (!currentTeam) return;
+    console.log("here");
+    if (!user) return;
 
     try {
       setIsLoading(true);
-      const [contentData, collectionsData, templatesData] = await Promise.all([
-        listTeamContent(currentTeam.id),
-        listTeamCollections(currentTeam.id),
-        listTeamTemplates(currentTeam.id),
-      ]);
-      setContent(contentData);
-      setCollections(collectionsData);
-      setTemplates(templatesData);
+      if (user.userType === "organization" && currentTeam) {
+        // For organization users, fetch team content
+        const [contentData, collectionsData, templatesData] = await Promise.all(
+          [
+            listTeamContent(currentTeam.id),
+            listTeamCollections(currentTeam.id),
+            listTeamTemplates(currentTeam.id),
+          ]
+        );
+        console.log({ contentData, collectionsData, templatesData });
+        setContent(contentData);
+        setCollections(collectionsData);
+        setTemplates(templatesData);
+      } else {
+        // For individual users, fetch personal content
+        const [contentData, collectionsData, templatesData] = await Promise.all(
+          [
+            getPersonalContent(),
+            getPersonalCollections(),
+            listTeamTemplates("personal"), // This will return personal templates
+          ]
+        );
+        setContent(contentData);
+        setCollections(collectionsData);
+        setTemplates(templatesData);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load content");
@@ -102,7 +123,7 @@ export default function ContentManagement() {
 
   useEffect(() => {
     fetchData();
-  }, [currentTeam]);
+  }, [currentTeam, user]);
 
   const handleTabChange = (newValue: number) => {
     setTabIndex(newValue);
@@ -177,93 +198,86 @@ export default function ContentManagement() {
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
           </div>
-        ) : content.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">
-              No content items found
-            </p>
-            <button
-              onClick={() => {
-                setSelectedContent(null);
-                setContentDialogOpen(true);
-              }}
-              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" />
-              Add Content
-            </button>
-          </div>
         ) : (
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
-              Content Items
-            </h2>
-            <button
-              onClick={() => {
-                setSelectedContent(null);
-                setContentDialogOpen(true);
-              }}
-              className="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              <PlusCircleIcon className="h-5 w-5 mr-2" />
-              Add Content
-            </button>
-          </div>
-        )}
-        {content.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-            <ul className="divide-y divide-neutral-200 dark:divide-gray-700">
-              {content.map((item) => (
-                <li key={item.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {item.title}
-                      </h3>
-                      <p className="text-sm text-neutral-500 dark:text-gray-400">{`${item.type} - ${item.status}`}</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => {
-                          setContentToAnalyze(item);
-                          setAnalyzeDialogOpen(true);
-                        }}
-                        className="p-2 text-neutral-400 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 rounded-lg transition-colors"
-                        title="Analyze"
-                      >
-                        <PlayIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedContent(item);
-                          setContentDialogOpen(true);
-                        }}
-                        className="p-2 text-neutral-400 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <PencilSquareIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedContent(item);
-                          setDeleteConfirm({
-                            open: true,
-                            type: "content",
-                            id: item.id,
-                            title: item.title,
-                          });
-                        }}
-                        className="p-2 text-neutral-400 hover:text-error-600 dark:text-gray-400 dark:hover:text-error-400 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                Content Items
+              </h2>
+              <button
+                onClick={() => {
+                  setSelectedContent(null);
+                  setContentDialogOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                <PlusCircleIcon className="h-5 w-5 mr-2" />
+                Add Content
+              </button>
+            </div>
+
+            {content.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500 dark:text-gray-400">
+                  No content items found
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <ul className="divide-y divide-neutral-200 dark:divide-gray-700">
+                  {content.map((item) => (
+                    <li key={item.id} className="px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-neutral-500 dark:text-gray-400">{`${item.type} - ${item.status}`}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => {
+                              setContentToAnalyze(item);
+                              setAnalyzeDialogOpen(true);
+                            }}
+                            className="p-2 text-neutral-400 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 rounded-lg transition-colors"
+                            title="Analyze"
+                          >
+                            <PlayIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedContent(item);
+                              setContentDialogOpen(true);
+                            }}
+                            className="p-2 text-neutral-400 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <PencilSquareIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedContent(item);
+                              setDeleteConfirm({
+                                open: true,
+                                type: "content",
+                                id: item.id,
+                                title: item.title,
+                              });
+                            }}
+                            className="p-2 text-neutral-400 hover:text-error-600 dark:text-gray-400 dark:hover:text-error-400 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
       </TabPanel>
 

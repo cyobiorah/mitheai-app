@@ -212,8 +212,9 @@ const ContentCreation: React.FC = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         analyzedAt: null,
-        teamId: user?.teamIds?.[0] || null,
-        organizationId: user?.organizationId || null,
+        // Only set teamId and organizationId for organization users
+        teamId: user?.userType === "organization" ? user?.teamIds?.[0] : null,
+        organizationId: user?.userType === "organization" ? user?.organizationId : null,
       };
 
       const savedContent = await createContent(newContent);
