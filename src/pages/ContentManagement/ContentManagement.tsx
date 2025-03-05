@@ -82,7 +82,6 @@ export default function ContentManagement() {
   } | null>(null);
 
   const fetchData = async () => {
-    console.log("here");
     if (!user) return;
 
     try {
