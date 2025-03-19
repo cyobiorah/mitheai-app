@@ -6,7 +6,9 @@ export interface SocialAccount {
   id: string;
   userId: string;
   platform: string;
+  platformAccountId: string; // Unique identifier from the platform (e.g., Twitter user ID)
   username: string;
+  accountName?: string;
   accessToken: string;
   refreshToken: string;
   tokenExpiry: string;
@@ -15,6 +17,8 @@ export interface SocialAccount {
   updatedAt: string;
   organizationId?: string;
   teamId?: string;
+  ownershipLevel?: 'user' | 'team' | 'organization'; // Indicates who owns/controls this account
+  status?: 'active' | 'expired' | 'revoked' | 'error';
 }
 
 export interface PostRequest {
@@ -146,6 +150,28 @@ export const updateContentPostStatus = async (
     platform,
     postId,
     status,
+    postedAt: new Date().toISOString(),
+  });
+  return response.data;
+};
+
+// Create a Twitter intent URL for manual posting
+export const createTwitterIntentUrl = (message: string): string => {
+  // Encode the message for URL
+  const encodedMessage = encodeURIComponent(message);
+  return `https://twitter.com/intent/tweet?text=${encodedMessage}`;
+};
+
+// Track manual posting attempt
+export const trackManualPostAttempt = async (
+  contentId: string,
+  platform: string
+): Promise<ContentItem> => {
+  // This updates the content item with manual posting metadata
+  const response = await axiosInstance.patch(`/content/${contentId}/post-status`, {
+    platform,
+    postId: null, // No post ID since it's manual
+    status: "manual_attempt",
     postedAt: new Date().toISOString(),
   });
   return response.data;
