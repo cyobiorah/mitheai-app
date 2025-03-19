@@ -28,6 +28,7 @@ const ContentCreation: React.FC = () => {
     contentStyle?: string;
     toneIntensity?: string;
     hashtagStrategy?: string;
+    selectedHashtags?: string[];
   }>({
     platform: "linkedin",
     tone: "professional",
@@ -40,7 +41,10 @@ const ContentCreation: React.FC = () => {
     contentStyle: "",
     toneIntensity: "",
     hashtagStrategy: "",
+    selectedHashtags: [],
   });
+
+  const [suggestedHashtags, setSuggestedHashtags] = useState<string[]>([]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -55,20 +59,17 @@ const ContentCreation: React.FC = () => {
   };
 
   const handleGenerate = async () => {
+    setIsGenerating(true);
     try {
-      setIsGenerating(true);
-      toast.loading("Generating content...", { id: "content-generation" });
-
-      const request: AIAssistantRequest = {
+      const result = await generateContent({
         type: "caption",
-        content: formData.content,
         context: {
           platform: formData.platform,
           tone: formData.tone,
           purpose: formData.purpose,
           targetAudience: formData.targetAudience,
           keywords: formData.keywords.split(",").map((k) => k.trim()),
-          ctaType: formData.ctaType,
+          ctaType: formData.ctaType as any,
           contentStyle: formData.contentStyle,
           length: {
             ...(formData.contentLengthType === "short"
@@ -93,67 +94,39 @@ const ContentCreation: React.FC = () => {
               ? "moderate"
               : "heavy",
         },
-      };
+      });
 
-      console.log("Generating content with request:", request);
-      const response = await generateContent(request);
-      console.log("Received response:", response);
-
-      if (!response || !response.suggestions) {
-        throw new Error("Invalid response format from AI service");
-      }
-
-      if (response.suggestions.length > 0) {
+      if (result.suggestions.length > 0) {
+        const suggestion = result.suggestions[0];
         setFormData((prev) => ({
           ...prev,
-          content: response.suggestions[0].content,
+          content: suggestion.content,
+          selectedHashtags: suggestion.hashtags || [],
         }));
-
-        toast.success("Content generated successfully!", {
-          id: "content-generation",
-        });
-
-        // Show improvements if available
-        response.improvements?.forEach((improvement) => {
-          toast.success(improvement.suggestion);
-        });
-      } else {
-        toast.error("No content suggestions received", {
-          id: "content-generation",
-        });
+        setSuggestedHashtags(suggestion.hashtags || []);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating content:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        (error.message === "timeout of 60000ms exceeded"
-          ? "Content generation is taking longer than expected. Please try again."
-          : "Failed to generate content");
-      toast.error(errorMessage, { id: "content-generation" });
+      toast.error("Failed to generate content");
     } finally {
       setIsGenerating(false);
     }
   };
 
   const handleSave = async () => {
-    if (!formData.content) {
-      toast.error("Please generate or enter content first");
-      return;
-    }
+    setIsSaving(true);
+    toast.loading("Saving content...", { id: "content-saving" });
 
     try {
-      setIsSaving(true);
-      toast.loading("Saving content...", { id: "content-saving" });
-
       const newContent: Omit<ContentItem, "id"> = {
-        title: formData.content.slice(0, 50) + "...", // Default title from content
-        description: `${formData.purpose} content for ${formData.platform}`,
+        title: formData.content?.slice(0, 50) + "...",
+        description: "Generated social media content",
         type: "social_post",
         url: null,
-        content: formData.content,
+        content: formData.content || "",
         version: 1,
         metadata: {
-          source: formData.content ? "manual" : "ai_generated",
+          source: formData.content ? "ai_generated" : "manual",
           sourceDetails: {
             platform: formData.platform,
             aiModel: "gpt-4",
@@ -161,7 +134,7 @@ const ContentCreation: React.FC = () => {
             prompt: null,
           },
           language: "en",
-          tags: formData.keywords.split(",").map((k) => k.trim()).filter(Boolean),
+          tags: formData.selectedHashtags || [],
           collections: [],
           visibility: user?.userType === "individual" ? "private" : "team",
           customFields: {
@@ -459,6 +432,36 @@ const ContentCreation: React.FC = () => {
                 rows={10}
                 placeholder="Start writing your content here or generate it using AI..."
               />
+              {/* Hashtag Selection */}
+              {suggestedHashtags.length > 0 && (
+                <div className="mt-4">
+                  <label className="block text-neutral-900 dark:text-white mb-2">
+                    Suggested Hashtags
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestedHashtags.map((hashtag) => (
+                      <button
+                        key={hashtag}
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            selectedHashtags: prev.selectedHashtags?.includes(hashtag)
+                              ? prev.selectedHashtags.filter((h) => h !== hashtag)
+                              : [...(prev.selectedHashtags || []), hashtag],
+                          }))
+                        }
+                        className={`px-3 py-1 rounded-full text-sm ${
+                          formData.selectedHashtags?.includes(hashtag)
+                            ? "bg-indigo-600 text-white"
+                            : "bg-neutral-100 dark:bg-gray-700 text-neutral-700 dark:text-gray-300"
+                        }`}
+                      >
+                        #{hashtag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
