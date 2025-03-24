@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { FaTwitter, FaFacebook } from "react-icons/fa";
+import { FaThreads } from "react-icons/fa6";
 import { auth } from "../config/firebase";
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
 import toast from "react-hot-toast";
@@ -16,6 +17,8 @@ interface SocialAccount {
   id: string; // Add this if not already present
   accountId: string;
   teamId?: string; // Add this for team assignment
+  displayName: string;
+  username: string;
 }
 
 interface ConnectionError {
@@ -97,6 +100,10 @@ export const SocialMediaConnections: React.FC = () => {
   const { user } = useAuth();
 
   console.log(useAuth());
+
+  useEffect(() => {
+    console.log({ accounts });
+  }, [accounts]);
 
   const handleTeamAssign = async (accountId: string, teamId: string) => {
     try {
@@ -277,6 +284,37 @@ export const SocialMediaConnections: React.FC = () => {
     }
   };
 
+  const handleThreadsConnect = async () => {
+    try {
+      setConnectionError(null);
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        console.error("No authentication token available");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/social-accounts/threads/direct-auth`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to authenticate with Threads");
+      }
+
+      const authUrl = await response.text();
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error("Error connecting to Threads:", error);
+    }
+  };
+
   const handleDisconnect = async (accountId: string) => {
     try {
       const idToken = await auth.currentUser?.getIdToken();
@@ -359,7 +397,7 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => handleDisconnect(account.accountId)}
+                    onClick={() => handleDisconnect(account.id)}
                     className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
                   >
                     Disconnect
@@ -376,7 +414,6 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
               </div>
             ))}
-
           {/* Facebook Connections */}
           {/* Show existing Facebook accounts */}
           {accounts
@@ -401,7 +438,7 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => handleDisconnect(account.accountId)}
+                    onClick={() => handleDisconnect(account.id)}
                     className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
                   >
                     Disconnect
@@ -418,7 +455,37 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
               </div>
             ))}
-
+          {/* Add this in the renderConnectedAccounts section, inside the platforms */}
+          {accounts
+            .filter((account) => account.platform === "threads")
+            .map((account) => (
+              <div
+                key={account.id}
+                className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow mb-4"
+              >
+                <div className="flex items-center">
+                  <div className="p-2 rounded-full bg-neutral-800">
+                    <FaThreads className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {account.displayName}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      @{account.username}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleDisconnect(account.id)}
+                    className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+            ))}
           {/* Add Another Account Button */}
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center">
@@ -449,7 +516,6 @@ export const SocialMediaConnections: React.FC = () => {
               </button>
             </div>
           </div>
-
           {/* Add Facebook Account Button */}
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center">
@@ -471,6 +537,30 @@ export const SocialMediaConnections: React.FC = () => {
                 className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
               >
                 Connect Account
+              </button>
+            </div>
+          </div>
+          {/* Add Threads Account Button */}
+          <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg mt-4">
+            <div className="flex items-center">
+              <div className="p-2 rounded-full bg-neutral-800">
+                <FaThreads className="w-6 h-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-medium text-gray-900 dark:text-white">
+                  Threads
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Connect your Threads/Instagram account to post content
+                </p>
+              </div>
+            </div>
+            <div>
+              <button
+                onClick={() => handleThreadsConnect()}
+                className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+              >
+                Connect
               </button>
             </div>
           </div>
