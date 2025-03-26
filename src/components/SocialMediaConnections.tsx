@@ -99,12 +99,6 @@ export const SocialMediaConnections: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  console.log(useAuth());
-
-  useEffect(() => {
-    console.log({ accounts });
-  }, [accounts]);
-
   const handleTeamAssign = async (accountId: string, teamId: string) => {
     try {
       const token = await auth.currentUser?.getIdToken();
