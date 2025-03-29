@@ -1,3 +1,5 @@
+import axiosInstance from './axios';
+
 export interface LoginResponse {
   token: string;
   user: any;
@@ -15,46 +17,41 @@ export interface RegisterData {
 
 export const authApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Login failed");
+    try {
+      const response = await axiosInstance.post("/auth/login", {
+        email,
+        password,
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      console.error("Login error:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || error.message || "Login failed");
     }
-    
-    return response.json();
   },
   
   register: async (userData: RegisterData): Promise<LoginResponse> => {
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Registration failed");
+    try {
+      const response = await axiosInstance.post("/auth/register", userData);
+      
+      return response.data;
+    } catch (error: any) {
+      console.error("Registration error:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || error.message || "Registration failed");
     }
-    
-    return response.json();
   },
   
   getMe: async (token: string): Promise<{ user: any; organization?: any }> => {
-    const response = await fetch("/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to fetch user data");
+    try {
+      const response = await axiosInstance.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch user data:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || error.message || "Failed to fetch user data");
     }
-    
-    return response.json();
   },
   
   logout: async (): Promise<void> => {
