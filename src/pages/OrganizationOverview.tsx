@@ -32,11 +32,11 @@ const OrganizationOverview: React.FC = () => {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
 
   const fetchMembers = async () => {
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     try {
       setIsMembersLoading(true);
-      const membersList = await usersApi.getUsers(organization.id);
+      const membersList = await usersApi.getUsers(user.organizationId);
       setMembers(membersList);
     } catch (err) {
       console.error("Error fetching members:", err);
@@ -48,16 +48,16 @@ const OrganizationOverview: React.FC = () => {
 
   useEffect(() => {
     fetchMembers();
-  }, [organization]);
+  }, [user?.organizationId]);
 
   const handleCreateTeam = async (name: string) => {
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      await teamsApi.createTeam(name, organization.id);
+      await teamsApi.createTeam(name, user.organizationId);
       await refreshTeams();
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
@@ -119,22 +119,29 @@ const OrganizationOverview: React.FC = () => {
     }
   };
 
-  if (!organization) {
-    return (
-      <div className="animate-pulse space-y-8">
-        <div className="h-8 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // if (!organization) {
+  //   return (
+  //     <div className="animate-pulse space-y-8">
+  //       <div className="h-8 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
+  //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+  //         {[...Array(4)].map((_, i) => (
+  //           <div
+  //             key={i}
+  //             className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"
+  //           ></div>
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   useEffect(() => {
     console.log({ members });
   }, [members]);
+
+  useEffect(() => {
+    console.log({ organization });
+  }, [organization]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -142,10 +149,10 @@ const OrganizationOverview: React.FC = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
-            {organization.name}
+            {organization?.name}
           </h1>
           <p className="mt-2 text-neutral-500 dark:text-gray-400 capitalize">
-            {organization.type} Plan
+            {organization?.type} Plan
           </p>
         </div>
         <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
@@ -172,7 +179,9 @@ const OrganizationOverview: React.FC = () => {
       {/* Teams Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-8">
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Teams</h2>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            Teams
+          </h2>
           <button
             onClick={() => setIsAddTeamModalOpen(true)}
             className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
@@ -234,7 +243,9 @@ const OrganizationOverview: React.FC = () => {
       {/* Members Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-8">
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Members</h2>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            Members
+          </h2>
           <button
             onClick={() => setIsInviteMemberModalOpen(true)}
             className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
@@ -291,7 +302,9 @@ const OrganizationOverview: React.FC = () => {
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                       {member.firstName} {member.lastName}
                     </h3>
-                    <p className="text-sm text-neutral-500 dark:text-gray-400">{member.email}</p>
+                    <p className="text-sm text-neutral-500 dark:text-gray-400">
+                      {member.email}
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-xs text-neutral-400 dark:text-gray-500 capitalize">
                         {member.role}
@@ -306,7 +319,7 @@ const OrganizationOverview: React.FC = () => {
                 </div>
                 {user?.uid !== member.uid && (
                   <div className="flex items-center gap-3">
-                    {member.status === 'pending' && (
+                    {member.status === "pending" && (
                       <button
                         onClick={() => handleResendInvitation(member.email)}
                         className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-warning-700 dark:text-warning-400 bg-warning-100 dark:bg-warning-900/50 hover:bg-warning-200 dark:hover:bg-warning-900/70 rounded-lg transition-colors"

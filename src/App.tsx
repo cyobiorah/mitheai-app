@@ -20,7 +20,11 @@ import Dashboard from "./pages/Dashboard";
 // Wrapper component to conditionally render dashboard
 const DashboardRouter: React.FC = () => {
   const { user } = useAuth();
-  return user?.userType === 'individual' ? <Dashboard /> : <OrganizationOverview />;
+  return user?.organizationId && user?.organizationId !== null ? (
+    <OrganizationOverview />
+  ) : (
+    <Dashboard />
+  );
 };
 
 function App() {
@@ -46,7 +50,10 @@ function App() {
                         path={ROUTES.DASHBOARD}
                         element={<DashboardRouter />}
                       />
-                      <Route path={ROUTES.LIBRARY} element={<ContentLibrary />} />
+                      <Route
+                        path={ROUTES.LIBRARY}
+                        element={<ContentLibrary />}
+                      />
                       <Route
                         path={ROUTES.CONTENT}
                         element={<ContentCreation />}

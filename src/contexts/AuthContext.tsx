@@ -1,17 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  UserCredential,
-} from "firebase/auth";
-import { doc, getDoc, setDoc, collection } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
 import { ROUTES } from "../utils/contstants";
 import { User, Organization, Team, AuthState } from "../types";
 import { teamsApi } from "../api/teams";
-import { invitationsApi } from "../api/invitations";
+import { authApi, RegisterData } from "../api/auth";
 import toast from "react-hot-toast";
 
 interface AuthContextType extends AuthState {
@@ -20,15 +18,10 @@ interface AuthContextType extends AuthState {
   logout: () => Promise<void>;
   refreshTeams: () => Promise<void>;
   error: string | null;
-}
-
-interface RegisterData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  userType: 'individual' | 'organization';
-  organizationName?: string;
+  isOrganizationUser: boolean;
+  isIndividualUser: boolean;
+  activeTeam: Team | null;
+  setActiveTeam: (team: Team) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,147 +43,139 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [activeTeam, setActiveTeam] = useState<Team | null>(null);
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("auth_token")
+  );
 
-  const fetchUserData = async (uid: string): Promise<User | null> => {
-    console.log("Fetching user data for UID:", uid);
+  // Computed properties for user type
+  const isOrganizationUser = useMemo(() => user?.userType === 'organization', [user?.userType]);
+  const isIndividualUser = useMemo(() => user?.userType !== 'organization', [user?.userType]);
+
+  const fetchUserData = async (): Promise<User | null> => {
+    if (!token) return null;
+
     try {
-      const userDoc = await getDoc(doc(db, "users", uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as User;
-        const user = { ...userData, id: userDoc.id };
-        console.log("Fetched user data:", user);
-        setUser(user);
-        return user;
+      const data = await authApi.getMe(token);
+      if (data.user) {
+        setUser(data.user);
+
+        if (data.organization) {
+          setOrganization(data.organization);
+        }
+
+        return data.user;
       } else {
-        console.log("No user document found for uid:", uid);
+        console.log("No user data returned from API");
         setError("User account not fully set up. Please contact support.");
         return null;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching user data:", error);
-      setError("Failed to fetch user data");
+      setError(error.message || "Failed to fetch user data");
+
+      // If token is invalid, clear it
+      if (
+        error.message?.includes("token") ||
+        error.message?.includes("authentication")
+      ) {
+        localStorage.removeItem("auth_token");
+        setToken(null);
+      }
+
       return null;
     }
   };
 
-  const fetchOrganization = async (organizationId: string): Promise<void> => {
-    try {
-      console.log("Fetching organization with ID:", organizationId);
-      const orgDoc = await getDoc(doc(db, "organizations", organizationId));
-      if (orgDoc.exists()) {
-        const orgData = orgDoc.data() as Organization;
-        const org = { id: orgDoc.id, ...orgData };
-        console.log("Fetched organization:", org);
-        setOrganization(org);
-      }
-    } catch (error) {
-      console.error("Error fetching organization:", error);
-      setError("Failed to fetch organization data");
-    }
-  };
-
   const fetchTeams = async (organizationId: string): Promise<void> => {
+    if (!token) return;
+
     try {
       console.log("Fetching teams for organization ID:", organizationId);
       const fetchedTeams = await teamsApi.getTeams(organizationId);
       console.log("Fetched teams:", fetchedTeams);
       setTeams(fetchedTeams);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching teams:", error);
-      setError("Failed to fetch teams");
+      setError(error.message || "Failed to fetch teams");
     }
   };
 
   const refreshTeams = async () => {
-    if (organization) {
+    if (organization && token) {
       setError(null);
       await fetchTeams(organization.id);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      setError(null);
-      try {
-        if (firebaseUser) {
-          const userData = await fetchUserData(firebaseUser.uid);
-          if (userData?.userType === 'organization' && userData?.organizationId) {
-            await Promise.all([
-              fetchOrganization(userData.organizationId),
-              fetchTeams(userData.organizationId),
-            ]);
+    const initializeAuth = async () => {
+      if (token) {
+        setError(null);
+        try {
+          const userData = await fetchUserData();
+          if (
+            userData?.userType === "organization" &&
+            userData?.organizationId
+          ) {
+            await fetchTeams(userData.organizationId);
           }
-        } else {
-          setUser(null);
-          setOrganization(null);
-          setTeams([]);
+        } catch (error: any) {
+          console.error("Error in auth initialization:", error);
+          setError(error.message || "Authentication initialization failed");
+          localStorage.removeItem("auth_token");
+          setToken(null);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Error in auth state change:", error);
-        setError("Authentication state change failed");
-      } finally {
+      } else {
+        setUser(null);
+        setOrganization(null);
+        setTeams([]);
         setLoading(false);
       }
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    initializeAuth();
+  }, [token]);
+
+  // Set active team when teams are loaded or changed
+  useEffect(() => {
+    if (teams.length > 0 && !activeTeam) {
+      setActiveTeam(teams[0]);
+    }
+  }, [teams, activeTeam]);
 
   const login = async (email: string, password: string): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      const { user: firebaseUser } = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const response = await authApi.login(email, password);
 
-      const userData = await fetchUserData(firebaseUser.uid);
-      if (!userData) {
-        await signOut(auth);
-        toast.error("User account not fully set up. Please contact support.");
-        return;
-      }
+      // Save token to localStorage
+      localStorage.setItem("auth_token", response.token);
+      setToken(response.token);
 
-      // Handle individual users
-      if (userData.userType === 'individual') {
-        navigate(ROUTES.DASHBOARD);
-        return;
-      }
+      // Set user data
+      setUser(response.user);
 
-      // Handle organization users
-      if (userData.userType === 'organization') {
-        if (!userData.organizationId) {
-          await signOut(auth);
-          throw new Error("Organization account not properly set up.");
+      // Handle organization data if present
+      if (response.organization) {
+        setOrganization(response.organization);
+
+        // Fetch teams for organization
+        if (
+          response.user.userType === "organization" &&
+          response.user.organizationId
+        ) {
+          await fetchTeams(response.user.organizationId);
         }
-
-        await Promise.all([
-          fetchOrganization(userData.organizationId),
-          fetchTeams(userData.organizationId),
-        ]);
-
-        // Check if user has no teams and is not super_admin
-        if (userData.teamIds.length === 0 && userData.role !== "super_admin") {
-          await signOut(auth);
-          throw new Error(
-            "Your account is pending team assignment. Please contact your organization administrator."
-          );
-        }
-
-        navigate(ROUTES.DASHBOARD);
       }
+
+      navigate(ROUTES.DASHBOARD);
     } catch (error: any) {
       console.error("Login error:", error);
-      if (
-        error?.code === "auth/user-not-found" ||
-        error?.code === "auth/wrong-password"
-      ) {
-        setError("Invalid email or password.");
-      } else {
-        setError(error.message || "Failed to login. Please try again.");
-      }
+      setError(error.message || "Invalid email or password.");
       throw error;
     } finally {
       setLoading(false);
@@ -201,94 +186,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading(true);
     setError(null);
     try {
-      const { user: firebaseUser } = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
+      const response = await authApi.register(data);
 
-      let userData: Omit<User, "id"> = {
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        userType: data.userType,
-        status: "active",
-        uid: firebaseUser.uid,
-        settings: {
-          permissions: [],
-          theme: 'light',
-          notifications: []
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      // Save token to localStorage
+      localStorage.setItem("auth_token", response.token);
+      setToken(response.token);
 
-      // Handle organization user registration
-      if (data.userType === 'organization') {
-        const orgRef = doc(collection(db, "organizations"));
-        const organization: Omit<Organization, "id"> = {
-          name: data.organizationName || `${data.firstName}'s Organization`,
-          type: "startup",
-          settings: {
-            permissions: [],
-            maxTeams: 5,
-            maxUsers: 10,
-            features: []
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
+      // Set user data
+      setUser(response.user);
 
-        const teamRef = doc(collection(db, "teams"));
-        const team: Omit<Team, "id"> = {
-          name: "Default Team",
-          organizationId: orgRef.id,
-          memberIds: [],
-          settings: {
-            permissions: []
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        userData = {
-          ...userData,
-          role: "org_owner",
-          organizationId: orgRef.id,
-          teamIds: [teamRef.id],
-        };
-
-        await Promise.all([
-          setDoc(orgRef, organization),
-          setDoc(teamRef, team),
-          setDoc(doc(db, "users", firebaseUser.uid), userData),
-        ]);
-
-        // Send invitation email for organization users
-        try {
-          const response = await invitationsApi.sendInvitation({
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            role: "org_owner",
-            organizationId: orgRef.id,
-            teamIds: [teamRef.id],
-          });
-          console.log("Invitation API response:", response);
-        } catch (error: any) {
-          console.error("Error sending invitation email:", error);
-        }
-
-        await Promise.all([fetchOrganization(orgRef.id), fetchTeams(orgRef.id)]);
-      } else {
-        // Handle individual user registration
-        await setDoc(doc(db, "users", firebaseUser.uid), userData);
+      // Handle organization data if present
+      if (response.organization) {
+        setOrganization(response.organization);
       }
 
       navigate(ROUTES.DASHBOARD);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      setError("Failed to register. Please try again.");
+      setError(error.message || "Failed to register. Please try again.");
       throw error;
     } finally {
       setLoading(false);
@@ -298,27 +213,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async (): Promise<void> => {
     setError(null);
     try {
-      await signOut(auth);
+      await authApi.logout();
+
+      // Clear token from state
+      setToken(null);
+
+      // Clear user data
+      setUser(null);
+      setOrganization(null);
+      setTeams([]);
+
       navigate(ROUTES.LOGIN);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Logout error:", error);
-      setError("Failed to log out");
+      setError(error.message || "Failed to logout. Please try again.");
     }
   };
 
-  const value = {
-    user,
-    organization,
-    teams,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    refreshTeams,
-  };
+  // Provide the auth context value
+  const contextValue = useMemo(
+    () => ({
+      user,
+      organization,
+      teams,
+      loading,
+      error,
+      login,
+      register,
+      logout,
+      refreshTeams,
+      isOrganizationUser,
+      isIndividualUser,
+      activeTeam,
+      setActiveTeam,
+    }),
+    [
+      user,
+      organization,
+      teams,
+      loading,
+      error,
+      isOrganizationUser,
+      isIndividualUser,
+      activeTeam,
+      login,
+      register,
+      logout,
+      refreshTeams,
+    ]
+  );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

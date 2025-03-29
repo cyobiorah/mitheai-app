@@ -1,5 +1,4 @@
 import axios, { InternalAxiosRequestConfig, AxiosError } from "axios";
-import { auth } from "../config/firebase";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
@@ -10,19 +9,18 @@ const axiosInstance = axios.create({
 // Add a request interceptor
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    // Get the current user
-    const user = auth.currentUser;
-    if (user) {
-      // Get the ID token
-      const token = await user.getIdToken();
+    // Get the JWT token from localStorage
+    const token = localStorage.getItem("auth_token");
+
+    if (token) {
       // Add it to the Authorization header
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      console.log("[DEBUG] No user is currently signed in");
+      console.log("[DEBUG] No auth token found in localStorage");
     }
     return config;
   },
-  (error) => {
+  (error: Error) => {
     console.error("[DEBUG] Request interceptor error:", error);
     return Promise.reject(error);
   }

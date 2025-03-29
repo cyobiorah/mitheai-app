@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   HomeIcon,
@@ -21,20 +21,36 @@ import TeamSelector from "./TeamSelector";
 import MemberSelector from "./MemberSelector";
 import ThemeToggle from "./ThemeToggle";
 
-const navigation = [
-  { name: "Dashboard", href: ROUTES.DASHBOARD, icon: UsersIcon },
-  // { name: "View Content", href: ROUTES.LIBRARY, icon: DocumentTextIcon },
-  { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
-  { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
-  { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
-  { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
-  { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
-];
-
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Create navigation items based on user type
+  const navigationItems = useMemo(() => {
+    const baseNavigation = [
+      { name: "Dashboard", href: ROUTES.DASHBOARD, icon: HomeIcon },
+      { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
+      { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
+      { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
+      { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
+    ];
+
+    // Add organization-specific navigation items
+    if (user?.organizationId) {
+      return [
+        ...baseNavigation,
+        { name: "Team Management", href: ROUTES.TEAMS, icon: UsersIcon },
+        { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
+      ];
+    }
+
+    // Individual user navigation
+    return [
+      ...baseNavigation,
+      { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
+    ];
+  }, [user?.organizationId]);
 
   const handleLogout = async () => {
     try {
@@ -113,7 +129,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-4">
-            {navigation.map((item) => (
+            {navigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -139,8 +155,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </nav>
 
           {/* Team and Member Selectors - Only show for organization users */}
-          {user?.userType === 'organization' && (
-            <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4 px-4">
+          {user?.organizationId && (
+            <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4">
               <TeamSelector />
               <MemberSelector />
             </div>
@@ -158,8 +174,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200">
-                  View profile
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {user?.organizationId ? 'Organization Admin' : 'Individual User'}
                 </p>
               </div>
               <button

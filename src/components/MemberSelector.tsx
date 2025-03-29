@@ -2,27 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon, UsersIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { useAuth } from '../contexts/AuthContext';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../config/firebase';
 import { User } from '../types';
+import axiosInstance from '../api/axios';
 
 const MemberSelector: React.FC = () => {
-  const { organization } = useAuth();
+  const { user, organization } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!organization) return;
+      if (!user?.organizationId) return;
       
       try {
         setIsLoading(true);
-        const membersRef = collection(db, 'users');
-        const q = query(membersRef, where('organizationId', '==', organization.id));
-        const querySnapshot = await getDocs(q);
-        const membersList = querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as any));
-        setMembers(membersList);
+        const response = await axiosInstance.get(`/users/organization/${user.organizationId}`);
+        setMembers(response.data || []);
       } catch (err) {
         console.error('Error fetching members:', err);
       } finally {
@@ -31,7 +27,11 @@ const MemberSelector: React.FC = () => {
     };
 
     fetchMembers();
-  }, [organization]);
+  }, [user?.organizationId]);
+
+  if (!user?.organizationId) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -40,6 +40,15 @@ const MemberSelector: React.FC = () => {
           <div className="h-4 bg-neutral-200 dark:bg-gray-700 rounded w-3/4"></div>
           <div className="h-3 bg-neutral-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
         </div>
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="px-4">
+        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Members</h3>
+        <p className="text-xs text-gray-400 dark:text-gray-500">No members found</p>
       </div>
     );
   }
