@@ -4,6 +4,7 @@ const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 // Add a request interceptor
@@ -15,6 +16,17 @@ axiosInstance.interceptors.request.use(
     if (token) {
       // Add it to the Authorization header
       config.headers.Authorization = `Bearer ${token}`;
+
+      // Add timestamp to help debug caching issues
+      config.headers["X-Request-Time"] = new Date().toISOString();
+
+      // Log the request for debugging
+      // console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
+      //   headers: {
+      //     Authorization: "Bearer " + token.substring(0, 10) + "...",
+      //     "X-Request-Time": config.headers["X-Request-Time"]
+      //   }
+      // });
     } else {
       console.log("[DEBUG] No auth token found in localStorage");
     }

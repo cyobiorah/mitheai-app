@@ -17,7 +17,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../store/hooks";
 import { createContent, updateContent } from "../../api/content";
 import { ContentItem } from "../../types";
 import {
@@ -257,7 +257,7 @@ export default function ContentDialog({
       const contentMetadata = {
         ...(isOrgUser && currentTeam
           ? {
-              teamId: currentTeam.id,
+              teamId: currentTeam._id,
               organizationId: currentTeam.organizationId,
             }
           : {

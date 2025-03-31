@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { data, useLocation } from "react-router-dom";
 import { FaTwitter, FaFacebook } from "react-icons/fa";
 import { FaThreads } from "react-icons/fa6";
 import { auth } from "../config/firebase";
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
 import toast from "react-hot-toast";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { Team } from "../types";
+import socialApi from "../api/socialApi";
+import { teamsApi } from "../api/teams";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -48,19 +50,12 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log({ user });
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(
-          `${API_URL}/teams/organization/${user?.organizationId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await response.json();
+        const data = await teamsApi.getTeams(user?.organizationId as string);
+        console.log({ data });
         setTeams(data);
       } catch (error) {
         console.error("Failed to fetch teams:", error);
@@ -69,19 +64,21 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
       }
     };
 
-    fetchTeams();
-  }, []);
+    if (user?.organizationId) {
+      fetchTeams();
+    }
+  }, [user?.organizationId]);
 
   return (
     <div className="mt-2">
       <select
         className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700"
-        value={currentTeamId || ""}
+        value={currentTeamId ?? ""}
         onChange={(e) => onAssign(e.target.value)}
         disabled={loading}
       >
         <option value="">Select Team</option>
-        {teams.map((team) => (
+        {teams?.map((team) => (
           <option key={team.id} value={team.id}>
             {team.name}
           </option>
@@ -189,61 +186,32 @@ export const SocialMediaConnections: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) {
-        console.error("No ID token available");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/social-accounts`, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAccounts(Array.isArray(data) ? data : []); // Ensure accounts is always an array
+      const accounts = await socialApi.getAccounts();
+      setAccounts(accounts);
     } catch (error) {
       console.error("Failed to fetch social accounts:", error);
-      setAccounts([]); // Reset to empty array on error
+      setAccounts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTwitterConnect = async (skipWelcome: boolean = false) => {
+  const handleTwitterConnect = async (skipWelcome: boolean) => {
     try {
       setConnectionError(null);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
+      const response = await socialApi.connectTwitter({ skipWelcome });
+      console.log({ response });
+      if (!response) {
         throw new Error("Failed to authenticate");
       }
-
-      const authUrl = await response.text();
-      window.location.href = authUrl;
+      // The API returns the auth URL directly as a string
+      window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Twitter:", error);
+      setConnectionError({
+        code: "account_already_connected",
+        message: "Failed to connect to Twitter. Please try again",
+      });
     }
   };
 

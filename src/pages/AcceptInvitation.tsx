@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { invitationsApi } from '../api/invitations';
-import AuthLayout from '../components/AuthLayout';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../store/hooks";
+import { invitationsApi } from "../api/invitations";
+import AuthLayout from "../components/AuthLayout";
 
 interface InvitationData {
   token: string;
@@ -18,14 +18,14 @@ export const AcceptInvitation: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<InvitationData>({
-    token: searchParams.get('token') || '',
-    password: '',
-    confirmPassword: '',
+    token: searchParams.get("token") ?? "",
+    password: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
     if (!formData.token) {
-      setError('Invalid invitation link');
+      setError("Invalid invitation link");
       setLoading(false);
       return;
     }
@@ -36,7 +36,7 @@ export const AcceptInvitation: React.FC = () => {
         await invitationsApi.verifyInvitation(formData.token);
         setLoading(false);
       } catch (error) {
-        setError('Invalid or expired invitation');
+        setError("Invalid or expired invitation");
         setLoading(false);
       }
     };
@@ -46,7 +46,7 @@ export const AcceptInvitation: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -59,28 +59,31 @@ export const AcceptInvitation: React.FC = () => {
     setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       setLoading(false);
       return;
     }
 
     try {
-      const { email } = await invitationsApi.acceptInvitation(formData.token, formData.password);
+      const { email } = await invitationsApi.acceptInvitation(
+        formData.token,
+        formData.password
+      );
       setSuccess(true);
-      
+
       // Log the user in
       await login(email, formData.password);
-      
+
       // Redirect to dashboard
-      navigate('/');
+      navigate("/");
     } catch (error: any) {
-      setError(error.response?.data?.error || 'Failed to accept invitation');
+      setError(error.response?.data?.error || "Failed to accept invitation");
       setLoading(false);
     }
   };
@@ -119,7 +122,10 @@ export const AcceptInvitation: React.FC = () => {
         )}
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-neutral-700"
+          >
             Password
           </label>
           <div className="mt-1">
@@ -137,7 +143,10 @@ export const AcceptInvitation: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-neutral-700"
+          >
             Confirm Password
           </label>
           <div className="mt-1">
@@ -160,7 +169,7 @@ export const AcceptInvitation: React.FC = () => {
             disabled={loading}
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Setting up...' : 'Complete Setup'}
+            {loading ? "Setting up..." : "Complete Setup"}
           </button>
         </div>
       </form>

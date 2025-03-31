@@ -15,8 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { ROUTES } from "../utils/contstants";
-import { useAuth } from "../contexts/AuthContext";
-import OrganizationSelector from "./OrganizationSelector";
+import { useAuth } from "../store/hooks";
 import TeamSelector from "./TeamSelector";
 import MemberSelector from "./MemberSelector";
 import ThemeToggle from "./ThemeToggle";
@@ -40,15 +39,23 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     if (user?.organizationId) {
       return [
         ...baseNavigation,
-        { name: "Team Management", href: ROUTES.TEAMS, icon: UsersIcon },
-        { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
+        // { name: "Team Management", href: ROUTES.TEAMS, icon: UsersIcon },
+        {
+          name: "Profile & Settings",
+          href: ROUTES.SETTINGS,
+          icon: Cog6ToothIcon,
+        },
       ];
     }
 
     // Individual user navigation
     return [
       ...baseNavigation,
-      { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
+      {
+        name: "Profile & Settings",
+        href: ROUTES.SETTINGS,
+        icon: Cog6ToothIcon,
+      },
     ];
   }, [user?.organizationId]);
 
@@ -57,7 +64,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       await logout();
       // No need to navigate manually, AuthContext will handle it
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -72,7 +79,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Get user's initials for avatar
   const getInitials = () => {
     if (!user) return "?";
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    return `${user.firstName.charAt(0)}${user.lastName.charAt(
+      0
+    )}`.toUpperCase();
   };
 
   return (
@@ -175,14 +184,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   {user?.firstName} {user?.lastName}
                 </p>
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                  {user?.organizationId ? 'Organization Admin' : 'Individual User'}
+                  {user?.organizationId
+                    ? "Organization Admin"
+                    : "Individual User"}
                 </p>
               </div>
               <button
                 onClick={handleLogout}
                 className="ml-auto flex items-center justify-center h-10 w-10 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
               >
-                <ArrowLeftOnRectangleIcon className="h-5 w-5" aria-hidden="true" />
+                <ArrowLeftOnRectangleIcon
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
               </button>
             </div>
           </div>

@@ -15,13 +15,13 @@ import InviteMemberModal from "../components/InviteMemberModal";
 import ManageTeamModal from "../components/ManageTeamModal";
 import StatsCard from "../components/StatsCard";
 import { User, Team } from "../types";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { usersApi } from "../api/users";
 import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams, refreshTeams } = useAuth();
+  const { user, organization, teams } = useAuth();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
@@ -58,7 +58,7 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       await teamsApi.createTeam(name, user.organizationId);
-      await refreshTeams();
+      // await fetchTeams();
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
     } catch (err) {
@@ -78,7 +78,7 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       await teamsApi.deleteTeam(teamId);
-      await refreshTeams();
+      // await refreshTeams();
       toast.success("Team deleted successfully");
     } catch (err) {
       setError("Failed to delete team");
@@ -119,29 +119,21 @@ const OrganizationOverview: React.FC = () => {
     }
   };
 
-  // if (!organization) {
-  //   return (
-  //     <div className="animate-pulse space-y-8">
-  //       <div className="h-8 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
-  //       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-  //         {[...Array(4)].map((_, i) => (
-  //           <div
-  //             key={i}
-  //             className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"
-  //           ></div>
-  //         ))}
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  useEffect(() => {
-    console.log({ members });
-  }, [members]);
-
-  useEffect(() => {
-    console.log({ organization });
-  }, [organization]);
+  if (!organization) {
+    return (
+      <div className="animate-pulse space-y-8">
+        <div className="h-8 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"
+            ></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -200,7 +192,7 @@ const OrganizationOverview: React.FC = () => {
         <div className="divide-y divide-neutral-200 dark:divide-gray-700">
           {teams.map((team) => (
             <div
-              key={team.id}
+              key={team._id}
               className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
               <div className="flex items-center min-w-0">
@@ -212,7 +204,10 @@ const OrganizationOverview: React.FC = () => {
                     {team.name}
                   </h3>
                   <p className="text-sm text-neutral-500 dark:text-gray-400 truncate">
-                    {members.filter((m) => m.teamIds?.includes(team.id)).length}{" "}
+                    {
+                      members.filter((m) => m.teamIds?.includes(team._id))
+                        .length
+                    }{" "}
                     members
                   </p>
                 </div>
@@ -228,7 +223,7 @@ const OrganizationOverview: React.FC = () => {
                   Manage
                 </button>
                 <button
-                  onClick={() => handleDeleteTeam(team.id)}
+                  onClick={() => handleDeleteTeam(team._id)}
                   className="p-1.5 text-neutral-400 dark:text-gray-500 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
                   disabled={isLoading}
                 >
@@ -368,7 +363,7 @@ const OrganizationOverview: React.FC = () => {
         onClose={() => setIsInviteMemberModalOpen(false)}
         teams={teams}
       />
-      {selectedTeam && (
+      {/* {selectedTeam && (
         <ManageTeamModal
           isOpen={isManageTeamModalOpen}
           onClose={() => {
@@ -379,7 +374,7 @@ const OrganizationOverview: React.FC = () => {
           organizationMembers={members}
           onTeamUpdate={refreshTeams}
         />
-      )}
+      )} */}
     </div>
   );
 };

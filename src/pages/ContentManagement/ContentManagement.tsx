@@ -5,7 +5,6 @@ import {
   TrashIcon,
   PlayIcon,
 } from "@heroicons/react/24/outline";
-import { useAuth } from "../../contexts/AuthContext";
 import {
   listTeamContent,
   listTeamCollections,
@@ -24,6 +23,7 @@ import AnalyzeDialog from "./AnalyzeDialog";
 import clsx from "clsx";
 import { toast } from "react-hot-toast";
 import ConfirmDialog from "./ConfirmDialog";
+import { useAuth } from "../../store/hooks";
 
 interface TabPanelProps {
   children?: React.ReactNode;

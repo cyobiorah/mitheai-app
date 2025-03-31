@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon, UsersIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../store/hooks';
 import { User } from '../types';
 import axiosInstance from '../api/axios';
 

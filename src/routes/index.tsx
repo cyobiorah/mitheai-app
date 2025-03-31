@@ -11,9 +11,10 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import { AcceptInvitation } from "../pages/AcceptInvitation";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { PublicRoute } from "../components/PublicRoute";
 import { ROUTES } from "../utils/contstants";
 import Dashboard from "../pages/Dashboard";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 
 // Wrapper component to conditionally render dashboard
 const DashboardRouter: React.FC = () => {
@@ -28,9 +29,30 @@ const DashboardRouter: React.FC = () => {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path={ROUTES.LOGIN} element={<Login />} />
-      <Route path={ROUTES.REGISTER} element={<Register />} />
-      <Route path={ROUTES.ACCEPT_INVITATION} element={<AcceptInvitation />} />
+      <Route
+        path={ROUTES.LOGIN}
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path={ROUTES.REGISTER}
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ACCEPT_INVITATION}
+        element={
+          <PublicRoute>
+            <AcceptInvitation />
+          </PublicRoute>
+        }
+      />
       <Route
         path="*"
         element={

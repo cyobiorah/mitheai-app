@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../store/hooks';
 import AuthLayout from '../components/AuthLayout';
 
 const Register: React.FC = () => {
-  const { register } = useAuth();
+  const { register, authLoading, authError, clearAuthError } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -15,26 +15,29 @@ const Register: React.FC = () => {
     userType: 'individual' as 'individual' | 'organization',
     organizationName: '',
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState('');
+
+  // Use either local error or auth error from store
+  const error = localError || authError;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setError(''); // Clear error when user types
+    setLocalError(''); // Clear error when user types
+    clearAuthError(); // Also clear any auth errors
   };
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setLocalError('Passwords do not match');
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setLocalError('Password must be at least 6 characters long');
       return false;
     }
     if (formData.userType === 'organization' && !formData.organizationName.trim()) {
-      setError('Organization name is required');
+      setLocalError('Organization name is required');
       return false;
     }
     return true;
@@ -47,8 +50,8 @@ const Register: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    setError('');
+    setLocalError('');
+    clearAuthError();
 
     try {
       await register({
@@ -65,25 +68,23 @@ const Register: React.FC = () => {
       if (error instanceof FirebaseError) {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            setError('An account with this email already exists');
+            setLocalError('An account with this email already exists');
             break;
           case 'auth/invalid-email':
-            setError('Invalid email address');
+            setLocalError('Invalid email address');
             break;
           case 'auth/operation-not-allowed':
-            setError('Email/password accounts are not enabled. Please contact support.');
+            setLocalError('Email/password accounts are not enabled. Please contact support.');
             break;
           case 'auth/weak-password':
-            setError('Password is too weak');
+            setLocalError('Password is too weak');
             break;
           default:
-            setError('Failed to create account');
+            setLocalError('Failed to create account');
         }
       } else {
-        setError('An unexpected error occurred');
+        setLocalError('An unexpected error occurred');
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -230,10 +231,10 @@ const Register: React.FC = () => {
         <div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={authLoading}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {authLoading ? 'Creating account...' : 'Create account'}
           </button>
         </div>
 

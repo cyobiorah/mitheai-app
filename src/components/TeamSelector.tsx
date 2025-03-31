@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDownIcon, UsersIcon, PlusIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import { useAuth } from '../contexts/AuthContext';
-import { Team } from '../types';
+import React, { useState, useEffect } from "react";
+import {
+  ChevronDownIcon,
+  UsersIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
+import clsx from "clsx";
+import { useAuth } from "../store/hooks";
+import { Team } from "../types";
 
 const TeamSelector: React.FC = () => {
   const { user, teams } = useAuth();
@@ -24,10 +28,14 @@ const TeamSelector: React.FC = () => {
   return (
     <div className="px-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">Teams</h3>
-        <button 
+        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          Teams
+        </h3>
+        <button
           className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          onClick={() => {/* Handle team creation */}}
+          onClick={() => {
+            /* Handle team creation */
+          }}
         >
           <PlusIcon className="h-3 w-3 inline mr-1" />
           Add
@@ -39,12 +47,15 @@ const TeamSelector: React.FC = () => {
       >
         <div className="flex items-center">
           <UsersIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
-          <span>{selectedTeam?.name || 'Select Team'}</span>
+          <span>{selectedTeam?.name || "Select Team"}</span>
         </div>
         <ChevronDownIcon
-          className={clsx('h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform', {
-            'transform rotate-180': isOpen,
-          })}
+          className={clsx(
+            "h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform",
+            {
+              "transform rotate-180": isOpen,
+            }
+          )}
         />
       </button>
 
@@ -59,10 +70,10 @@ const TeamSelector: React.FC = () => {
                 // Here you would typically update the active team in your context
               }}
               className={clsx(
-                'w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50',
+                "w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50",
                 selectedTeam?.id === team.id
-                  ? 'bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300'
-                  : 'text-gray-700 dark:text-gray-200'
+                  ? "bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300"
+                  : "text-gray-700 dark:text-gray-200"
               )}
             >
               <div className="flex items-center">

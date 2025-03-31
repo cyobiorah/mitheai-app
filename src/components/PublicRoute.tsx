@@ -1,16 +1,18 @@
+// src/components/PublicRoute.tsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../store/hooks";
+import { useAuthStore } from "../store/authStore";
 import { ROUTES } from "../utils/contstants";
 
-interface ProtectedRouteProps {
+interface PublicRouteProps {
   children: React.ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, authLoading } = useAuth();
+export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+  const { token, isLoading } = useAuthStore();
+  const isAuthenticated = !!token;
 
-  if (authLoading) {
+  if (isLoading) {
     // You can replace this with a loading spinner component
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -19,8 +21,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to={ROUTES.LOGIN} />;
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.DASHBOARD} />;
   }
 
   return <>{children}</>;

@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { Link, useNavigate } from "react-router-dom";
 import { ContentItem } from "../types";
 import toast from "react-hot-toast";
 // import { ROUTES } from "../utils/constants";
-import { BookmarkIcon, ChartBarIcon, DocumentTextIcon, PlusIcon, UsersIcon } from "@heroicons/react/24/outline";
+import {
+  BookmarkIcon,
+  ChartBarIcon,
+  DocumentTextIcon,
+  PlusIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
 import StatsCard from "../components/StatsCard";
 import * as contentApi from "../api/content";
 import { ROUTES } from "../utils/contstants";
@@ -43,7 +49,9 @@ const Dashboard: React.FC = () => {
       setStats({
         totalContent: content.length,
         totalCollections: personalCollections.length,
-        analyzedContent: content.filter((item: any) => item.status === "analyzed").length,
+        analyzedContent: content.filter(
+          (item: any) => item.status === "analyzed"
+        ).length,
         totalTeams: teams?.length || 0,
         totalMembers: 0, // This would need an API call to get total members
       });
@@ -69,8 +77,8 @@ const Dashboard: React.FC = () => {
             Welcome back, {user?.firstName}!
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {user?.userType === 'organization' 
-              ? `Manage your organization's content and team activities` 
+            {user?.userType === "organization"
+              ? `Manage your organization's content and team activities`
               : `Here's an overview of your personal content and activities`}
           </p>
         </div>
@@ -87,8 +95,8 @@ const Dashboard: React.FC = () => {
 
   // Render organization-specific stats
   const renderOrganizationStats = () => {
-    if (user?.userType !== 'organization') return null;
-    
+    if (user?.userType !== "organization") return null;
+
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
@@ -127,8 +135,8 @@ const Dashboard: React.FC = () => {
 
   // Render individual-specific stats
   const renderIndividualStats = () => {
-    if (user?.userType === 'organization') return null;
-    
+    if (user?.userType === "organization") return null;
+
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
@@ -171,12 +179,16 @@ const Dashboard: React.FC = () => {
       {renderWelcomeHeader()}
 
       {/* Stats Overview - Different for each user type */}
-      {user?.userType === 'organization' ? renderOrganizationStats() : renderIndividualStats()}
+      {user?.userType === "organization"
+        ? renderOrganizationStats()
+        : renderIndividualStats()}
 
       {/* Recent Content - Show for both user types */}
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Recent Content</h2>
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+            Recent Content
+          </h2>
           <Link
             to={ROUTES.MANAGE}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
