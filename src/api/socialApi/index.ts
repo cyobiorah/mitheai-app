@@ -31,6 +31,23 @@ export const socialApi = {
       );
     }
   },
+
+  disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/disconnect/${accountId}`
+      );
+      console.log({ response });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to disconnect account:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to disconnect account"
+      );
+    }
+  },
 };
 
 export default socialApi;

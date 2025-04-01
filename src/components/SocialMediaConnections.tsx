@@ -21,6 +21,7 @@ interface SocialAccount {
   teamId?: string; // Add this for team assignment
   displayName: string;
   username: string;
+  _id?: string;
 }
 
 interface ConnectionError {
@@ -79,7 +80,7 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
       >
         <option value="">Select Team</option>
         {teams?.map((team) => (
-          <option key={team.id} value={team.id}>
+          <option key={team._id} value={team._id}>
             {team.name}
           </option>
         ))}
@@ -279,32 +280,15 @@ export const SocialMediaConnections: React.FC = () => {
 
   const handleDisconnect = async (accountId: string) => {
     try {
-      const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/disconnect/${accountId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to disconnect account");
-      }
+      const response = socialApi.disconnectSocialAccount({ accountId });
+      console.log({ response });
 
       // Refresh the accounts list
-      fetchAccounts();
+      fetchAccounts()
     } catch (error) {
       console.error(`Error disconnecting account:`, error);
+    } finally {
+      fetchAccounts();
     }
   };
 
@@ -359,7 +343,7 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => handleDisconnect(account.id)}
+                    onClick={() => handleDisconnect(account.id as string)}
                     className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
                   >
                     Disconnect
