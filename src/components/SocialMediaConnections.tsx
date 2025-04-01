@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { data, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { FaTwitter, FaFacebook } from "react-icons/fa";
 import { FaThreads } from "react-icons/fa6";
 import { auth } from "../config/firebase";
@@ -201,16 +201,11 @@ export const SocialMediaConnections: React.FC = () => {
     try {
       setConnectionError(null);
       const response = await socialApi.connectTwitter({ skipWelcome });
-      console.log({ response });
-      if (!response) {
-        throw new Error("Failed to authenticate");
-      }
-      // The API returns the auth URL directly as a string
       window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Twitter:", error);
       setConnectionError({
-        code: "account_already_connected",
+        code: "account_connection_failes",
         message: "Failed to connect to Twitter. Please try again",
       });
     }
@@ -219,31 +214,14 @@ export const SocialMediaConnections: React.FC = () => {
   const handleFacebookConnect = async () => {
     try {
       setConnectionError(null);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/facebook/direct-auth`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to authenticate");
-      }
-
-      const authUrl = await response.text();
-      window.location.href = authUrl;
+      const response = await socialApi.connectFacebook();
+      window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Facebook:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to Facebook. Please try again",
+      });
     }
   };
 
@@ -284,7 +262,7 @@ export const SocialMediaConnections: React.FC = () => {
       console.log({ response });
 
       // Refresh the accounts list
-      fetchAccounts()
+      fetchAccounts();
     } catch (error) {
       console.error(`Error disconnecting account:`, error);
     } finally {

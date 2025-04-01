@@ -48,6 +48,23 @@ export const socialApi = {
       );
     }
   },
+
+  connectFacebook: async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/facebook/direct-auth`
+      );
+      console.log({ response });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to connect to Facebook:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to connect to Facebook"
+      );
+    }
+  },
 };
 
 export default socialApi;
