@@ -65,6 +65,22 @@ export const socialApi = {
       );
     }
   },
+
+  connectThreads: async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/threads/direct-auth`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to connect to Threads:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to connect to Threads"
+      );
+    }
+  },
 };
 
 export default socialApi;

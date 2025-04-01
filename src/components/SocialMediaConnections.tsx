@@ -228,31 +228,14 @@ export const SocialMediaConnections: React.FC = () => {
   const handleThreadsConnect = async () => {
     try {
       setConnectionError(null);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/threads/direct-auth`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to authenticate with Threads");
-      }
-
-      const authUrl = await response.text();
-      window.location.href = authUrl;
+      const response = await socialApi.connectThreads();
+      window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Threads:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to Threads. Please try again",
+      });
     }
   };
 
