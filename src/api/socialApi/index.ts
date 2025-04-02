@@ -32,6 +32,23 @@ export const socialApi = {
     }
   },
 
+  connectLinkedIn: async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/linkedin/direct-auth`
+      );
+      console.log("nowhere", { response });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to connect to LinkedIn:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to connect to LinkedIn"
+      );
+    }
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       const response = await axiosInstance.post(

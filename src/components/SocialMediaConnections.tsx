@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { FaTwitter, FaFacebook } from "react-icons/fa";
+import { FaTwitter, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { FaThreads } from "react-icons/fa6";
 import { auth } from "../config/firebase";
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
@@ -239,6 +239,20 @@ export const SocialMediaConnections: React.FC = () => {
     }
   };
 
+  const handleLinkedInConnect = async () => {
+    try {
+      setConnectionError(null);
+      const response = await socialApi.connectLinkedIn();
+      window.location.href = response;
+    } catch (error) {
+      console.error("Error connecting to LinkedIn:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to LinkedIn. Please try again",
+      });
+    }
+  };
+
   const handleDisconnect = async (accountId: string) => {
     try {
       const response = socialApi.disconnectSocialAccount({ accountId });
@@ -318,6 +332,47 @@ export const SocialMediaConnections: React.FC = () => {
                       }
                     />
                   )}
+                </div>
+              </div>
+            ))}
+          {/* LinkedIn Connections */}
+          {/* Show existing LinkedIn accounts */}
+          {accounts
+            .filter((account) => account.platform === "linkedin")
+            .map((account, index) => (
+              <div
+                key={account.id}
+                className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg"
+              >
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-[#0077B5] rounded-lg flex items-center justify-center text-white">
+                    <FaLinkedin size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-neutral-900 dark:text-white font-medium">
+                      LinkedIn Account {index + 1}
+                    </h3>
+                    <p className="text-neutral-600 dark:text-gray-400 text-sm">
+                      Connected as {account.accountName}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {user?.organizationId && (
+                    <TeamAssignment
+                      accountId={account.id}
+                      currentTeamId={account.teamId}
+                      onAssign={(teamId) =>
+                        handleTeamAssign(account.id, teamId)
+                      }
+                    />
+                  )}
+                  <button
+                    onClick={() => handleDisconnect(account.id)}
+                    className="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-200 rounded-md text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                  >
+                    Disconnect
+                  </button>
                 </div>
               </div>
             ))}
@@ -447,6 +502,14 @@ export const SocialMediaConnections: React.FC = () => {
               </button>
             </div>
           </div>
+          {/* Add LinkedIn Account Button */}
+          <button
+            onClick={handleLinkedInConnect}
+            className="flex items-center justify-center w-full p-3 bg-[#0077B5] text-white rounded-lg hover:bg-[#006699] transition-colors"
+          >
+            <FaLinkedin size={20} className="mr-2" />
+            Connect LinkedIn Account
+          </button>
           {/* Add Threads Account Button */}
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg mt-4">
             <div className="flex items-center">

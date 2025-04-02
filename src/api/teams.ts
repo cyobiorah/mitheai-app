@@ -14,7 +14,7 @@ export const teamsApi = {
   },
 
   getTeams: async (organizationId: string): Promise<Team[]> => {
-    console.log("Fetching teams for organization:", organizationId);
+    // console.log("Fetching teams for organization:", organizationId);
     console.log("API URL:", `${API_URL}/teams/organization/${organizationId}`);
     try {
       console.log("here");
