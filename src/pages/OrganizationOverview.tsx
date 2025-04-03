@@ -12,13 +12,13 @@ import { teamsApi } from "../api/teams";
 
 import AddTeamModal from "../components/AddTeamModal";
 import InviteMemberModal from "../components/InviteMemberModal";
-import ManageTeamModal from "../components/ManageTeamModal";
 import StatsCard from "../components/StatsCard";
 import { User, Team } from "../types";
 import { useAuth } from "../store/hooks";
 import { usersApi } from "../api/users";
 import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
+import SectionLoader from "../components/SectionLoader";
 
 const OrganizationOverview: React.FC = () => {
   const { user, organization, teams } = useAuth();
@@ -58,7 +58,6 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       await teamsApi.createTeam(name, user.organizationId);
-      // await fetchTeams();
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
     } catch (err) {
@@ -78,7 +77,6 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       await teamsApi.deleteTeam(teamId);
-      // await refreshTeams();
       toast.success("Team deleted successfully");
     } catch (err) {
       setError("Failed to delete team");
@@ -90,7 +88,6 @@ const OrganizationOverview: React.FC = () => {
   };
 
   const handleRemoveMember = async (userId: string) => {
-    console.log({ userId });
     if (!window.confirm("Are you sure you want to remove this member?")) return;
 
     try {
@@ -252,19 +249,7 @@ const OrganizationOverview: React.FC = () => {
 
         <div className="divide-y divide-neutral-200 dark:divide-gray-700">
           {isMembersLoading ? (
-            <div className="px-6 py-4">
-              <div className="animate-pulse space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-neutral-200 dark:bg-gray-700 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-neutral-200 dark:bg-gray-700 rounded w-1/4"></div>
-                      <div className="mt-2 h-3 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SectionLoader />
           ) : (
             members.map((member) => (
               <div

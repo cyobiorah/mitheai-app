@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FirebaseError } from "firebase/app";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../config/firebase";
+// import { FirebaseError } from "firebase/app";
+// import { sendPasswordResetEmail } from "firebase/auth";
+// import { auth } from "../config/firebase";
 import { useAuth } from "../store/hooks";
 import AuthLayout from "../components/AuthLayout";
 
@@ -24,8 +24,8 @@ const Login: React.FC = () => {
 
     try {
       await login(email, password);
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
             setLocalError("Invalid email address");
@@ -56,11 +56,11 @@ const Login: React.FC = () => {
     }
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      // await sendPasswordResetEmail(auth, email);
       setResetSent(true);
       setLocalError("");
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
             setLocalError("Invalid email address");

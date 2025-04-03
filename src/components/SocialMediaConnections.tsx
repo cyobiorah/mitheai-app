@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { FaTwitter, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { FaThreads } from "react-icons/fa6";
-import { auth } from "../config/firebase";
+// import { auth } from "../config/firebase";
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/hooks";
@@ -99,7 +99,8 @@ export const SocialMediaConnections: React.FC = () => {
 
   const handleTeamAssign = async (accountId: string, teamId: string) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = "";
+      // const token = await auth.currentUser?.getIdToken();
       const response = await fetch(
         `${API_URL}/social-accounts/${accountId}/team`,
         {

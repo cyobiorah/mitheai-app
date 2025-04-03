@@ -1,43 +1,48 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FirebaseError } from 'firebase/app';
-import { useAuth } from '../store/hooks';
-import AuthLayout from '../components/AuthLayout';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+// import { FirebaseError } from 'firebase/app';
+import { useAuth } from "../store/hooks";
+import AuthLayout from "../components/AuthLayout";
 
 const Register: React.FC = () => {
   const { register, authLoading, authError, clearAuthError } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    userType: 'individual' as 'individual' | 'organization',
-    organizationName: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    userType: "individual" as "individual" | "organization",
+    organizationName: "",
   });
-  const [localError, setLocalError] = useState('');
+  const [localError, setLocalError] = useState("");
 
   // Use either local error or auth error from store
   const error = localError || authError;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setLocalError(''); // Clear error when user types
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setLocalError(""); // Clear error when user types
     clearAuthError(); // Also clear any auth errors
   };
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setLocalError('Passwords do not match');
+      setLocalError("Passwords do not match");
       return false;
     }
     if (formData.password.length < 6) {
-      setLocalError('Password must be at least 6 characters long');
+      setLocalError("Password must be at least 6 characters long");
       return false;
     }
-    if (formData.userType === 'organization' && !formData.organizationName.trim()) {
-      setLocalError('Organization name is required');
+    if (
+      formData.userType === "organization" &&
+      !formData.organizationName.trim()
+    ) {
+      setLocalError("Organization name is required");
       return false;
     }
     return true;
@@ -45,12 +50,12 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
-    setLocalError('');
+    setLocalError("");
     clearAuthError();
 
     try {
@@ -60,30 +65,32 @@ const Register: React.FC = () => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         userType: formData.userType,
-        ...(formData.userType === 'organization' && {
+        ...(formData.userType === "organization" && {
           organizationName: formData.organizationName,
         }),
       });
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
-          case 'auth/email-already-in-use':
-            setLocalError('An account with this email already exists');
+          case "auth/email-already-in-use":
+            setLocalError("An account with this email already exists");
             break;
-          case 'auth/invalid-email':
-            setLocalError('Invalid email address');
+          case "auth/invalid-email":
+            setLocalError("Invalid email address");
             break;
-          case 'auth/operation-not-allowed':
-            setLocalError('Email/password accounts are not enabled. Please contact support.');
+          case "auth/operation-not-allowed":
+            setLocalError(
+              "Email/password accounts are not enabled. Please contact support."
+            );
             break;
-          case 'auth/weak-password':
-            setLocalError('Password is too weak');
+          case "auth/weak-password":
+            setLocalError("Password is too weak");
             break;
           default:
-            setLocalError('Failed to create account');
+            setLocalError("Failed to create account");
         }
       } else {
-        setLocalError('An unexpected error occurred');
+        setLocalError("An unexpected error occurred");
       }
     }
   };
@@ -96,13 +103,18 @@ const Register: React.FC = () => {
       <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (
           <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-600 dark:text-red-400">{error}</div>
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
           </div>
         )}
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+            >
               First name
             </label>
             <div className="mt-1">
@@ -119,7 +131,10 @@ const Register: React.FC = () => {
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+            >
               Last name
             </label>
             <div className="mt-1">
@@ -137,7 +152,10 @@ const Register: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+          >
             Email address
           </label>
           <div className="mt-1">
@@ -156,7 +174,10 @@ const Register: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="userType" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+          <label
+            htmlFor="userType"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+          >
             Account Type
           </label>
           <div className="mt-1">
@@ -174,9 +195,12 @@ const Register: React.FC = () => {
           </div>
         </div>
 
-        {formData.userType === 'organization' && (
+        {formData.userType === "organization" && (
           <div>
-            <label htmlFor="organizationName" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+            <label
+              htmlFor="organizationName"
+              className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+            >
               Organization name
             </label>
             <div className="mt-1">
@@ -195,7 +219,10 @@ const Register: React.FC = () => {
         )}
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+          >
             Password
           </label>
           <div className="mt-1">
@@ -212,7 +239,10 @@ const Register: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+          >
             Confirm password
           </label>
           <div className="mt-1">
@@ -234,13 +264,13 @@ const Register: React.FC = () => {
             disabled={authLoading}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
           >
-            {authLoading ? 'Creating account...' : 'Create account'}
+            {authLoading ? "Creating account..." : "Create account"}
           </button>
         </div>
 
         <div className="text-sm text-center">
           <span className="text-neutral-700 dark:text-gray-300">
-            Already have an account?{' '}
+            Already have an account?{" "}
           </span>
           <Link
             to="/login"
