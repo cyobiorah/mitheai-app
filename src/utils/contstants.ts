@@ -5,6 +5,7 @@ export const ROUTES = {
   LIBRARY: '/library',
   CONTENT: '/create',
   MANAGE: '/manage',
+  POST: '/create-post',
   SCHEDULE: '/schedule',
   ANALYTICS: '/analytics',
   SETTINGS: '/settings',

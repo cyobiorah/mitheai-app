@@ -98,6 +98,55 @@ export const socialApi = {
       );
     }
   },
+
+  postToThreads: async (
+    accountId: string,
+    content: string,
+    mediaType: string
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/threads/${accountId}/post`,
+        {
+          content,
+          mediaType,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error posting to Threads:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to post to Threads"
+      );
+    }
+  },
+
+  postToLinkedIn: async (accountId: string, content: string) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/linkedin/${accountId}/post`,
+        {
+          content,
+        },
+        {
+          withCredentials: true, // Include cookies for session authentication
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error posting to LinkedIn:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to post to LinkedIn"
+      );
+    }
+  },
 };
 
 export default socialApi;

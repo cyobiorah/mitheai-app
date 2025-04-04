@@ -27,7 +27,7 @@ export interface Team {
 }
 
 export interface User {
-  uid: string; // Firebase Auth UID
+  _id: string;
   email: string;
   firstName: string;
   lastName: string;

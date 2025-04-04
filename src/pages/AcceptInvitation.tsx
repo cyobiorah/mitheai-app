@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../store/hooks";
-import { invitationsApi } from "../api/invitations";
 import AuthLayout from "../components/AuthLayout";
+import { invitationsApi } from "../api/invitations";
 
 interface InvitationData {
   token: string;
@@ -33,10 +33,12 @@ export const AcceptInvitation: React.FC = () => {
     // Verify token on component mount
     const verifyToken = async () => {
       try {
-        await invitationsApi.verifyInvitation(formData.token);
-        setLoading(false);
+        const response = await invitationsApi.verifyInvitation(formData.token);
+        console.log(response);
       } catch (error) {
         setError("Invalid or expired invitation");
+        setLoading(false);
+      } finally {
         setLoading(false);
       }
     };

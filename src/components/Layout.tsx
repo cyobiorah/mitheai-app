@@ -30,6 +30,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const baseNavigation = [
       { name: "Dashboard", href: ROUTES.DASHBOARD, icon: HomeIcon },
       { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
+      { name: "Create Post", href: ROUTES.POST, icon: PencilSquareIcon },
       { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
       { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
       { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },

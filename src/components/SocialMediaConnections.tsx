@@ -100,7 +100,6 @@ export const SocialMediaConnections: React.FC = () => {
   const handleTeamAssign = async (accountId: string, teamId: string) => {
     try {
       const token = "";
-      // const token = await auth.currentUser?.getIdToken();
       const response = await fetch(
         `${API_URL}/social-accounts/${accountId}/team`,
         {
@@ -432,11 +431,9 @@ export const SocialMediaConnections: React.FC = () => {
                   </div>
                   <div className="ml-4">
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {account.displayName}
+                      @{account.accountName}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      @{account.username}
-                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400"></p>
                   </div>
                 </div>
                 <div className="flex items-center">

@@ -1,4 +1,5 @@
 import axiosInstance from "./axios";
+import { VerifyInvitationResponse } from "./invitations";
 
 export interface LoginResponse {
   token: string;
@@ -49,11 +50,9 @@ export const authApi = {
     }
   },
 
-  getMe: async (token: string): Promise<{ user: any; organization?: any }> => {
+  getMe: async (): Promise<{ user: any; organization?: any }> => {
     try {
-      const response = await axiosInstance.get("/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axiosInstance.get("/auth/me");
 
       return response.data;
     } catch (error: any) {

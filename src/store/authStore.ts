@@ -37,7 +37,6 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const data = await authApi.login(email, password);
-          console.log({ data });
           localStorage.setItem("auth_token", data.token);
           set({
             token: data.token,
@@ -98,7 +97,7 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
         try {
-          const data = await authApi.getMe(token);
+          const data = await authApi.getMe();
           set({
             user: data.user,
             organization: data.organization || null,

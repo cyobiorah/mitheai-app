@@ -19,9 +19,11 @@ import { usersApi } from "../api/users";
 import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
 import SectionLoader from "../components/SectionLoader";
+import ManageTeamModal from "../components/ManageTeamModal";
+import teamApi from "../api/teamApi";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams } = useAuth();
+  const { user, organization, teams, fetchTeams } = useAuth();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
@@ -167,18 +169,20 @@ const OrganizationOverview: React.FC = () => {
 
       {/* Teams Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-8">
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
-            Teams
-          </h2>
-          <button
-            onClick={() => setIsAddTeamModalOpen(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Add Team
-          </button>
-        </div>
+        {teams?.length > 0 && (
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              Teams
+            </h2>
+            <button
+              onClick={() => setIsAddTeamModalOpen(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Add Team
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="px-6 py-4 bg-error/10 dark:bg-error/20 border-b border-error/20 dark:border-error/30">
@@ -253,7 +257,7 @@ const OrganizationOverview: React.FC = () => {
           ) : (
             members.map((member) => (
               <div
-                key={member.uid}
+                key={member._id}
                 className={`px-6 py-4 flex items-center justify-between ${
                   member.status === "pending" ? "bg-warning-50/50" : ""
                 }`}
@@ -297,7 +301,7 @@ const OrganizationOverview: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {user?.uid !== member.uid && (
+                {user?._id !== member._id && (
                   <div className="flex items-center gap-3">
                     {member.status === "pending" && (
                       <button
@@ -323,7 +327,7 @@ const OrganizationOverview: React.FC = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => handleRemoveMember(member.uid)}
+                      onClick={() => handleRemoveMember(member._id)}
                       className="p-2 text-neutral-500 dark:text-gray-400 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
                       disabled={isLoading}
                     >
@@ -348,7 +352,7 @@ const OrganizationOverview: React.FC = () => {
         onClose={() => setIsInviteMemberModalOpen(false)}
         teams={teams}
       />
-      {/* {selectedTeam && (
+      {selectedTeam && (
         <ManageTeamModal
           isOpen={isManageTeamModalOpen}
           onClose={() => {
@@ -357,9 +361,9 @@ const OrganizationOverview: React.FC = () => {
           }}
           team={selectedTeam}
           organizationMembers={members}
-          onTeamUpdate={refreshTeams}
+          onTeamUpdate={() => fetchTeams()}
         />
-      )} */}
+      )}
     </div>
   );
 };
