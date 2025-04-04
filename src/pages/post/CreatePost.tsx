@@ -68,7 +68,18 @@ const CreatePost = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 text-gray-800 dark:text-gray-100">
-      <h1 className="text-3xl font-bold mb-2">Create a New Post</h1>
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="text-3xl font-bold">Create a New Post</h1>
+        <button
+          onClick={() => navigate('posted')}
+          className="flex items-center gap-2 text-primary-500 hover:text-primary-600 transition-colors"
+        >
+          <span>View Posted Content</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+          </svg>
+        </button>
+      </div>
       <p className="text-gray-600 dark:text-gray-300 mb-8">
         Choose the type of content you'd like to share across your connected
         social platforms.

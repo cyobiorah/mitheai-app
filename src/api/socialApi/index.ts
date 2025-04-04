@@ -147,6 +147,49 @@ export const socialApi = {
       );
     }
   },
+
+  getPosts: async (filters = {}) => {
+    try {
+      // Convert filters object to query string
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          queryParams.append(key, String(value));
+        }
+      });
+
+      const queryString = queryParams.toString()
+        ? `?${queryParams.toString()}`
+        : "";
+      const response = await axiosInstance.get(
+        `/social-posts/posts${queryString}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch social posts:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch social posts"
+      );
+    }
+  },
+
+  deletePost: async (postId: string) => {
+    try {
+      const response = await axiosInstance.delete(
+        `/social-posts/posts/${postId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to delete social post:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to delete social post"
+      );
+    }
+  },
 };
 
 export default socialApi;

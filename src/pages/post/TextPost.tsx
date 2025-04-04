@@ -3,9 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
-import { ROUTES } from "../../../utils/contstants";
-import { SocialAccount } from "../../../api/social";
-import socialApi from "../../../api/socialApi";
+import { ROUTES } from "../../utils/contstants";
+import { SocialAccount } from "../../api/social";
+import socialApi from "../../api/socialApi";
 import {
   FaFacebookF,
   FaLinkedinIn,
