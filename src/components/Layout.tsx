@@ -25,7 +25,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Create navigation items based on user type
   const navigationItems = useMemo(() => {
     const baseNavigation = [
       { name: "Dashboard", href: ROUTES.DASHBOARD, icon: HomeIcon },
@@ -34,31 +33,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
       { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
       { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
-    ];
-
-    // Add organization-specific navigation items
-    if (user?.organizationId) {
-      return [
-        ...baseNavigation,
-        // { name: "Team Management", href: ROUTES.TEAMS, icon: UsersIcon },
-        {
-          name: "Profile & Settings",
-          href: ROUTES.SETTINGS,
-          icon: Cog6ToothIcon,
-        },
-      ];
-    }
-
-    // Individual user navigation
-    return [
-      ...baseNavigation,
       {
         name: "Profile & Settings",
         href: ROUTES.SETTINGS,
         icon: Cog6ToothIcon,
       },
+      {
+        name: "Account Setup",
+        href: ROUTES.ACCOUNT_SETUP,
+        icon: Cog6ToothIcon,
+      },
     ];
-  }, [user?.organizationId]);
+
+    return baseNavigation;
+  }, [user]);
 
   const handleLogout = async () => {
     try {

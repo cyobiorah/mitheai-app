@@ -9,6 +9,7 @@ export const ROUTES = {
   SCHEDULE: '/schedule',
   ANALYTICS: '/analytics',
   SETTINGS: '/settings',
+  ACCOUNT_SETUP: '/account-setup',
   LOGIN: '/login',
   REGISTER: '/register',
   ACCEPT_INVITATION: '/accept-invitation',
