@@ -154,7 +154,7 @@ export const socialApi = {
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
-          queryParams.append(key, String(value));
+          queryParams.append(key, String(value as string));
         }
       });
 
@@ -187,6 +187,101 @@ export const socialApi = {
         error.response?.data?.message ||
           error.message ||
           "Failed to delete social post"
+      );
+    }
+  },
+
+  schedulePost: async (data: {
+    content: string;
+    mediaUrls?: string[];
+    platforms: { platformId: string; accountId: string }[];
+    scheduledFor: Date;
+    teamId?: string;
+    organizationId?: string;
+  }) => {
+    try {
+      const response = await axiosInstance.post("/scheduled-posts", data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to schedule post:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to schedule post"
+      );
+    }
+  },
+
+  // Get Scheduled Posts By Id
+  getScheduledPostById: async (postId: string) => {
+    try {
+      const response = await axiosInstance.get(`/scheduled-posts/${postId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch scheduled post:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch scheduled post"
+      );
+    }
+  },
+
+  getScheduledPosts: async () => {
+    try {
+      // Convert filters object to query string
+      // const queryParams = new URLSearchParams();
+      // Object.entries(filters).forEach(([key, value]) => {
+      //   if (value !== undefined && value !== null && value !== "") {
+      //     queryParams.append(key, String(value as string));
+      //   }
+      // });
+
+      // const queryString = queryParams.toString()
+      //   ? `?${queryParams.toString()}`
+      //   : "";
+      const response = await axiosInstance.get(
+        `/scheduled-posts`
+        // `/scheduled-posts${queryString}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch scheduled posts:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch scheduled posts"
+      );
+    }
+  },
+
+  updateScheduledPost: async (postId: string, data: any) => {
+    try {
+      const response = await axiosInstance.put(
+        `/scheduled-posts/${postId}`,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to update scheduled post:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to update scheduled post"
+      );
+    }
+  },
+
+  deleteScheduledPost: async (postId: string) => {
+    try {
+      const response = await axiosInstance.delete(`/scheduled-posts/${postId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to delete scheduled post:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to delete scheduled post"
       );
     }
   },

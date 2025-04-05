@@ -13,17 +13,30 @@ import {
   FaInstagram,
 } from "react-icons/fa";
 import { PiButterflyBold } from "react-icons/pi";
+import { useAuth } from "../../store/hooks";
 
 const TextPost = () => {
   const [caption, setCaption] = useState("");
   const [scheduleEnabled, setScheduleEnabled] = useState(true);
   const [scheduledDate, setScheduledDate] = useState<Date>(new Date());
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
+  const [userTimezone, setUserTimezone] = useState<string>(
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+
+  const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.timezone) {
+      setUserTimezone(user.timezone);
+    }
+  }, [user]);
 
   const handlePost = async () => {
     if (!selectedAccountId) {
@@ -43,11 +56,24 @@ const TextPost = () => {
     if (scheduleEnabled) {
       // Schedule the post
       const scheduledPost = {
-        caption,
-        scheduledDate,
-        accountId: selectedAccountId,
+        content: caption,
+        platforms: [
+          {
+            platformId: selectedAccount.platform,
+            accountId: selectedAccountId,
+          },
+        ],
+        scheduledFor: scheduledDate,
+        // Add team and organization IDs if available
+        teamId: selectedAccount.teamId,
+        organizationId: selectedAccount.organizationId,
       };
       console.log("Scheduled post:", scheduledPost);
+
+      const response = await socialApi.schedulePost(scheduledPost);
+      console.log("Scheduled post response:", response);
+      alert("Post scheduled successfully!");
+      navigate(ROUTES.SCHEDULE);
     } else {
       // Post now
       const post = {
@@ -218,6 +244,8 @@ const TextPost = () => {
             caption={caption}
             handlePost={handlePost}
             isValid={!!selectedAccountId && caption.length > 0}
+            userTimezone={userTimezone}
+            setUserTimezone={setUserTimezone}
           />
         </div>
       </div>
@@ -266,6 +294,8 @@ const ScheduleControls = ({
   caption,
   handlePost,
   isValid,
+  userTimezone,
+  setUserTimezone,
 }: {
   scheduleEnabled: boolean;
   setScheduleEnabled: (v: boolean) => void;
@@ -274,45 +304,96 @@ const ScheduleControls = ({
   caption: string;
   handlePost: () => void;
   isValid: boolean;
-}) => (
-  <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-    <div className="flex justify-between items-center mb-3">
-      <label
-        htmlFor="schedule"
-        className="font-medium text-sm text-gray-700 dark:text-gray-300"
-      >
-        Schedule post
-      </label>
-      <input
-        type="checkbox"
-        id="schedule"
-        checked={scheduleEnabled}
-        onChange={(e) => setScheduleEnabled(e.target.checked)}
-        className="w-5 h-5 text-primary-500 focus:ring-primary-500 border-gray-300 rounded"
-      />
+  userTimezone: string;
+  setUserTimezone: (tz: string) => void;
+}) => {
+  const [timezones, setTimezones] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Get list of common timezones
+    const commonTimezones = [
+      "America/New_York",
+      "America/Chicago",
+      "America/Denver",
+      "America/Los_Angeles",
+      "Europe/London",
+      "Europe/Paris",
+      "Asia/Tokyo",
+      "Australia/Sydney",
+      // Add more common timezones as needed
+    ];
+    setTimezones(commonTimezones);
+  }, []);
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="flex justify-between items-center mb-3">
+        <label
+          htmlFor="schedule"
+          className="font-medium text-sm text-gray-700 dark:text-gray-300"
+        >
+          Schedule post
+        </label>
+        <input
+          type="checkbox"
+          id="schedule"
+          checked={scheduleEnabled}
+          onChange={(e) => setScheduleEnabled(e.target.checked)}
+          className="w-5 h-5 text-primary-500 focus:ring-primary-500 border-gray-300 rounded"
+        />
+      </div>
+      <div className="space-y-3">
+        <div className="mb-3">
+          <label
+            htmlFor="timezone"
+            className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Timezone
+          </label>
+          <select
+            id="timezone"
+            value={userTimezone}
+            onChange={(e) => setUserTimezone(e.target.value)}
+            className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {timezones.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <DatePicker
+          selected={scheduledDate}
+          onChange={(date) => date && setScheduledDate(date)}
+          showTimeSelect
+          dateFormat="Pp"
+          className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          timeFormat="p"
+          timeIntervals={15}
+          minDate={new Date()}
+        />
+
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Scheduled time shown in {userTimezone.replace(/_/g, " ")}
+        </div>
+
+        <button
+          disabled={!isValid}
+          onClick={() => handlePost()}
+          className="w-full py-2 text-sm font-semibold rounded-md transition text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-800"
+        >
+          {scheduleEnabled ? "Schedule" : "Post Now"}
+        </button>
+        {!isValid && (
+          <p className="text-xs text-center text-red-500 dark:text-red-400 mt-1">
+            {!caption.length
+              ? "Caption required"
+              : "Select an account to post to"}
+          </p>
+        )}
+      </div>
     </div>
-    <div className="space-y-3">
-      <DatePicker
-        selected={scheduledDate}
-        onChange={(date) => date && setScheduledDate(date)}
-        showTimeSelect
-        dateFormat="Pp"
-        className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-      />
-      <button
-        disabled={!isValid}
-        onClick={() => handlePost()}
-        className="w-full py-2 text-sm font-semibold rounded-md transition text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary-300 dark:disabled:bg-primary-800"
-      >
-        {scheduleEnabled ? "Schedule" : "Post Now"}
-      </button>
-      {!isValid && (
-        <p className="text-xs text-center text-red-500 dark:text-red-400 mt-1">
-          {!caption.length
-            ? "Caption required"
-            : "Select an account to post to"}
-        </p>
-      )}
-    </div>
-  </div>
-);
+  );
+};

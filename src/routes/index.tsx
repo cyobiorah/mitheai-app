@@ -19,6 +19,7 @@ import CreatePost from "../pages/post/CreatePost";
 import TextPost from "../pages/post/TextPost";
 import Posted from "../pages/post/Posted";
 import AccountSetup from "../pages/account/AccountSetup";
+import ScheduledPosts from "../pages/post/ScheduledPost";
 
 // Wrapper component to conditionally render dashboard
 const DashboardRouter: React.FC = () => {
@@ -70,6 +71,10 @@ const AppRoutes = () => {
                 <Route path={ROUTES.POST} element={<CreatePost />} />
                 <Route path={`${ROUTES.POST}/text`} element={<TextPost />} />
                 <Route path={`${ROUTES.POST}/posted`} element={<Posted />} />
+                <Route
+                  path={`${ROUTES.POST}/scheduled`}
+                  element={<ScheduledPosts />}
+                />
                 <Route path={ROUTES.SCHEDULE} element={<Scheduling />} />
                 <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
                 <Route path={ROUTES.SETTINGS} element={<Settings />} />
