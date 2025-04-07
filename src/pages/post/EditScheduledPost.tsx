@@ -8,7 +8,7 @@ import socialApi from "../../api/socialApi";
 import { useAuth } from "../../store/hooks";
 
 const EditScheduledPost = () => {
-  const { postId } = useParams();
+  //   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,6 +19,8 @@ const EditScheduledPost = () => {
   const [timezones, setTimezones] = useState<string[]>([]);
 
   const { user } = useAuth();
+
+  const params = useParams();
 
   useEffect(() => {
     // Get list of common timezones
@@ -34,6 +36,8 @@ const EditScheduledPost = () => {
     ];
     setTimezones(commonTimezones);
 
+    console.log({ params });
+
     setUserTimezone(user?.timezone ?? "America/New_York");
 
     // Fetch the scheduled post
@@ -41,7 +45,7 @@ const EditScheduledPost = () => {
       try {
         setLoading(true);
         // We need to implement this method in the socialApi
-        const response = await socialApi.getScheduledPostById(postId!);
+        const response = await socialApi.getScheduledPostById(params.id!);
         const fetchedPost = response.data;
 
         setPost(fetchedPost);
@@ -49,19 +53,16 @@ const EditScheduledPost = () => {
         setScheduledDate(new Date(fetchedPost.scheduledFor));
       } catch (error) {
         console.error("Failed to fetch scheduled post:", error);
-        alert(
-          "Failed to load scheduled post. Redirecting to scheduled posts page."
-        );
-        navigate(`${ROUTES.POST}/scheduled`);
+        // navigate(`${ROUTES.POST}/scheduled`);
       } finally {
         setLoading(false);
       }
     };
 
-    if (postId) {
+    if (params.id) {
       fetchScheduledPost();
     }
-  }, [postId, navigate]);
+  }, [params.id, navigate]);
 
   const handleSave = async () => {
     if (!content.trim()) {
@@ -77,12 +78,10 @@ const EditScheduledPost = () => {
         scheduledFor: scheduledDate,
       };
 
-      await socialApi.updateScheduledPost(postId!, updateData);
-      alert("Scheduled post updated successfully!");
+      await socialApi.updateScheduledPost(params.id!, updateData);
       navigate(`${ROUTES.POST}/scheduled`);
     } catch (error) {
       console.error("Failed to update scheduled post:", error);
-      alert("Failed to update scheduled post. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -136,17 +135,13 @@ const EditScheduledPost = () => {
 
           <div className="mb-4">
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-              Platforms:
+              Platform:
             </p>
             <div className="flex flex-wrap gap-2">
-              {post?.platforms?.map((platform: any) => (
-                <div
-                  key={platform._id}
-                  className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-300"
-                >
-                  {platform.accountName || platform.platformId}
-                </div>
-              ))}
+              <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm text-gray-700 dark:text-gray-300">
+                {post?.platforms?.[0]?.accountName ||
+                  post?.platforms?.[0]?.platformId}
+              </div>
             </div>
           </div>
         </div>

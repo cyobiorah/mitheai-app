@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ import { useAuth } from "../../store/hooks";
 
 const TextPost = () => {
   const [caption, setCaption] = useState("");
-  const [scheduleEnabled, setScheduleEnabled] = useState(true);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
@@ -332,7 +332,7 @@ const ScheduleControls = ({
           htmlFor="schedule"
           className="font-medium text-sm text-gray-700 dark:text-gray-300"
         >
-          Schedule post
+          {scheduleEnabled ? "Schedule" : "Post Now"}
         </label>
         <input
           type="checkbox"
@@ -343,41 +343,45 @@ const ScheduleControls = ({
         />
       </div>
       <div className="space-y-3">
-        <div className="mb-3">
-          <label
-            htmlFor="timezone"
-            className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Timezone
-          </label>
-          <select
-            id="timezone"
-            value={userTimezone}
-            onChange={(e) => setUserTimezone(e.target.value)}
-            className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            {timezones.map((tz) => (
-              <option key={tz} value={tz}>
-                {tz.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
-        </div>
+        {scheduleEnabled && (
+          <div>
+            <div className="mb-3">
+              <label
+                htmlFor="timezone"
+                className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Timezone
+              </label>
+              <select
+                id="timezone"
+                value={userTimezone}
+                onChange={(e) => setUserTimezone(e.target.value)}
+                className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                {timezones.map((tz) => (
+                  <option key={tz} value={tz}>
+                    {tz.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <DatePicker
-          selected={scheduledDate}
-          onChange={(date) => date && setScheduledDate(date)}
-          showTimeSelect
-          dateFormat="Pp"
-          className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-          timeFormat="p"
-          timeIntervals={15}
-          minDate={new Date()}
-        />
+            <DatePicker
+              selected={scheduledDate}
+              onChange={(date) => date && setScheduledDate(date)}
+              showTimeSelect
+              dateFormat="Pp"
+              className="w-full text-sm px-3 py-2 border rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              timeFormat="p"
+              timeIntervals={15}
+              minDate={new Date()}
+            />
 
-        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Scheduled time shown in {userTimezone.replace(/_/g, " ")}
-        </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Scheduled time shown in {userTimezone.replace(/_/g, " ")}
+            </div>
+          </div>
+        )}
 
         <button
           disabled={!isValid}

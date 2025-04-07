@@ -14,7 +14,8 @@ export const ROUTES = {
   REGISTER: "/register",
   ACCEPT_INVITATION: "/accept-invitation",
   // SCHEDULED_POSTS: "/scheduled",
-  EDIT_SCHEDULED_POST: "/schedule/:id",
+  // EDIT_SCHEDULED_POST: "/schedule/:id",
+  HOME: "/home",
 } as const;
 
 export const API_ENDPOINTS = {

@@ -137,7 +137,7 @@ const Posted = () => {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-6 py-10 text-gray-800 dark:text-gray-100">
       {/* Back button */}
       <button
         onClick={() => navigate(ROUTES.POST)}
@@ -147,35 +147,75 @@ const Posted = () => {
         Back
       </button>
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Posted Content</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            View and manage all your social media posts
-          </p>
+      {/* Header and Info Panel */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
+            Posted Content
+          </h1>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-800/50 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M2.628 1.601C5.028 1.206 7.49 1 10 1s4.973.206 7.372.601a.75.75 0 01.628.74v2.288a2.25 2.25 0 01-.659 1.59l-4.682 4.683a2.25 2.25 0 00-.659 1.59v3.037c0 .684-.31 1.33-.844 1.757l-1.937 1.55A.75.75 0 018 18.25v-5.757a2.25 2.25 0 00-.659-1.591L2.659 6.22A2.25 2.25 0 012 4.629V2.34a.75.75 0 01.628-.74z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {showFilters ? "Hide Filters" : "Show Filters"}
+            </button>
+
+            <button
+              onClick={fetchPosts}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-800/50 transition-colors"
+            >
+              <ArrowPathIcon className="w-5 h-5" />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
-        <div className="mt-4 md:mt-0 flex space-x-3">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </button>
-          <button
-            onClick={fetchPosts}
-            className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-md text-sm font-medium hover:bg-primary-600"
-          >
-            <ArrowPathIcon className="w-4 h-4 mr-2" />
-            Refresh
-          </button>
+
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 rounded-xl border border-blue-100 dark:border-blue-800">
+          <div className="flex items-start gap-4">
+            <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 flex-shrink-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-6 h-6"
+              >
+                <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+                <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                Published Social Media Content
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">
+                View and manage all your social media posts. Track engagement
+                metrics and filter by platform or date.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
-          <h2 className="text-lg font-medium mb-4">Filter Posts</h2>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+            Filter Posts
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {/* Platform filter */}
             <div>
@@ -302,13 +342,13 @@ const Posted = () => {
           <div className="flex justify-end space-x-3">
             <button
               onClick={resetFilters}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Reset
             </button>
             <button
               onClick={applyFilters}
-              className="px-4 py-2 bg-primary-500 text-white rounded-md text-sm font-medium hover:bg-primary-600"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
             >
               Apply Filters
             </button>
@@ -332,9 +372,9 @@ const Posted = () => {
 
       {/* Empty state */}
       {!loading && !error && posts.length === 0 && (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -346,10 +386,10 @@ const Posted = () => {
               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
             />
           </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">
+          <h3 className="mt-4 text-xl font-semibold text-gray-900 dark:text-gray-100">
             No posts found
           </h3>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             {Object.keys(filters).some(
               (key) =>
                 filters[key as keyof Filters] &&
@@ -362,7 +402,7 @@ const Posted = () => {
           <div className="mt-6">
             <button
               onClick={() => navigate(ROUTES.POST)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-500 hover:bg-blue-600 transition-colors"
             >
               Create a Post
             </button>
@@ -376,55 +416,75 @@ const Posted = () => {
           {posts.map((post) => (
             <div
               key={post._id}
-              className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-full"
+              className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all flex flex-col h-full"
             >
-              {/* Post header */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center">
-                  {post.accountAvatar ? (
-                    <img
-                      src={post.accountAvatar}
-                      alt={post.accountName}
-                      className="w-8 h-8 rounded-full mr-2"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-2">
-                      {platformIcons[post.platform] || (
-                        <span className="text-gray-500 dark:text-gray-400">
-                          ?
+              {/* Color bar based on platform */}
+              <div
+                className={`h-1.5 w-full ${
+                  post.platform === "twitter"
+                    ? "bg-blue-400"
+                    : post.platform === "linkedin"
+                    ? "bg-blue-700"
+                    : post.platform === "facebook"
+                    ? "bg-blue-600"
+                    : post.platform === "instagram"
+                    ? "bg-pink-500"
+                    : post.platform === "threads"
+                    ? "bg-black dark:bg-white"
+                    : "bg-gray-500"
+                }`}
+              ></div>
+
+              <div className="p-5 flex flex-col h-full">
+                {/* Post header */}
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center">
+                    {post.accountAvatar ? (
+                      <img
+                        src={post.accountAvatar}
+                        alt={post.accountName}
+                        className="w-10 h-10 rounded-full mr-3 border-2 border-gray-100 dark:border-gray-700"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 border-2 border-gray-200 dark:border-gray-600">
+                        {platformIcons[post.platform] || (
+                          <span className="text-gray-500 dark:text-gray-400">
+                            ?
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center">
+                        <span className="font-medium text-gray-800 dark:text-gray-100">
+                          {post.accountName}
                         </span>
-                      )}
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center">
-                      <span className="font-medium text-sm">
-                        {post.accountName}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-xs">
-                      <span className="flex items-center text-gray-500 dark:text-gray-400">
-                        {platformIcons[post.platform] || null}
-                        <span className="ml-1 capitalize">{post.platform}</span>
-                      </span>
-                      <span className="mx-1 text-gray-500 dark:text-gray-400">
-                        •
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                          statusColors[post.status] ||
-                          "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {post.status}
-                      </span>
+                      </div>
+                      <div className="flex items-center text-xs mt-0.5">
+                        <span className="flex items-center text-gray-500 dark:text-gray-400">
+                          {platformIcons[post.platform] || null}
+                          <span className="ml-1 capitalize">
+                            {post.platform}
+                          </span>
+                        </span>
+                        <span className="mx-1 text-gray-400 dark:text-gray-500">
+                          •
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                            statusColors[post.status] ||
+                            "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {post.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div>
                   <button
                     onClick={() => handleDeletePost(post._id)}
-                    className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-500"
+                    className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    title="Delete post"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -440,87 +500,87 @@ const Posted = () => {
                     </svg>
                   </button>
                 </div>
-              </div>
 
-              {/* Date */}
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                {formatDate(post.publishedDate)}
-              </div>
+                {/* Date */}
+                <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  {formatDate(post.publishedDate)}
+                </div>
 
-              {/* Post content */}
-              <div className="mb-3 flex-grow">
-                <p className="text-gray-800 dark:text-gray-200 text-sm">
-                  {truncateText(post.content, 100)}
-                </p>
-              </div>
+                {/* Post content */}
+                <div className="mb-4 flex-grow">
+                  <p className="text-gray-800 dark:text-gray-200">
+                    {truncateText(post.content, 100)}
+                  </p>
+                </div>
 
-              {/* Post analytics */}
-              <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
-                {post.likes !== undefined && (
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span>{post.likes}</span>
-                  </div>
-                )}
-                {post.comments !== undefined && (
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span>{post.comments}</span>
-                  </div>
-                )}
-                {post.shares !== undefined && (
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                    </svg>
-                    <span>{post.shares}</span>
-                  </div>
-                )}
-                {post.impressions !== undefined && (
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path
-                        fillRule="evenodd"
-                        d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span>{post.impressions}</span>
-                  </div>
-                )}
+                {/* Post analytics */}
+                <div className="flex flex-wrap gap-3 text-xs text-gray-500 dark:text-gray-400 mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
+                  {post.likes !== undefined && (
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1 text-red-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{post.likes}</span>
+                    </div>
+                  )}
+                  {post.comments !== undefined && (
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1 text-blue-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{post.comments}</span>
+                    </div>
+                  )}
+                  {post.shares !== undefined && (
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1 text-green-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                      </svg>
+                      <span>{post.shares}</span>
+                    </div>
+                  )}
+                  {post.impressions !== undefined && (
+                    <div className="flex items-center bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1 text-purple-500"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span>{post.impressions}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
