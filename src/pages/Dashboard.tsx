@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/hooks";
+import { Link, useNavigate } from "react-router-dom";
 import { ContentItem } from "../types";
 import toast from "react-hot-toast";
 // import { ROUTES } from "../utils/constants";
-import { BookmarkIcon, ChartBarIcon, DocumentTextIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  BookmarkIcon,
+  ChartBarIcon,
+  DocumentTextIcon,
+  PlusIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
 import StatsCard from "../components/StatsCard";
 import * as contentApi from "../api/content";
 import { ROUTES } from "../utils/contstants";
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, organization, teams } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +26,8 @@ const Dashboard: React.FC = () => {
     totalContent: 0,
     totalCollections: 0,
     analyzedContent: 0,
+    totalTeams: 0,
+    totalMembers: 0,
   });
 
   useEffect(() => {
@@ -41,7 +49,11 @@ const Dashboard: React.FC = () => {
       setStats({
         totalContent: content.length,
         totalCollections: personalCollections.length,
-        analyzedContent: content.filter((item: any) => item.status === "analyzed").length,
+        analyzedContent: content.filter(
+          (item: any) => item.status === "analyzed"
+        ).length,
+        totalTeams: teams?.length || 0,
+        totalMembers: 0, // This would need an API call to get total members
       });
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -56,16 +68,18 @@ const Dashboard: React.FC = () => {
     navigate(ROUTES.CONTENT);
   };
 
-  return (
-    <div className="space-y-6 p-6">
-      {/* Welcome Header */}
+  // Render different welcome message based on user type
+  const renderWelcomeHeader = () => {
+    return (
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
             Welcome back, {user?.firstName}!
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Here's an overview of your content and activities
+            {user?.userType === "organization"
+              ? `Manage your organization's content and team activities`
+              : `Here's an overview of your personal content and activities`}
           </p>
         </div>
         <button
@@ -76,8 +90,54 @@ const Dashboard: React.FC = () => {
           Create Content
         </button>
       </div>
+    );
+  };
 
-      {/* Stats Overview */}
+  // Render organization-specific stats
+  const renderOrganizationStats = () => {
+    if (user?.userType !== "organization") return null;
+
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <StatsCard
+          title="Teams"
+          value={stats.totalTeams}
+          icon={UsersIcon}
+          trend={{
+            value: 0,
+            label: "active teams",
+            direction: "up",
+          }}
+        />
+        <StatsCard
+          title="Members"
+          value={stats.totalMembers}
+          icon={UsersIcon}
+          trend={{
+            value: 0,
+            label: "team members",
+            direction: "up",
+          }}
+        />
+        <StatsCard
+          title="Organization Content"
+          value={stats.totalContent}
+          icon={DocumentTextIcon}
+          trend={{
+            value: 0,
+            label: "pieces of content",
+            direction: "up",
+          }}
+        />
+      </div>
+    );
+  };
+
+  // Render individual-specific stats
+  const renderIndividualStats = () => {
+    if (user?.userType === "organization") return null;
+
+    return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
           title="Total Content"
@@ -105,19 +165,38 @@ const Dashboard: React.FC = () => {
           icon={ChartBarIcon}
           trend={{
             value: 0,
-            label: "items analyzed",
+            label: "analyzed pieces",
             direction: "up",
           }}
         />
       </div>
+    );
+  };
 
-      {/* Recent Content and Collections */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Content */}
-        <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+  return (
+    <div className="space-y-6 p-6">
+      {/* Welcome Header */}
+      {renderWelcomeHeader()}
+
+      {/* Stats Overview - Different for each user type */}
+      {user?.userType === "organization"
+        ? renderOrganizationStats()
+        : renderIndividualStats()}
+
+      {/* Recent Content - Show for both user types */}
+      <div>
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">
             Recent Content
           </h2>
+          <Link
+            to={ROUTES.MANAGE}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            View all
+          </Link>
+        </div>
+        <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="mt-4 space-y-4">
             {recentContent.length > 0 ? (
               recentContent.map((item) => (
@@ -151,41 +230,41 @@ const Dashboard: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Collections */}
-        <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-          <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-            Your Collections
-          </h2>
-          <div className="mt-4 space-y-4">
-            {collections.length > 0 ? (
-              collections.map((collection) => (
-                <div
-                  key={collection.id}
-                  className="flex items-center justify-between rounded-md border p-4 dark:border-gray-700"
-                >
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                      {collection.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {collection.contentIds?.length || 0} items
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/collections/${collection.id}`)}
-                    className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                  >
-                    View
-                  </button>
+      {/* Collections */}
+      <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+          Your Collections
+        </h2>
+        <div className="mt-4 space-y-4">
+          {collections.length > 0 ? (
+            collections.map((collection) => (
+              <div
+                key={collection.id}
+                className="flex items-center justify-between rounded-md border p-4 dark:border-gray-700"
+              >
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {collection.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {collection.contentIds?.length || 0} items
+                  </p>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No collections created yet
-              </p>
-            )}
-          </div>
+                <button
+                  onClick={() => navigate(`/collections/${collection.id}`)}
+                  className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                >
+                  View
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No collections created yet
+            </p>
+          )}
         </div>
       </div>
 

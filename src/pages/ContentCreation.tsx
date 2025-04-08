@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { generateContent, createContent } from "../api/content";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { useNavigate } from "react-router-dom";
 import {
   AIAssistantRequest,

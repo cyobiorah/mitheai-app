@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { FaTwitter, FaFacebook } from "react-icons/fa";
-import { auth } from "../config/firebase";
+import { FaTwitter, FaFacebook, FaLinkedin } from "react-icons/fa";
+import { FaThreads } from "react-icons/fa6";
+// import { auth } from "../config/firebase";
 import { Alert, AlertTitle, Box, Collapse } from "@mui/material";
 import toast from "react-hot-toast";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { Team } from "../types";
+import socialApi from "../api/socialApi";
+import { teamsApi } from "../api/teams";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -16,6 +19,9 @@ interface SocialAccount {
   id: string; // Add this if not already present
   accountId: string;
   teamId?: string; // Add this for team assignment
+  displayName: string;
+  username: string;
+  _id?: string;
 }
 
 interface ConnectionError {
@@ -45,19 +51,12 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log({ user });
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const token = await auth.currentUser?.getIdToken();
-        const response = await fetch(
-          `${API_URL}/teams/organization/${user?.organizationId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await response.json();
+        const data = await teamsApi.getTeams(user?.organizationId as string);
+        console.log({ data });
         setTeams(data);
       } catch (error) {
         console.error("Failed to fetch teams:", error);
@@ -66,20 +65,22 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
       }
     };
 
-    fetchTeams();
-  }, []);
+    if (user?.organizationId) {
+      fetchTeams();
+    }
+  }, [user?.organizationId]);
 
   return (
     <div className="mt-2">
       <select
         className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700"
-        value={currentTeamId || ""}
+        value={currentTeamId ?? ""}
         onChange={(e) => onAssign(e.target.value)}
         disabled={loading}
       >
         <option value="">Select Team</option>
-        {teams.map((team) => (
-          <option key={team.id} value={team.id}>
+        {teams?.map((team) => (
+          <option key={team._id} value={team._id}>
             {team.name}
           </option>
         ))}
@@ -96,11 +97,9 @@ export const SocialMediaConnections: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  console.log(useAuth());
-
   const handleTeamAssign = async (accountId: string, teamId: string) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = "";
       const response = await fetch(
         `${API_URL}/social-accounts/${accountId}/team`,
         {
@@ -188,123 +187,83 @@ export const SocialMediaConnections: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) {
-        console.error("No ID token available");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/social-accounts`, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setAccounts(Array.isArray(data) ? data : []); // Ensure accounts is always an array
+      const accounts = await socialApi.getAccounts();
+      setAccounts(accounts);
     } catch (error) {
       console.error("Failed to fetch social accounts:", error);
-      setAccounts([]); // Reset to empty array on error
+      setAccounts([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTwitterConnect = async (skipWelcome: boolean = false) => {
+  const handleTwitterConnect = async (skipWelcome: boolean) => {
     try {
       setConnectionError(null);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to authenticate");
-      }
-
-      const authUrl = await response.text();
-      window.location.href = authUrl;
+      const response = await socialApi.connectTwitter({ skipWelcome });
+      window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Twitter:", error);
+      setConnectionError({
+        code: "account_connection_failes",
+        message: "Failed to connect to Twitter. Please try again",
+      });
     }
   };
 
   const handleFacebookConnect = async () => {
     try {
       setConnectionError(null);
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/facebook/direct-auth`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to authenticate");
-      }
-
-      const authUrl = await response.text();
-      window.location.href = authUrl;
+      const response = await socialApi.connectFacebook();
+      window.location.href = response;
     } catch (error) {
       console.error("Error connecting to Facebook:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to Facebook. Please try again",
+      });
+    }
+  };
+
+  const handleThreadsConnect = async () => {
+    try {
+      setConnectionError(null);
+      const response = await socialApi.connectThreads();
+      window.location.href = response;
+    } catch (error) {
+      console.error("Error connecting to Threads:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to Threads. Please try again",
+      });
+    }
+  };
+
+  const handleLinkedInConnect = async () => {
+    try {
+      setConnectionError(null);
+      const response = await socialApi.connectLinkedIn();
+      window.location.href = response;
+    } catch (error) {
+      console.error("Error connecting to LinkedIn:", error);
+      setConnectionError({
+        code: "account_connection_failed",
+        message: "Failed to connect to LinkedIn. Please try again",
+      });
     }
   };
 
   const handleDisconnect = async (accountId: string) => {
     try {
-      const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) {
-        console.error("No authentication token available");
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/social-accounts/disconnect/${accountId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to disconnect account");
-      }
+      const response = socialApi.disconnectSocialAccount({ accountId });
+      console.log({ response });
 
       // Refresh the accounts list
       fetchAccounts();
     } catch (error) {
       console.error(`Error disconnecting account:`, error);
+    } finally {
+      fetchAccounts();
     }
   };
 
@@ -359,7 +318,7 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => handleDisconnect(account.accountId)}
+                    onClick={() => handleDisconnect(account.id as string)}
                     className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
                   >
                     Disconnect
@@ -376,7 +335,47 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
               </div>
             ))}
-
+          {/* LinkedIn Connections */}
+          {/* Show existing LinkedIn accounts */}
+          {accounts
+            .filter((account) => account.platform === "linkedin")
+            .map((account, index) => (
+              <div
+                key={account.id}
+                className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg"
+              >
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-[#0077B5] rounded-lg flex items-center justify-center text-white">
+                    <FaLinkedin size={24} />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-neutral-900 dark:text-white font-medium">
+                      LinkedIn Account {index + 1}
+                    </h3>
+                    <p className="text-neutral-600 dark:text-gray-400 text-sm">
+                      Connected as {account.accountName}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {user?.organizationId && (
+                    <TeamAssignment
+                      accountId={account.id}
+                      currentTeamId={account.teamId}
+                      onAssign={(teamId) =>
+                        handleTeamAssign(account.id, teamId)
+                      }
+                    />
+                  )}
+                  <button
+                    onClick={() => handleDisconnect(account.id)}
+                    className="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-200 rounded-md text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+            ))}
           {/* Facebook Connections */}
           {/* Show existing Facebook accounts */}
           {accounts
@@ -401,7 +400,7 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
                 <div className="flex items-center">
                   <button
-                    onClick={() => handleDisconnect(account.accountId)}
+                    onClick={() => handleDisconnect(account.id)}
                     className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
                   >
                     Disconnect
@@ -418,7 +417,35 @@ export const SocialMediaConnections: React.FC = () => {
                 </div>
               </div>
             ))}
-
+          {/* Add this in the renderConnectedAccounts section, inside the platforms */}
+          {accounts
+            .filter((account) => account.platform === "threads")
+            .map((account) => (
+              <div
+                key={account.id}
+                className="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow mb-4"
+              >
+                <div className="flex items-center">
+                  <div className="p-2 rounded-full bg-neutral-800">
+                    <FaThreads className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      @{account.accountName}
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400"></p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleDisconnect(account.id)}
+                    className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              </div>
+            ))}
           {/* Add Another Account Button */}
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center">
@@ -449,7 +476,6 @@ export const SocialMediaConnections: React.FC = () => {
               </button>
             </div>
           </div>
-
           {/* Add Facebook Account Button */}
           <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
             <div className="flex items-center">
@@ -471,6 +497,38 @@ export const SocialMediaConnections: React.FC = () => {
                 className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
               >
                 Connect Account
+              </button>
+            </div>
+          </div>
+          {/* Add LinkedIn Account Button */}
+          <button
+            onClick={handleLinkedInConnect}
+            className="flex items-center justify-center w-full p-3 bg-[#0077B5] text-white rounded-lg hover:bg-[#006699] transition-colors"
+          >
+            <FaLinkedin size={20} className="mr-2" />
+            Connect LinkedIn Account
+          </button>
+          {/* Add Threads Account Button */}
+          <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg mt-4">
+            <div className="flex items-center">
+              <div className="p-2 rounded-full bg-neutral-800">
+                <FaThreads className="w-6 h-6 text-white" />
+              </div>
+              <div className="ml-4">
+                <p className="font-medium text-gray-900 dark:text-white">
+                  Threads
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Connect your Threads/Instagram account to post content
+                </p>
+              </div>
+            </div>
+            <div>
+              <button
+                onClick={() => handleThreadsConnect()}
+                className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+              >
+                Connect
               </button>
             </div>
           </div>

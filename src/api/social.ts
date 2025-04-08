@@ -3,6 +3,7 @@ import { ContentItem } from "../types";
 
 // Types for social account operations
 export interface SocialAccount {
+  _id: string;
   id: string;
   userId: string;
   platform: string;
@@ -15,6 +16,7 @@ export interface SocialAccount {
   profileData: any;
   createdAt: string;
   updatedAt: string;
+  accountId: string;
   organizationId?: string;
   teamId?: string;
   ownershipLevel?: 'user' | 'team' | 'organization'; // Indicates who owns/controls this account

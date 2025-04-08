@@ -1,75 +1,75 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FirebaseError } from "firebase/app";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../config/firebase";
-import { useAuth } from "../contexts/AuthContext";
+// import { FirebaseError } from "firebase/app";
+// import { sendPasswordResetEmail } from "firebase/auth";
+// import { auth } from "../config/firebase";
+import { useAuth } from "../store/hooks";
 import AuthLayout from "../components/AuthLayout";
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, authError, authLoading, clearAuthError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState("");
   const [resetSent, setResetSent] = useState(false);
+
+  // Use either local error or auth error from store
+  const error = localError || authError;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setLocalError("");
+    clearAuthError();
 
     try {
       await login(email, password);
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
-            setError("Invalid email address");
+            setLocalError("Invalid email address");
             break;
           case "auth/user-disabled":
-            setError("This account has been disabled");
+            setLocalError("This account has been disabled");
             break;
           case "auth/user-not-found":
-            setError("No account found with this email");
+            setLocalError("No account found with this email");
             break;
           case "auth/wrong-password":
-            setError("Incorrect password");
+            setLocalError("Incorrect password");
             break;
           default:
-            setError("Failed to log in");
+            setLocalError("Failed to log in");
         }
       } else {
         const message = (error as Error).message;
-        setError(message || "An unexpected error occurred");
+        setLocalError(message || "An unexpected error occurred");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError("Please enter your email address first");
+      setLocalError("Please enter your email address first");
       return;
     }
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      // await sendPasswordResetEmail(auth, email);
       setResetSent(true);
-      setError("");
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+      setLocalError("");
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
-            setError("Invalid email address");
+            setLocalError("Invalid email address");
             break;
           case "auth/user-not-found":
-            setError("No account found with this email");
+            setLocalError("No account found with this email");
             break;
           default:
-            setError("Failed to send reset email");
+            setLocalError("Failed to send reset email");
         }
       }
     }
@@ -80,7 +80,9 @@ const Login: React.FC = () => {
       <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (
           <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-600 dark:text-red-400">{error}</div>
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
           </div>
         )}
         {resetSent && (
@@ -166,10 +168,10 @@ const Login: React.FC = () => {
         <div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={authLoading}
             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {authLoading ? "Signing in..." : "Sign in"}
           </button>
         </div>
 
