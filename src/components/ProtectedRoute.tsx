@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { ROUTES } from "../utils/contstants";
 
 interface ProtectedRouteProps {
@@ -8,9 +8,9 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, authLoading } = useAuth();
 
-  if (loading) {
+  if (authLoading) {
     // You can replace this with a loading spinner component
     return (
       <div className="min-h-screen flex items-center justify-center">

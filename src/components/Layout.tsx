@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   HomeIcon,
@@ -15,33 +15,45 @@ import {
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { ROUTES } from "../utils/contstants";
-import { useAuth } from "../contexts/AuthContext";
-import OrganizationSelector from "./OrganizationSelector";
+import { useAuth } from "../store/hooks";
 import TeamSelector from "./TeamSelector";
 import MemberSelector from "./MemberSelector";
 import ThemeToggle from "./ThemeToggle";
-
-const navigation = [
-  { name: "Dashboard", href: ROUTES.DASHBOARD, icon: UsersIcon },
-  { name: "View Content", href: ROUTES.LIBRARY, icon: DocumentTextIcon },
-  { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
-  { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
-  { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
-  { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
-  { name: "Profile & Settings", href: ROUTES.SETTINGS, icon: Cog6ToothIcon },
-];
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  const navigationItems = useMemo(() => {
+    const baseNavigation = [
+      { name: "Dashboard", href: ROUTES.DASHBOARD, icon: HomeIcon },
+      { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
+      { name: "Create Post", href: ROUTES.POST, icon: PencilSquareIcon },
+      { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
+      { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
+      { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
+      {
+        name: "Profile & Settings",
+        href: ROUTES.SETTINGS,
+        icon: Cog6ToothIcon,
+      },
+      {
+        name: "Account Setup",
+        href: ROUTES.ACCOUNT_SETUP,
+        icon: Cog6ToothIcon,
+      },
+    ];
+
+    return baseNavigation;
+  }, [user]);
+
   const handleLogout = async () => {
     try {
       await logout();
       // No need to navigate manually, AuthContext will handle it
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -56,7 +68,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Get user's initials for avatar
   const getInitials = () => {
     if (!user) return "?";
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+    return `${user.firstName.charAt(0)}${user.lastName.charAt(
+      0
+    )}`.toUpperCase();
   };
 
   return (
@@ -113,7 +127,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-4">
-            {navigation.map((item) => (
+            {navigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -138,11 +152,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ))}
           </nav>
 
-          {/* Team and Member Selectors */}
-          <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4 px-4">
-            <TeamSelector />
-            <MemberSelector />
-          </div>
+          {/* Team and Member Selectors - Only show for organization users */}
+          {user?.organizationId && (
+            <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4">
+              <TeamSelector />
+              <MemberSelector />
+            </div>
+          )}
 
           {/* User section */}
           <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-gray-700">
@@ -156,15 +172,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200">
-                  View profile
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  {user?.organizationId
+                    ? "Organization Admin"
+                    : "Individual User"}
                 </p>
               </div>
               <button
                 onClick={handleLogout}
                 className="ml-auto flex items-center justify-center h-10 w-10 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
               >
-                <ArrowLeftOnRectangleIcon className="h-5 w-5" aria-hidden="true" />
+                <ArrowLeftOnRectangleIcon
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
               </button>
             </div>
           </div>

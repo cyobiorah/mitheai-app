@@ -1,74 +1,75 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FirebaseError } from "firebase/app";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../config/firebase";
-import { useAuth } from "../contexts/AuthContext";
+// import { FirebaseError } from "firebase/app";
+// import { sendPasswordResetEmail } from "firebase/auth";
+// import { auth } from "../config/firebase";
+import { useAuth } from "../store/hooks";
 import AuthLayout from "../components/AuthLayout";
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, authError, authLoading, clearAuthError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState("");
   const [resetSent, setResetSent] = useState(false);
+
+  // Use either local error or auth error from store
+  const error = localError || authError;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setLocalError("");
+    clearAuthError();
 
     try {
       await login(email, password);
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
-            setError("Invalid email address");
+            setLocalError("Invalid email address");
             break;
           case "auth/user-disabled":
-            setError("This account has been disabled");
+            setLocalError("This account has been disabled");
             break;
           case "auth/user-not-found":
-            setError("No account found with this email");
+            setLocalError("No account found with this email");
             break;
           case "auth/wrong-password":
-            setError("Incorrect password");
+            setLocalError("Incorrect password");
             break;
           default:
-            setError("Failed to log in");
+            setLocalError("Failed to log in");
         }
       } else {
-        setError("An unexpected error occurred");
+        const message = (error as Error).message;
+        setLocalError(message || "An unexpected error occurred");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
   const handlePasswordReset = async () => {
     if (!email) {
-      setError("Please enter your email address first");
+      setLocalError("Please enter your email address first");
       return;
     }
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      // await sendPasswordResetEmail(auth, email);
       setResetSent(true);
-      setError("");
-    } catch (error) {
-      if (error instanceof FirebaseError) {
+      setLocalError("");
+    } catch (error: any) {
+      if (error) {
         switch (error.code) {
           case "auth/invalid-email":
-            setError("Invalid email address");
+            setLocalError("Invalid email address");
             break;
           case "auth/user-not-found":
-            setError("No account found with this email");
+            setLocalError("No account found with this email");
             break;
           default:
-            setError("Failed to send reset email");
+            setLocalError("Failed to send reset email");
         }
       }
     }
@@ -79,7 +80,9 @@ const Login: React.FC = () => {
       <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (
           <div className="rounded-md bg-red-50 p-4">
-            <div className="text-sm text-red-600 dark:text-red-400">{error}</div>
+            <div className="text-sm text-red-600 dark:text-red-400">
+              {error}
+            </div>
           </div>
         )}
         {resetSent && (
@@ -106,7 +109,8 @@ const Login: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-neutral-300 dark:border-gray-600 rounded-md shadow-sm placeholder-neutral-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 sm:text-sm dark:bg-gray-700 dark:text-white"
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
+              placeholder="you@example.com"
             />
           </div>
         </div>
@@ -127,7 +131,7 @@ const Login: React.FC = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="appearance-none block w-full px-3 py-2 border border-neutral-300 dark:border-gray-600 rounded-md shadow-sm placeholder-neutral-400 dark:placeholder-gray-500 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 sm:text-sm dark:bg-gray-700 dark:text-white"
+              className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:text-sm"
             />
           </div>
         </div>
@@ -140,11 +144,11 @@ const Login: React.FC = () => {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400 border-neutral-300 dark:border-gray-600 rounded dark:bg-gray-700"
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700"
             />
             <label
               htmlFor="remember-me"
-              className="ml-2 block text-sm text-neutral-900 dark:text-gray-300"
+              className="ml-2 block text-sm text-neutral-700 dark:text-gray-300"
             >
               Remember me
             </label>
@@ -154,8 +158,7 @@ const Login: React.FC = () => {
             <button
               type="button"
               onClick={handlePasswordReset}
-              disabled={loading || !email}
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 disabled:opacity-50"
+              className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
             >
               Forgot your password?
             </button>
@@ -165,33 +168,23 @@ const Login: React.FC = () => {
         <div>
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900 disabled:opacity-50"
+            disabled={authLoading}
+            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {authLoading ? "Signing in..." : "Sign in"}
           </button>
         </div>
 
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-300 dark:border-gray-600" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-800 text-neutral-500 dark:text-gray-400">
-                Don't have an account?
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <Link
-              to="/register"
-              className="w-full flex justify-center py-2 px-4 border border-neutral-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-neutral-700 dark:text-white bg-white dark:bg-gray-700 hover:bg-neutral-50 dark:hover:bg-gray-600"
-            >
-              Create new account
-            </Link>
-          </div>
+        <div className="text-sm text-center">
+          <span className="text-neutral-700 dark:text-gray-300">
+            Don't have an account?{" "}
+          </span>
+          <Link
+            to="/register"
+            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+          >
+            Register here
+          </Link>
         </div>
       </form>
     </AuthLayout>

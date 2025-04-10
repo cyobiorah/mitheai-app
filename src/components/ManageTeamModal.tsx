@@ -38,28 +38,28 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
     if (isOpen) {
       // Filter organization members into team members and available members
       const currentTeamMembers = organizationMembers.filter((member) =>
-        member.teamIds?.includes(team.id)
+        member.teamIds?.includes(team._id)
       );
       const nonTeamMembers = organizationMembers.filter(
-        (member) => !member.teamIds?.includes(team.id)
+        (member) => !member.teamIds?.includes(team._id)
       );
 
       setTeamMembers(currentTeamMembers);
       setAvailableMembers(nonTeamMembers);
     }
-  }, [isOpen, team.id, organizationMembers]);
+  }, [isOpen, team._id, organizationMembers]);
 
   const handleAddMember = async (user: User) => {
     console.log({ user });
     try {
       setLoading(true);
-      await teamsApi.addTeamMember(team.id, user.uid);
+      await teamsApi.addTeamMember(team._id, user._id);
       await onTeamUpdate();
       toast.success(`Added ${user.firstName} ${user.lastName} to the team`);
 
       // Update local state
       setTeamMembers([...teamMembers, user]);
-      setAvailableMembers(availableMembers.filter((m) => m.uid !== user.uid));
+      setAvailableMembers(availableMembers.filter((m) => m._id !== user._id));
     } catch (error) {
       console.error("Error adding team member:", error);
       toast.error("Failed to add team member");
@@ -71,12 +71,12 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
   const handleRemoveMember = async (user: User) => {
     try {
       setLoading(true);
-      await teamsApi.removeTeamMember(team.id, user.uid);
+      await teamsApi.removeTeamMember(team._id, user._id);
       await onTeamUpdate();
       toast.success(`Removed ${user.firstName} ${user.lastName} from the team`);
 
       // Update local state
-      setTeamMembers(teamMembers.filter((m) => m.uid !== user.uid));
+      setTeamMembers(teamMembers.filter((m) => m._id !== user._id));
       setAvailableMembers([...availableMembers, user]);
     } catch (error) {
       console.error("Error removing team member:", error);
@@ -119,7 +119,7 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
               <div className="space-y-2">
                 {teamMembers.map((member) => (
                   <div
-                    key={member.uid}
+                    key={member._id}
                     className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-gray-700/50 rounded-lg"
                   >
                     <div className="flex items-center min-w-0">
@@ -158,7 +158,7 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
               <div className="space-y-2">
                 {availableMembers.map((member) => (
                   <div
-                    key={member.uid}
+                    key={member._id}
                     className="flex items-center justify-between p-3 bg-neutral-50 dark:bg-gray-700/50 rounded-lg"
                   >
                     <div className="flex items-center min-w-0">

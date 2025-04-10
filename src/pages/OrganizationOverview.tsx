@@ -12,16 +12,18 @@ import { teamsApi } from "../api/teams";
 
 import AddTeamModal from "../components/AddTeamModal";
 import InviteMemberModal from "../components/InviteMemberModal";
-import ManageTeamModal from "../components/ManageTeamModal";
 import StatsCard from "../components/StatsCard";
 import { User, Team } from "../types";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { usersApi } from "../api/users";
 import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
+import SectionLoader from "../components/SectionLoader";
+import ManageTeamModal from "../components/ManageTeamModal";
+import teamApi from "../api/teamApi";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams, refreshTeams } = useAuth();
+  const { user, organization, teams, fetchTeams } = useAuth();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
@@ -32,11 +34,11 @@ const OrganizationOverview: React.FC = () => {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
 
   const fetchMembers = async () => {
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     try {
       setIsMembersLoading(true);
-      const membersList = await usersApi.getUsers(organization.id);
+      const membersList = await usersApi.getUsers(user.organizationId);
       setMembers(membersList);
     } catch (err) {
       console.error("Error fetching members:", err);
@@ -48,17 +50,16 @@ const OrganizationOverview: React.FC = () => {
 
   useEffect(() => {
     fetchMembers();
-  }, [organization]);
+  }, [user?.organizationId]);
 
   const handleCreateTeam = async (name: string) => {
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      await teamsApi.createTeam(name, organization.id);
-      await refreshTeams();
+      await teamsApi.createTeam(name, user.organizationId);
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
     } catch (err) {
@@ -78,7 +79,6 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       await teamsApi.deleteTeam(teamId);
-      await refreshTeams();
       toast.success("Team deleted successfully");
     } catch (err) {
       setError("Failed to delete team");
@@ -90,7 +90,6 @@ const OrganizationOverview: React.FC = () => {
   };
 
   const handleRemoveMember = async (userId: string) => {
-    console.log({ userId });
     if (!window.confirm("Are you sure you want to remove this member?")) return;
 
     try {
@@ -125,16 +124,15 @@ const OrganizationOverview: React.FC = () => {
         <div className="h-8 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"></div>
+            <div
+              key={i}
+              className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"
+            ></div>
           ))}
         </div>
       </div>
     );
   }
-
-  useEffect(() => {
-    console.log({ members });
-  }, [members]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -142,10 +140,10 @@ const OrganizationOverview: React.FC = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
-            {organization.name}
+            {organization?.name}
           </h1>
           <p className="mt-2 text-neutral-500 dark:text-gray-400 capitalize">
-            {organization.type} Plan
+            {organization?.type} Plan
           </p>
         </div>
         <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
@@ -171,16 +169,20 @@ const OrganizationOverview: React.FC = () => {
 
       {/* Teams Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-8">
-        <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Teams</h2>
-          <button
-            onClick={() => setIsAddTeamModalOpen(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Add Team
-          </button>
-        </div>
+        {teams?.length > 0 && (
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              Teams
+            </h2>
+            <button
+              onClick={() => setIsAddTeamModalOpen(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Add Team
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="px-6 py-4 bg-error/10 dark:bg-error/20 border-b border-error/20 dark:border-error/30">
@@ -191,7 +193,7 @@ const OrganizationOverview: React.FC = () => {
         <div className="divide-y divide-neutral-200 dark:divide-gray-700">
           {teams.map((team) => (
             <div
-              key={team.id}
+              key={team._id}
               className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
               <div className="flex items-center min-w-0">
@@ -203,7 +205,10 @@ const OrganizationOverview: React.FC = () => {
                     {team.name}
                   </h3>
                   <p className="text-sm text-neutral-500 dark:text-gray-400 truncate">
-                    {members.filter((m) => m.teamIds?.includes(team.id)).length}{" "}
+                    {
+                      members.filter((m) => m.teamIds?.includes(team._id))
+                        .length
+                    }{" "}
                     members
                   </p>
                 </div>
@@ -219,7 +224,7 @@ const OrganizationOverview: React.FC = () => {
                   Manage
                 </button>
                 <button
-                  onClick={() => handleDeleteTeam(team.id)}
+                  onClick={() => handleDeleteTeam(team._id)}
                   className="p-1.5 text-neutral-400 dark:text-gray-500 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
                   disabled={isLoading}
                 >
@@ -234,7 +239,9 @@ const OrganizationOverview: React.FC = () => {
       {/* Members Section */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mt-8">
         <div className="px-6 py-4 border-b border-neutral-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Members</h2>
+          <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
+            Members
+          </h2>
           <button
             onClick={() => setIsInviteMemberModalOpen(true)}
             className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
@@ -246,23 +253,11 @@ const OrganizationOverview: React.FC = () => {
 
         <div className="divide-y divide-neutral-200 dark:divide-gray-700">
           {isMembersLoading ? (
-            <div className="px-6 py-4">
-              <div className="animate-pulse space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-neutral-200 dark:bg-gray-700 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-neutral-200 dark:bg-gray-700 rounded w-1/4"></div>
-                      <div className="mt-2 h-3 bg-neutral-200 dark:bg-gray-700 rounded w-1/3"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SectionLoader />
           ) : (
             members.map((member) => (
               <div
-                key={member.uid}
+                key={member._id}
                 className={`px-6 py-4 flex items-center justify-between ${
                   member.status === "pending" ? "bg-warning-50/50" : ""
                 }`}
@@ -291,7 +286,9 @@ const OrganizationOverview: React.FC = () => {
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
                       {member.firstName} {member.lastName}
                     </h3>
-                    <p className="text-sm text-neutral-500 dark:text-gray-400">{member.email}</p>
+                    <p className="text-sm text-neutral-500 dark:text-gray-400">
+                      {member.email}
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <p className="text-xs text-neutral-400 dark:text-gray-500 capitalize">
                         {member.role}
@@ -304,9 +301,9 @@ const OrganizationOverview: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                {user?.uid !== member.uid && (
+                {user?._id !== member._id && (
                   <div className="flex items-center gap-3">
-                    {member.status === 'pending' && (
+                    {member.status === "pending" && (
                       <button
                         onClick={() => handleResendInvitation(member.email)}
                         className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-warning-700 dark:text-warning-400 bg-warning-100 dark:bg-warning-900/50 hover:bg-warning-200 dark:hover:bg-warning-900/70 rounded-lg transition-colors"
@@ -330,7 +327,7 @@ const OrganizationOverview: React.FC = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => handleRemoveMember(member.uid)}
+                      onClick={() => handleRemoveMember(member._id)}
                       className="p-2 text-neutral-500 dark:text-gray-400 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
                       disabled={isLoading}
                     >
@@ -364,7 +361,7 @@ const OrganizationOverview: React.FC = () => {
           }}
           team={selectedTeam}
           organizationMembers={members}
-          onTeamUpdate={refreshTeams}
+          onTeamUpdate={() => fetchTeams()}
         />
       )}
     </div>

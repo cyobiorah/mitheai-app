@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '../../contexts/AuthContext';
-import { createCollection, updateCollection } from '../../api/content';
-import { ContentCollection } from '../../types';
+import React, { useEffect, useState, Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../../store/hooks";
+import { createCollection, updateCollection } from "../../api/content";
+import { ContentCollection } from "../../types";
 
 interface CollectionDialogProps {
   open: boolean;
@@ -35,8 +34,8 @@ export default function CollectionDialog({
   const currentTeam = teams[0];
 
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
+    name: "",
+    description: "",
     metadata: {
       tags: [],
       customFields: {},
@@ -46,13 +45,13 @@ export default function CollectionDialog({
     },
   });
 
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (collection) {
       setFormData({
         name: collection.name,
-        description: collection.description || '',
+        description: collection.description || "",
         metadata: {
           tags: collection.metadata.tags,
           customFields: collection.metadata.customFields,
@@ -64,7 +63,9 @@ export default function CollectionDialog({
     }
   }, [collection]);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleTextChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -81,7 +82,7 @@ export default function CollectionDialog({
           tags: [...prev.metadata.tags, tagInput.trim()],
         },
       }));
-      setTagInput('');
+      setTagInput("");
     }
   };
 
@@ -90,7 +91,7 @@ export default function CollectionDialog({
       ...prev,
       metadata: {
         ...prev.metadata,
-        tags: prev.metadata.tags.filter(tag => tag !== tagToRemove),
+        tags: prev.metadata.tags.filter((tag) => tag !== tagToRemove),
       },
     }));
   };
@@ -121,7 +122,7 @@ export default function CollectionDialog({
       onSave();
       onClose();
     } catch (error) {
-      console.error('Error saving collection:', error);
+      console.error("Error saving collection:", error);
     }
   };
 
@@ -154,7 +155,7 @@ export default function CollectionDialog({
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-xl transition-all">
                 <div className="flex items-center justify-between mb-4">
                   <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
-                    {collection ? 'Edit Collection' : 'New Collection'}
+                    {collection ? "Edit Collection" : "New Collection"}
                   </Dialog.Title>
                   <button
                     onClick={onClose}
@@ -166,7 +167,10 @@ export default function CollectionDialog({
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+                    >
                       Name
                     </label>
                     <input
@@ -181,7 +185,10 @@ export default function CollectionDialog({
                   </div>
 
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+                    >
                       Description
                     </label>
                     <textarea
@@ -220,7 +227,10 @@ export default function CollectionDialog({
                         type="text"
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), handleAddTag())
+                        }
                         placeholder="Add a tag"
                         className="block w-full rounded-l-md border border-neutral-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-gray-400 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-primary-400"
                       />
@@ -246,7 +256,7 @@ export default function CollectionDialog({
                       type="submit"
                       className="rounded-md border border-transparent bg-primary-600 dark:bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-offset-2"
                     >
-                      {collection ? 'Save Changes' : 'Create Collection'}
+                      {collection ? "Save Changes" : "Create Collection"}
                     </button>
                   </div>
                 </form>

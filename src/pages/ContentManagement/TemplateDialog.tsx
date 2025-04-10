@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '../../contexts/AuthContext';
-import { createTemplate, updateTemplate } from '../../api/content';
-import { AnalysisTemplate } from '../../types';
-import clsx from 'clsx';
+import React, { useEffect, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { Fragment } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "../../store/hooks";
+import { createTemplate, updateTemplate } from "../../api/content";
+import { AnalysisTemplate } from "../../types";
 
 interface TemplateDialogProps {
   open: boolean;
@@ -14,7 +13,7 @@ interface TemplateDialogProps {
   onSave: () => void;
 }
 
-type TemplateType = 'sentiment' | 'classification' | 'extraction' | 'custom';
+type TemplateType = "sentiment" | "classification" | "extraction" | "custom";
 
 interface FormData {
   name: string;
@@ -29,23 +28,29 @@ interface FormData {
   settings: {
     permissions: string[];
     autoApply: boolean;
-    contentTypes: ('article' | 'social_post' | 'video' | 'image' | 'document')[];
+    contentTypes: (
+      | "article"
+      | "social_post"
+      | "video"
+      | "image"
+      | "document"
+    )[];
   };
 }
 
 const contentTypeOptions = [
-  { value: 'article', label: 'Article' },
-  { value: 'social_post', label: 'Social Post' },
-  { value: 'video', label: 'Video' },
-  { value: 'image', label: 'Image' },
-  { value: 'document', label: 'Document' },
+  { value: "article", label: "Article" },
+  { value: "social_post", label: "Social Post" },
+  { value: "video", label: "Video" },
+  { value: "image", label: "Image" },
+  { value: "document", label: "Document" },
 ];
 
 const templateTypes = [
-  { value: 'sentiment', label: 'Sentiment Analysis' },
-  { value: 'classification', label: 'Classification' },
-  { value: 'extraction', label: 'Data Extraction' },
-  { value: 'custom', label: 'Custom Analysis' },
+  { value: "sentiment", label: "Sentiment Analysis" },
+  { value: "classification", label: "Classification" },
+  { value: "extraction", label: "Data Extraction" },
+  { value: "custom", label: "Custom Analysis" },
 ];
 
 export default function TemplateDialog({
@@ -58,9 +63,9 @@ export default function TemplateDialog({
   const currentTeam = teams[0];
 
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    type: 'sentiment',
+    name: "",
+    description: "",
+    type: "sentiment",
     config: {
       models: [],
       parameters: {},
@@ -74,13 +79,13 @@ export default function TemplateDialog({
     },
   });
 
-  const [modelInput, setModelInput] = useState('');
+  const [modelInput, setModelInput] = useState("");
 
   useEffect(() => {
     if (template) {
       setFormData({
         name: template.name,
-        description: template.description || '',
+        description: template.description || "",
         type: template.type,
         config: {
           models: template.config.models,
@@ -97,7 +102,9 @@ export default function TemplateDialog({
     }
   }, [template]);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleTextChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -125,7 +132,10 @@ export default function TemplateDialog({
   };
 
   const handleAddModel = () => {
-    if (modelInput.trim() && !formData.config.models.includes(modelInput.trim())) {
+    if (
+      modelInput.trim() &&
+      !formData.config.models.includes(modelInput.trim())
+    ) {
       setFormData((prev) => ({
         ...prev,
         config: {
@@ -133,7 +143,7 @@ export default function TemplateDialog({
           models: [...prev.config.models, modelInput.trim()],
         },
       }));
-      setModelInput('');
+      setModelInput("");
     }
   };
 
@@ -142,7 +152,7 @@ export default function TemplateDialog({
       ...prev,
       config: {
         ...prev.config,
-        models: prev.config.models.filter(model => model !== modelToRemove),
+        models: prev.config.models.filter((model) => model !== modelToRemove),
       },
     }));
   };
@@ -155,14 +165,14 @@ export default function TemplateDialog({
       if (template) {
         await updateTemplate(template.id, {
           ...formData,
-          teamId: currentTeam.id,
+          teamId: currentTeam._id,
           organizationId: currentTeam.organizationId,
           updatedAt: new Date().toISOString(),
         });
       } else {
         await createTemplate({
           ...formData,
-          teamId: currentTeam.id,
+          teamId: currentTeam._id,
           organizationId: currentTeam.organizationId,
           createdAt: new Date().toISOString(),
           createdBy: user.uid,
@@ -172,7 +182,7 @@ export default function TemplateDialog({
       onSave();
       onClose();
     } catch (error) {
-      console.error('Error saving template:', error);
+      console.error("Error saving template:", error);
     }
   };
 
@@ -205,7 +215,7 @@ export default function TemplateDialog({
               <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-xl transition-all">
                 <div className="flex items-center justify-between mb-4">
                   <Dialog.Title className="text-lg font-medium text-neutral-900 dark:text-white">
-                    {template ? 'Edit Template' : 'New Template'}
+                    {template ? "Edit Template" : "New Template"}
                   </Dialog.Title>
                   <button
                     onClick={onClose}
@@ -217,7 +227,10 @@ export default function TemplateDialog({
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+                    >
                       Name
                     </label>
                     <input
@@ -232,7 +245,10 @@ export default function TemplateDialog({
                   </div>
 
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+                    >
                       Description
                     </label>
                     <textarea
@@ -246,7 +262,10 @@ export default function TemplateDialog({
                   </div>
 
                   <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-neutral-700 dark:text-gray-300">
+                    <label
+                      htmlFor="type"
+                      className="block text-sm font-medium text-neutral-700 dark:text-gray-300"
+                    >
                       Template Type
                     </label>
                     <select
@@ -289,7 +308,10 @@ export default function TemplateDialog({
                         type="text"
                         value={modelInput}
                         onChange={(e) => setModelInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddModel())}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          (e.preventDefault(), handleAddModel())
+                        }
                         placeholder="Add a model"
                         className="block w-full rounded-l-md border border-neutral-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-gray-400 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:focus:ring-primary-400"
                       />
@@ -312,8 +334,12 @@ export default function TemplateDialog({
                         <label key={option.value} className="flex items-center">
                           <input
                             type="checkbox"
-                            checked={formData.settings.contentTypes.includes(option.value as any)}
-                            onChange={() => handleContentTypesChange(option.value)}
+                            checked={formData.settings.contentTypes.includes(
+                              option.value as any
+                            )}
+                            onChange={() =>
+                              handleContentTypesChange(option.value)
+                            }
                             className="h-4 w-4 rounded border-neutral-300 dark:border-gray-600 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400"
                           />
                           <span className="ml-2 text-sm text-neutral-700 dark:text-gray-300">
@@ -329,10 +355,15 @@ export default function TemplateDialog({
                       type="checkbox"
                       id="autoApply"
                       checked={formData.settings.autoApply}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        settings: { ...prev.settings, autoApply: e.target.checked }
-                      }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          settings: {
+                            ...prev.settings,
+                            autoApply: e.target.checked,
+                          },
+                        }))
+                      }
                       className="h-4 w-4 rounded border-neutral-300 dark:border-gray-600 text-primary-600 dark:text-primary-400 focus:ring-primary-500 dark:focus:ring-primary-400"
                     />
                     <label
@@ -355,7 +386,7 @@ export default function TemplateDialog({
                       type="submit"
                       className="rounded-md border border-transparent bg-primary-600 dark:bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-offset-2"
                     >
-                      {template ? 'Save Changes' : 'Create Template'}
+                      {template ? "Save Changes" : "Create Template"}
                     </button>
                   </div>
                 </form>

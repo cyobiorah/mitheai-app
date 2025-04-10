@@ -1,65 +1,39 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import ContentLibrary from "./pages/ContentLibrary";
-import ContentCreation from "./pages/ContentCreation";
-import ContentManagement from "./pages/ContentManagement/ContentManagement";
-import Scheduling from "./pages/Scheduling";
-import Analytics from "./pages/Analytics";
-import Settings from "./pages/Settings";
-import OrganizationOverview from "./pages/OrganizationOverview";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import { AcceptInvitation } from "./pages/AcceptInvitation";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ROUTES } from "./utils/contstants";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+// src/App.tsx
+import { BrowserRouter as Router } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import AppRoutes from "./routes";
+import { useEffect } from "react";
+import { useAuthStore } from "./store/authStore";
+import { useTeamStore } from "./store/teamStore";
+import { useThemeStore } from "./store/themeStore";
 
 function App() {
+  const { token, fetchUserData } = useAuthStore();
+  const { fetchTeams } = useTeamStore();
+  const { theme } = useThemeStore();
+
+  // Initialize app data on mount or when token changes
+  useEffect(() => {
+    if (token) {
+      // Load user data
+      fetchUserData();
+
+      // Load teams data
+      fetchTeams();
+    }
+  }, [token, fetchUserData, fetchTeams]);
+
+  // Apply theme on mount and when it changes
+  useEffect(() => {
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+  }, [theme]);
+
   return (
-    <ThemeProvider>
-      <Router>
-        <AuthProvider>
-          <Toaster />
-          <Routes>
-            <Route path={ROUTES.LOGIN} element={<Login />} />
-            <Route path={ROUTES.REGISTER} element={<Register />} />
-            <Route
-              path={ROUTES.ACCEPT_INVITATION}
-              element={<AcceptInvitation />}
-            />
-            <Route
-              path="*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Routes>
-                      <Route
-                        path={ROUTES.DASHBOARD}
-                        element={<OrganizationOverview />}
-                      />
-                      <Route path={ROUTES.LIBRARY} element={<ContentLibrary />} />
-                      <Route
-                        path={ROUTES.CONTENT}
-                        element={<ContentCreation />}
-                      />
-                      <Route
-                        path={ROUTES.MANAGE}
-                        element={<ContentManagement />}
-                      />
-                      <Route path={ROUTES.SCHEDULE} element={<Scheduling />} />
-                      <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
-                      <Route path={ROUTES.SETTINGS} element={<Settings />} />
-                    </Routes>
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </AuthProvider>
-      </Router>
-    </ThemeProvider>
+    <Router>
+      <Toaster />
+      <AppRoutes />
+    </Router>
   );
 }
 

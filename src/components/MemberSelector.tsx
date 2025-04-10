@@ -1,37 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronDownIcon, UsersIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import { useAuth } from '../contexts/AuthContext';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../config/firebase';
-import { User } from '../types';
+import React, { useState, useEffect } from "react";
+import { ChevronDownIcon, UsersIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
+import { useAuth } from "../store/hooks";
+import { User } from "../types";
+import axiosInstance from "../api/axios";
 
 const MemberSelector: React.FC = () => {
-  const { organization } = useAuth();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMembers = async () => {
-      if (!organization) return;
-      
+      if (!user?.organizationId) return;
+
       try {
         setIsLoading(true);
-        const membersRef = collection(db, 'users');
-        const q = query(membersRef, where('organizationId', '==', organization.id));
-        const querySnapshot = await getDocs(q);
-        const membersList = querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as any));
-        setMembers(membersList);
+        const response = await axiosInstance.get(
+          `/users/organization/${user.organizationId}`
+        );
+        setMembers(response.data || []);
       } catch (err) {
-        console.error('Error fetching members:', err);
+        console.error("Error fetching members:", err);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMembers();
-  }, [organization]);
+  }, [user?.organizationId]);
+
+  if (!user?.organizationId) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -40,6 +42,19 @@ const MemberSelector: React.FC = () => {
           <div className="h-4 bg-neutral-200 dark:bg-gray-700 rounded w-3/4"></div>
           <div className="h-3 bg-neutral-200 dark:bg-gray-700 rounded w-1/2 mt-2"></div>
         </div>
+      </div>
+    );
+  }
+
+  if (members.length === 0) {
+    return (
+      <div className="px-4">
+        <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+          Members
+        </h3>
+        <p className="text-xs text-gray-400 dark:text-gray-500">
+          No members found
+        </p>
       </div>
     );
   }
@@ -55,9 +70,12 @@ const MemberSelector: React.FC = () => {
           <span>Team Members</span>
         </div>
         <ChevronDownIcon
-          className={clsx('h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform', {
-            'transform rotate-180': isOpen,
-          })}
+          className={clsx(
+            "h-5 w-5 text-gray-400 dark:text-gray-500 transition-transform",
+            {
+              "transform rotate-180": isOpen,
+            }
+          )}
         />
       </button>
 
@@ -65,13 +83,14 @@ const MemberSelector: React.FC = () => {
         <div className="mt-2 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 max-h-64 overflow-y-auto">
           {members.map((member) => (
             <div
-              key={member.uid}
+              key={member._id}
               className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
               <div className="flex items-center space-x-3 min-w-0">
                 <div className="flex-shrink-0">
                   <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300 text-sm font-medium">
-                    {member.firstName?.[0]}{member.lastName?.[0]}
+                    {member.firstName?.[0]}
+                    {member.lastName?.[0]}
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
