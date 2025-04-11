@@ -89,7 +89,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </button>
         <Link to={ROUTES.DASHBOARD} className="flex items-center">
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
-            MeetCiryl
+            MitheAi
           </span>
         </Link>
         <div className="w-12" /> {/* Spacer to center logo */}
@@ -110,7 +110,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="h-16 flex items-center justify-between px-4">
             <Link to={ROUTES.DASHBOARD} className="flex items-center">
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
-                MeetCiryl
+                MitheAi
               </span>
             </Link>
           </div>
