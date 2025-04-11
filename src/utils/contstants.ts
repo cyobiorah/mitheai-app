@@ -1,7 +1,7 @@
 export const APP_NAME = "MitheAi";
 
 export const ROUTES = {
-  DASHBOARD: "/",
+  DASHBOARD: "/dashboard",
   LIBRARY: "/library",
   CONTENT: "/create",
   MANAGE: "/manage",
@@ -15,7 +15,7 @@ export const ROUTES = {
   ACCEPT_INVITATION: "/accept-invitation",
   // SCHEDULED_POSTS: "/scheduled",
   // EDIT_SCHEDULED_POST: "/schedule/:id",
-  HOME: "/home",
+  HOME: "/",
 } as const;
 
 export const API_ENDPOINTS = {
