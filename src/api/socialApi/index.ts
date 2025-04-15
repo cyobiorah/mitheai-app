@@ -51,7 +51,8 @@ export const socialApi = {
 
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
-      const response = await axiosInstance.post(
+      // Use DELETE method for a more RESTful approach
+      const response = await axiosInstance.delete(
         `/social-accounts/disconnect/${accountId}`
       );
       console.log({ response });
@@ -198,6 +199,7 @@ export const socialApi = {
     scheduledFor: Date;
     teamId?: string;
     organizationId?: string;
+    timezone: string;
   }) => {
     try {
       const response = await axiosInstance.post("/scheduled-posts", data);

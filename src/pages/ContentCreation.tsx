@@ -230,6 +230,7 @@ const ContentCreation: React.FC = () => {
               <option value="twitter">Twitter</option>
               <option value="facebook">Facebook</option>
               <option value="instagram">Instagram</option>
+              <option value="threads">Threads</option>
             </select>
           </div>
 

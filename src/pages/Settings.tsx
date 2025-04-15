@@ -1,7 +1,30 @@
-import React from "react";
-import { SocialMediaConnections } from "../components/SocialMediaConnections";
+import { useState } from "react";
+import { useAuth } from "../store/hooks";
+import { usersApi } from "../api/users";
 
-const Settings: React.FC = () => {
+const Settings = () => {
+  const { user, fetchUserData } = useAuth();
+
+  const [loading, setLoading] = useState(false);
+  const [userDetails, setUserDetails] = useState({
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+  });
+
+  const updateProfile = async () => {
+    console.log({ userDetails });
+    try {
+      setLoading(true);
+      const response = await usersApi.updateUser(user?._id!, userDetails);
+      console.log({ response });
+      fetchUserData();
+    } catch (error) {
+      console.error("Error updating user:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">
@@ -10,111 +33,121 @@ const Settings: React.FC = () => {
 
       {/* User Profile Section */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
-          User Profile
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-neutral-900 dark:text-white mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent placeholder-neutral-400 dark:placeholder-gray-400"
-              placeholder="John Doe"
-            />
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500 dark:border-primary-400"></div>
           </div>
-          <div>
-            <label className="block text-neutral-900 dark:text-white mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent placeholder-neutral-400 dark:placeholder-gray-400"
-              placeholder="john@example.com"
-            />
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="firstName"
+                className="block text-neutral-900 dark:text-white mb-2"
+              >
+                First Name
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent placeholder-neutral-400 dark:placeholder-gray-400"
+                placeholder="John"
+                value={userDetails.firstName}
+                onChange={(e) =>
+                  setUserDetails({ ...userDetails, firstName: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="lastName"
+                className="block text-neutral-900 dark:text-white mb-2"
+              >
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent placeholder-neutral-400 dark:placeholder-gray-400"
+                placeholder="Doe"
+                value={userDetails.lastName}
+                onChange={(e) =>
+                  setUserDetails({ ...userDetails, lastName: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-neutral-900 dark:text-white mb-2"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent placeholder-neutral-400 dark:placeholder-gray-400"
+                placeholder="john@example.com"
+                value={user?.email}
+                disabled
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="role"
+                className="block text-neutral-900 dark:text-white mb-2"
+              >
+                Role
+              </label>
+              <select
+                id="role"
+                className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent"
+                value={user?.role}
+                disabled
+              >
+                <option value="admin">Admin</option>
+                <option value="editor">Editor</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-neutral-900 dark:text-white mb-2">
-              Role
-            </label>
-            <select className="w-full px-4 py-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-transparent">
-              <option value="admin">Admin</option>
-              <option value="editor">Editor</option>
-              <option value="viewer">Viewer</option>
-            </select>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Integrations Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      {/* <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
           Integrations
         </h2>
         <div className="space-y-4">
-          {/* Social Media Connections */}
-          {/* <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-[#1DA1F2] rounded-lg flex items-center justify-center text-white">
-                  Tw
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-neutral-900 dark:text-white font-medium">Twitter</h3>
-                  <p className="text-neutral-600 dark:text-gray-400 text-sm">Connected as @username</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-neutral-100 dark:bg-gray-600 text-neutral-900 dark:text-white rounded-lg hover:bg-error-600 hover:text-white dark:hover:bg-error-500 transition-colors">
-                Disconnect
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-[#4267B2] rounded-lg flex items-center justify-center text-white">
-                  Fb
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-neutral-900 dark:text-white font-medium">Facebook</h3>
-                  <p className="text-neutral-600 dark:text-gray-400 text-sm">Not connected</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg transition-colors">
-                Connect
-              </button>
-            </div>
-          </div> */}
-
-          <SocialMediaConnections />
-
-          {/* Email Notifications */}
           <div className="mt-6">
             <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-3">
               Email Notifications
             </h3>
             <div className="space-y-3">
-              <label className="flex items-center">
+              <label htmlFor="contentApprovals" className="flex items-center">
                 <input
                   type="checkbox"
+                  id="contentApprovals"
                   className="form-checkbox text-primary-600 dark:text-primary-400 h-5 w-5 rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-500 dark:focus:ring-primary-400"
                 />
                 <span className="ml-2 text-neutral-900 dark:text-white">
                   Content approvals
                 </span>
               </label>
-              <label className="flex items-center">
+              <label htmlFor="teamMentions" className="flex items-center">
                 <input
                   type="checkbox"
+                  id="teamMentions"
                   className="form-checkbox text-primary-600 dark:text-primary-400 h-5 w-5 rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-500 dark:focus:ring-primary-400"
                 />
                 <span className="ml-2 text-neutral-900 dark:text-white">
                   Team mentions
                 </span>
               </label>
-              <label className="flex items-center">
+              <label htmlFor="analyticsReports" className="flex items-center">
                 <input
                   type="checkbox"
+                  id="analyticsReports"
                   className="form-checkbox text-primary-600 dark:text-primary-400 h-5 w-5 rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-primary-500 dark:focus:ring-primary-400"
                 />
                 <span className="ml-2 text-neutral-900 dark:text-white">
@@ -124,10 +157,10 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Team Management Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      {/* <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
           Team Management
         </h2>
@@ -142,7 +175,6 @@ const Settings: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {/* Team Member Row */}
             <div className="flex items-center justify-between p-4 bg-neutral-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-accent-600 dark:bg-accent-500 rounded-full flex items-center justify-center text-white">
@@ -163,10 +195,10 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* API Keys Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+      {/* <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">
           API Keys
         </h2>
@@ -208,11 +240,14 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Save Changes Button */}
       <div className="flex justify-end">
-        <button className="px-6 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg transition-colors">
+        <button
+          onClick={() => updateProfile()}
+          className="px-6 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg transition-colors"
+        >
           Save Changes
         </button>
       </div>

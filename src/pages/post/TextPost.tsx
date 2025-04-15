@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { PiButterflyBold } from "react-icons/pi";
 import { useAuth } from "../../store/hooks";
+import { allTimezones } from "../../utils/timezone";
 
 const TextPost = () => {
   const [caption, setCaption] = useState("");
@@ -67,6 +68,8 @@ const TextPost = () => {
         // Add team and organization IDs if available
         teamId: selectedAccount.teamId,
         organizationId: selectedAccount.organizationId,
+        timezone: userTimezone,
+        mediaType: "TEXT",
       };
       console.log("Scheduled post:", scheduledPost);
 
@@ -147,46 +150,38 @@ const TextPost = () => {
     }
   };
 
-  return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <button
-        onClick={() => navigate(ROUTES.POST)}
-        className="inline-flex items-center mb-6 text-sm font-medium text-gray-700 hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
-      >
-        <ChevronLeftIcon className="w-4 h-4 mr-1" />
-        Back
-      </button>
+  const handleRenderAccountsSection = () => {
+    let renderAccountsSection;
 
-      {/* Account Selection */}
-      <div className="mb-8">
-        <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
-          Select account to post to
-        </h2>
-
-        {loading ? (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-          </div>
-        ) : accounts.length === 0 ? (
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-yellow-700 dark:text-yellow-300">
-            <p>
-              No social accounts connected. Please connect an account first.
-            </p>
-            <button
-              onClick={() => navigate(ROUTES.SETTINGS)}
-              className="mt-2 text-sm font-medium text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
-            >
-              Go to Settings
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {accounts.map((account) => (
+    if (loading) {
+      renderAccountsSection = (
+        <div className="flex justify-center py-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      );
+    } else if (accounts.length === 0) {
+      renderAccountsSection = (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-yellow-700 dark:text-yellow-300">
+          <p>No social accounts connected. Please connect an account first.</p>
+          <button
+            onClick={() => navigate(ROUTES.SETTINGS)}
+            className="mt-2 text-sm font-medium text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
+          >
+            Go to Settings
+          </button>
+        </div>
+      );
+    } else {
+      renderAccountsSection = (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {accounts.map((account) => {
+            const isSelected = selectedAccountId === account._id;
+            return (
               <button
                 key={account.id}
                 onClick={() => setSelectedAccountId(account._id)}
                 className={`relative flex items-center p-3 border rounded-lg transition-all ${
-                  selectedAccountId === account._id
+                  isSelected
                     ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-500"
                     : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-700"
                 }`}
@@ -204,13 +199,36 @@ const TextPost = () => {
                     </p>
                   </div>
                 </div>
-                {selectedAccountId === account.id && (
+                {isSelected && (
                   <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-primary-500" />
                 )}
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
+      );
+    }
+
+    return renderAccountsSection;
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <button
+        onClick={() => navigate(ROUTES.POST)}
+        className="inline-flex items-center mb-6 text-sm font-medium text-gray-700 hover:text-primary-500 dark:text-gray-300 dark:hover:text-primary-400"
+      >
+        <ChevronLeftIcon className="w-4 h-4 mr-1" />
+        Back
+      </button>
+
+      {/* Account Selection */}
+      <div className="mb-8">
+        <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-3">
+          Select account to post to
+        </h2>
+
+        {handleRenderAccountsSection()}
 
         {accounts.length > 0 && !selectedAccountId && (
           <p className="mt-2 text-sm text-red-500 dark:text-red-400">
@@ -311,17 +329,9 @@ const ScheduleControls = ({
 
   useEffect(() => {
     // Get list of common timezones
-    const commonTimezones = [
-      "America/New_York",
-      "America/Chicago",
-      "America/Denver",
-      "America/Los_Angeles",
-      "Europe/London",
-      "Europe/Paris",
-      "Asia/Tokyo",
-      "Australia/Sydney",
-      // Add more common timezones as needed
-    ];
+    const commonTimezones = Object.values(allTimezones)
+      .flat()
+      .map((tz) => tz.value);
     setTimezones(commonTimezones);
   }, []);
 

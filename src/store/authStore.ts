@@ -84,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
             token: response.token,
             user: response.user,
             organization: response.organization || null,
+            teams: response.teams || [],
             isLoading: false,
           });
         } catch (error: any) {
@@ -101,6 +102,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: data.user,
             organization: data.organization || null,
+            teams: data.teams || [],
             isLoading: false,
           });
         } catch (error: any) {

@@ -204,7 +204,7 @@ const ScheduledPostCard = ({
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Scheduled for{" "}
                   <span className="font-medium text-gray-700 dark:text-gray-300">
-                    {format(new Date(post.scheduledForDisplay), "PPpp")}
+                    {format(new Date(post.scheduledFor), "PPpp")}
                   </span>
                 </p>
               </div>

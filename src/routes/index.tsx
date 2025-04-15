@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import Layout from "../components/Layout";
+import Layout from "../components/layout";
 import ContentLibrary from "../pages/ContentLibrary";
 import ContentCreation from "../pages/ContentCreation";
 import ContentManagement from "../pages/ContentManagement/ContentManagement";

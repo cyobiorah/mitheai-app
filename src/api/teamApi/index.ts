@@ -31,6 +31,31 @@ export const teamApi = {
       );
     }
   },
+
+  // Assign Team
+  assignTeam: async (
+    accountId: string,
+    teamId: string,
+    organizationId: string
+  ) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/${accountId}/team`,
+        {
+          teamId,
+          organizationId,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to assign team:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to assign team"
+      );
+    }
+  },
 };
 
 export default teamApi;

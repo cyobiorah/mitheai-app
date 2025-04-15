@@ -42,15 +42,15 @@ const Dashboard: React.FC = () => {
       setRecentContent(content.slice(0, 5)); // Show only 5 most recent items
 
       // Fetch personal collections
-      const personalCollections = await contentApi.getPersonalCollections();
-      setCollections(personalCollections);
+      // const personalCollections = await contentApi.getPersonalCollections();
+      // setCollections(personalCollections);
 
       // Calculate stats
       setStats({
         totalContent: content.length,
-        totalCollections: personalCollections.length,
+        totalCollections: 0,
         analyzedContent: content.filter(
-          (item: any) => item.status === "analyzed"
+          (item: any) => item.status === "published"
         ).length,
         totalTeams: teams?.length || 0,
         totalMembers: 0, // This would need an API call to get total members
@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "active teams",
-            direction: "up",
+            isPositive: true,
           }}
         />
         <StatsCard
@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "team members",
-            direction: "up",
+            isPositive: true,
           }}
         />
         <StatsCard
@@ -126,7 +126,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "pieces of content",
-            direction: "up",
+            isPositive: false,
           }}
         />
       </div>
@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "pieces of content",
-            direction: "up",
+            isPositive: false,
           }}
         />
         <StatsCard
@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "personal collections",
-            direction: "up",
+            isPositive: false,
           }}
         />
         <StatsCard
@@ -166,7 +166,7 @@ const Dashboard: React.FC = () => {
           trend={{
             value: 0,
             label: "analyzed pieces",
-            direction: "up",
+            isPositive: false,
           }}
         />
       </div>
@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   <span
                     className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      item.status === "analyzed"
+                      item.status === "published"
                         ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                         : "bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100"
                     }`}
@@ -233,7 +233,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Collections */}
-      <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+      {/* <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white">
           Your Collections
         </h2>
@@ -266,7 +266,7 @@ const Dashboard: React.FC = () => {
             </p>
           )}
         </div>
-      </div>
+      </div> */}
 
       {error && (
         <div className="rounded-md bg-red-50 p-4">
