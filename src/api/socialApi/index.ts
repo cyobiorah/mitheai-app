@@ -20,7 +20,7 @@ export const socialApi = {
       const response = await axiosInstance.get(
         `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
       );
-      console.log({ response });
+      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to connect to Twitter:", error);
@@ -55,7 +55,7 @@ export const socialApi = {
       const response = await axiosInstance.delete(
         `/social-accounts/disconnect/${accountId}`
       );
-      console.log({ response });
+      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to disconnect account:", error);
@@ -72,7 +72,7 @@ export const socialApi = {
       const response = await axiosInstance.get(
         `/social-accounts/facebook/direct-auth`
       );
-      console.log({ response });
+      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to connect to Facebook:", error);

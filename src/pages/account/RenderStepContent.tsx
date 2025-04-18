@@ -175,7 +175,7 @@ const RenderStepContent = ({
                         <div className="mt-3 space-y-2">
                           {connectedAccounts.map((account) => (
                             <div
-                              key={account.id}
+                              key={account._id}
                               className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-md"
                             >
                               <div className="flex items-center">
@@ -415,7 +415,7 @@ const RenderStepContent = ({
                   const PlatformIcon = platform?.icon || FaTwitter;
 
                   return (
-                    <div key={account.id} className="col-span-1">
+                    <div key={account._id} className="col-span-1">
                       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center border border-gray-200 dark:border-gray-700">
                         <PlatformIcon size={24} color={platform?.color} />
                         <div className="ml-3">

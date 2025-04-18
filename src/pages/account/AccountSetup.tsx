@@ -236,7 +236,7 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleDisconnect = async (accountId: string, platformName: string) => {
-    console.log({ accountId, platformName });
+    // console.log({ accountId, platformName });
     try {
       await socialApi.disconnectSocialAccount({ accountId });
       toast.success(`${platformName} account disconnected successfully`);
@@ -274,7 +274,7 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleAssignTeam = async (accountId: string, teamId: string) => {
-    console.log({ accountId, teamId });
+    // console.log({ accountId, teamId });
     setShowModal(false);
     try {
       setLoading(true);

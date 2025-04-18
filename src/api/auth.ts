@@ -57,7 +57,7 @@ export const authApi = {
     organization?: any;
   }> => {
     try {
-      const response = await axiosInstance.get("/auth/me");
+      const response = await axiosInstance.get("/users/me");
 
       return response.data;
     } catch (error: any) {

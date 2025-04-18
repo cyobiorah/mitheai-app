@@ -10,20 +10,23 @@ interface InviteUserRequest {
 }
 
 export const usersApi = {
-  getUsers: async (organizationId: string): Promise<User[]> => {
+  getUsers: async (organizationId: string): Promise<any> => {
     const response = await axiosInstance.get(
-      `/users/organization/${organizationId}`
+      `/organizations/${organizationId}`
     );
     return response.data;
   },
 
   inviteUser: async (data: InviteUserRequest): Promise<void> => {
-    await axiosInstance.post("/users/invite", data);
+    await axiosInstance.post("/invitations", data);
   },
 
   updateUser: async (userId: string, updates: Partial<User>): Promise<User> => {
     try {
-      const response = await axiosInstance.put<User>(`/users/${userId}`, updates);
+      const response = await axiosInstance.put<User>(
+        `/users/${userId}`,
+        updates
+      );
       return response.data;
     } catch (error: any) {
       return error;

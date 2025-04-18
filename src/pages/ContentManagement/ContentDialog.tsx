@@ -86,7 +86,7 @@ export default function ContentDialog({
   const [tagInput, setTagInput] = useState<string>("");
 
   useEffect(() => {
-    console.log({ content });
+    // console.log({ content });
     if (content) {
       setFormData({
         title: content.title,
@@ -122,7 +122,7 @@ export default function ContentDialog({
     try {
       setIsLoadingAccounts(true);
       const accounts = await socialApi.getAccounts();
-      console.log({ accounts });
+      // console.log({ accounts });
       setSocialAccounts(accounts);
       setIsLoadingAccounts(false);
     } catch (error) {

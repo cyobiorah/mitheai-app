@@ -20,7 +20,7 @@ interface ManageTeamModalProps {
   onClose: () => void;
   team: Team;
   organizationMembers: User[];
-  onTeamUpdate: () => Promise<void>;
+  onTeamUpdate: any;
 }
 
 const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
@@ -50,7 +50,7 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
   }, [isOpen, team._id, organizationMembers]);
 
   const handleAddMember = async (user: User) => {
-    console.log({ user });
+    // console.log({ user });
     try {
       setLoading(true);
       await teamsApi.addTeamMember(team._id, user._id);
@@ -93,7 +93,10 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
       className="fixed inset-0 z-10 overflow-y-auto"
     >
       <div className="flex items-center justify-center min-h-screen">
-        <div className="fixed inset-0 bg-black/30 dark:bg-black/50" aria-hidden="true" />
+        <div
+          className="fixed inset-0 bg-black/30 dark:bg-black/50"
+          aria-hidden="true"
+        />
 
         <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-lg max-w-2xl w-full mx-4">
           {/* Header */}

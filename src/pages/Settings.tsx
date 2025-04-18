@@ -12,11 +12,11 @@ const Settings = () => {
   });
 
   const updateProfile = async () => {
-    console.log({ userDetails });
+    // console.log({ userDetails });
     try {
       setLoading(true);
       const response = await usersApi.updateUser(user?._id!, userDetails);
-      console.log({ response });
+      // console.log({ response });
       fetchUserData();
     } catch (error) {
       console.error("Error updating user:", error);

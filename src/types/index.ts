@@ -11,6 +11,7 @@ export interface Organization {
   };
   createdAt: string;
   updatedAt: string;
+  memberIds: string[];
 }
 
 export interface Team {

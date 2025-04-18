@@ -73,7 +73,7 @@ export default function ContentManagement() {
   };
 
   useEffect(() => {
-    console.log({ currentTeam });
+    // console.log({ currentTeam });
     if (currentTeam?._id) fetchTeamsContent();
   }, [currentTeam]);
 

@@ -36,7 +36,7 @@ const EditScheduledPost = () => {
     ];
     setTimezones(commonTimezones);
 
-    console.log({ params });
+    // console.log({ params });
 
     setUserTimezone(user?.timezone ?? "America/New_York");
 

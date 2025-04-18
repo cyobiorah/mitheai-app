@@ -26,6 +26,7 @@ export const useTeamStore = create<TeamState>()((set, get) => ({
 
   // Actions
   fetchTeams: async () => {
+    console.log("here");
     const organizationId = useAuthStore.getState().organization?.id;
     if (!organizationId) return;
 
@@ -46,10 +47,10 @@ export const useTeamStore = create<TeamState>()((set, get) => ({
   setActiveTeam: (team) => {
     set({ activeTeam: team });
   },
-  
+
   setTeams: (teams) => {
     set({ teams });
-    
+
     // Set active team if none is selected
     if (!get().activeTeam && teams.length > 0) {
       set({ activeTeam: teams[0] });
