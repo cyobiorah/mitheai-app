@@ -11,6 +11,8 @@ import {
 import { PiButterflyBold } from "react-icons/pi";
 import socialApi from "../../api/socialApi";
 import { format } from "date-fns";
+import { useAuth } from "../../store/hooks";
+import ModalConfirmation from "../../components/ModalConfirmation";
 
 // Platform icons mapping
 const platformIcons: Record<string, JSX.Element> = {
@@ -44,6 +46,7 @@ interface Post {
   comments?: number;
   shares?: number;
   impressions?: number;
+  createdAt: string;
 }
 
 // Filter interface
@@ -54,18 +57,29 @@ interface Filters {
   endDate?: string;
   sortBy?: string;
   sortOrder?: string;
+  userId?: string;
+  organizationId?: string;
+  teamId?: string;
 }
 
 const Posted = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({
     sortBy: "publishedDate",
     sortOrder: "desc",
+    userId: user?._id,
+    organizationId: user?.organizationId,
+    // teamId: user?.teamIds,
+    status: "posted",
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
 
   // Fetch posts based on filters
   const fetchPosts = async () => {
@@ -84,16 +98,18 @@ const Posted = () => {
 
   // Delete a post
   const handleDeletePost = async (postId: string) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await socialApi.deletePost(postId);
-        // Refresh posts after deletion
-        fetchPosts();
-      } catch (err: any) {
-        console.error("Error deleting post:", err);
-        alert(err.message || "Failed to delete post");
-      }
-    }
+    // if (window.confirm("Are you sure you want to delete this post?")) {
+    //   try {
+    //     await socialApi.deletePost(postId);
+    //     // Refresh posts after deletion
+    //     fetchPosts();
+    //   } catch (err: any) {
+    //     console.error("Error deleting post:", err);
+    //     alert(err.message || "Failed to delete post");
+    //   }
+    // }
+    setPostToDelete(postId);
+    setShowDeleteModal(true);
   };
 
   // Handle filter changes
@@ -483,7 +499,7 @@ const Posted = () => {
                   </div>
                   <button
                     onClick={() => handleDeletePost(post._id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="text-red-500 hover:text-red-700"
                     title="Delete post"
                   >
                     <svg
@@ -503,7 +519,7 @@ const Posted = () => {
 
                 {/* Date */}
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  {formatDate(post.publishedDate)}
+                  {formatDate(post.publishedDate || post.createdAt)}
                 </div>
 
                 {/* Post content */}
@@ -585,6 +601,31 @@ const Posted = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {showDeleteModal && (
+        <ModalConfirmation
+          title="Delete Post?"
+          message="Are you sure you want to delete this post? This action cannot be undone."
+          onConfirm={async () => {
+            console.log({ postToDelete });
+            if (postToDelete) {
+              try {
+                await socialApi.deletePost(postToDelete);
+                fetchPosts();
+              } catch (err: any) {
+                console.error("Error deleting post:", err);
+                alert(err.message ?? "Failed to delete post");
+              }
+            }
+            setShowDeleteModal(false);
+            setPostToDelete(null);
+          }}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setPostToDelete(null);
+          }}
+        />
       )}
     </div>
   );

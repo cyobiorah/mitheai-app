@@ -103,6 +103,13 @@ const TextPost = () => {
           );
           console.log("LinkedIn post response:", response);
           alert("Posted successfully to LinkedIn!");
+        } else if (selectedAccount.platform === "twitter") {
+          const response = await socialApi.postToTwitter(
+            selectedAccountId,
+            caption
+          );
+          console.log("Twitter post response:", response);
+          alert("Posted successfully to Twitter!");
         } else {
           alert(`Posting to ${selectedAccount.platform} is not yet supported.`);
         }

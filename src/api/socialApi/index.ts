@@ -8,8 +8,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to fetch social accounts:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to fetch social accounts"
       );
     }
@@ -20,13 +20,12 @@ export const socialApi = {
       const response = await axiosInstance.get(
         `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
       );
-      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to connect to Twitter:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to connect to Twitter"
       );
     }
@@ -37,13 +36,12 @@ export const socialApi = {
       const response = await axiosInstance.get(
         `/social-accounts/linkedin/direct-auth`
       );
-      console.log("nowhere", { response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to connect to LinkedIn:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to connect to LinkedIn"
       );
     }
@@ -55,13 +53,12 @@ export const socialApi = {
       const response = await axiosInstance.delete(
         `/social-accounts/disconnect/${accountId}`
       );
-      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to disconnect account:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to disconnect account"
       );
     }
@@ -72,13 +69,12 @@ export const socialApi = {
       const response = await axiosInstance.get(
         `/social-accounts/facebook/direct-auth`
       );
-      // console.log({ response });
       return response.data;
     } catch (error: any) {
       console.error("Failed to connect to Facebook:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to connect to Facebook"
       );
     }
@@ -93,8 +89,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to connect to Threads:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to connect to Threads"
       );
     }
@@ -117,8 +113,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Error posting to Threads:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to post to Threads"
       );
     }
@@ -142,35 +138,43 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Error posting to LinkedIn:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to post to LinkedIn"
       );
     }
   },
 
-  getPosts: async (filters = {}) => {
+  postToTwitter: async (accountId: string, content: string) => {
     try {
-      // Convert filters object to query string
-      const queryParams = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
-          queryParams.append(key, String(value as string));
+      const response = await axiosInstance.post(
+        `/social-accounts/twitter/${accountId}/post`,
+        {
+          content,
         }
-      });
-
-      const queryString = queryParams.toString()
-        ? `?${queryParams.toString()}`
-        : "";
-      const response = await axiosInstance.get(
-        `/social-posts/posts${queryString}`
       );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error posting to Twitter:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to post to Twitter"
+      );
+    }
+  },
+
+  getPosts: async (filters: any) => {
+    try {
+      const response = await axiosInstance.get(`/social-posts`, {
+        params: filters,
+      });
       return response.data;
     } catch (error: any) {
       console.error("Failed to fetch social posts:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to fetch social posts"
       );
     }
@@ -179,14 +183,14 @@ export const socialApi = {
   deletePost: async (postId: string) => {
     try {
       const response = await axiosInstance.delete(
-        `/social-posts/posts/${postId}`
+        `/social-posts/${postId}`
       );
       return response.data;
     } catch (error: any) {
       console.error("Failed to delete social post:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to delete social post"
       );
     }
@@ -207,8 +211,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to schedule post:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to schedule post"
       );
     }
@@ -222,8 +226,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to fetch scheduled post:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to fetch scheduled post"
       );
     }
@@ -231,27 +235,13 @@ export const socialApi = {
 
   getScheduledPosts: async () => {
     try {
-      // Convert filters object to query string
-      // const queryParams = new URLSearchParams();
-      // Object.entries(filters).forEach(([key, value]) => {
-      //   if (value !== undefined && value !== null && value !== "") {
-      //     queryParams.append(key, String(value as string));
-      //   }
-      // });
-
-      // const queryString = queryParams.toString()
-      //   ? `?${queryParams.toString()}`
-      //   : "";
-      const response = await axiosInstance.get(
-        `/scheduled-posts`
-        // `/scheduled-posts${queryString}`
-      );
+      const response = await axiosInstance.get(`/scheduled-posts`);
       return response.data;
     } catch (error: any) {
       console.error("Failed to fetch scheduled posts:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to fetch scheduled posts"
       );
     }
@@ -267,8 +257,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to update scheduled post:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to update scheduled post"
       );
     }
@@ -281,8 +271,8 @@ export const socialApi = {
     } catch (error: any) {
       console.error("Failed to delete scheduled post:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to delete scheduled post"
       );
     }
