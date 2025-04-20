@@ -142,7 +142,7 @@ const Posted = () => {
   };
 
   // Truncate text
-  const truncateText = (text: string, maxLength: number = 150) => {
+  const truncateText = (text: string = "", maxLength: number = 150) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
   };

@@ -76,7 +76,7 @@ const TextPost = () => {
       const response = await socialApi.schedulePost(scheduledPost);
       console.log("Scheduled post response:", response);
       alert("Post scheduled successfully!");
-      navigate(ROUTES.SCHEDULE);
+      navigate(`${ROUTES.POST}/scheduled`);
     } else {
       // Post now
       const post = {
@@ -171,7 +171,7 @@ const TextPost = () => {
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-yellow-700 dark:text-yellow-300">
           <p>No social accounts connected. Please connect an account first.</p>
           <button
-            onClick={() => navigate(ROUTES.SETTINGS)}
+            onClick={() => navigate(ROUTES.ACCOUNT_SETUP)}
             className="mt-2 text-sm font-medium text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
           >
             Go to Settings
