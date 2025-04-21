@@ -33,9 +33,9 @@ export const AcceptInvitation: React.FC = () => {
     // Verify token on component mount
     const verifyToken = async () => {
       try {
-        const response = await invitationsApi.verifyInvitation(formData.token);
-        console.log(response);
+        await invitationsApi.verifyInvitation(formData.token);
       } catch (error) {
+        console.error("Failed to verify invitation:", error);
         setError("Invalid or expired invitation");
         setLoading(false);
       } finally {

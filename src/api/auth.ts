@@ -1,3 +1,4 @@
+import { Team, User } from "../types";
 import axiosInstance from "./axios";
 import { VerifyInvitationResponse } from "./invitations";
 
@@ -50,9 +51,13 @@ export const authApi = {
     }
   },
 
-  getMe: async (): Promise<{ user: any; organization?: any }> => {
+  getMe: async (): Promise<{
+    teams: Team[];
+    user: User;
+    organization?: any;
+  }> => {
     try {
-      const response = await axiosInstance.get("/auth/me");
+      const response = await axiosInstance.get("/users/me");
 
       return response.data;
     } catch (error: any) {

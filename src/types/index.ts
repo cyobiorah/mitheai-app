@@ -11,6 +11,7 @@ export interface Organization {
   };
   createdAt: string;
   updatedAt: string;
+  memberIds: string[];
 }
 
 export interface Team {
@@ -56,7 +57,7 @@ export interface AuthState {
 }
 
 export interface ContentItem {
-  id: string;
+  _id: string;
   title: string;
   description?: string;
   type: "article" | "social_post" | "video" | "image" | "document";

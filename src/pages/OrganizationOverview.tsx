@@ -20,17 +20,18 @@ import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
 import SectionLoader from "../components/SectionLoader";
 import ManageTeamModal from "../components/ManageTeamModal";
-import teamApi from "../api/teamApi";
+import { useTeamStore } from "../store/teamStore";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams, fetchTeams } = useAuth();
+  const { user, organization, teams } = useAuth();
+  // const { fetchTeams } = useTeamStore();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [members, setMembers] = useState<User[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
   const [isMembersLoading, setIsMembersLoading] = useState(true);
 
   const fetchMembers = async () => {
@@ -38,8 +39,8 @@ const OrganizationOverview: React.FC = () => {
 
     try {
       setIsMembersLoading(true);
-      const membersList = await usersApi.getUsers(user.organizationId);
-      setMembers(membersList);
+      const orgDetails = await usersApi.getUsers(user.organizationId);
+      setMembers(orgDetails.members);
     } catch (err) {
       console.error("Error fetching members:", err);
       toast.error("Failed to fetch members");
@@ -62,6 +63,7 @@ const OrganizationOverview: React.FC = () => {
       await teamsApi.createTeam(name, user.organizationId);
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
+      await teamsApi.getTeams(user.organizationId);
     } catch (err) {
       setError("Failed to create team");
       console.error("Error creating team:", err);
@@ -80,6 +82,7 @@ const OrganizationOverview: React.FC = () => {
     try {
       await teamsApi.deleteTeam(teamId);
       toast.success("Team deleted successfully");
+      await teamsApi.getTeams(user!.organizationId!);
     } catch (err) {
       setError("Failed to delete team");
       console.error("Error deleting team:", err);
@@ -101,6 +104,7 @@ const OrganizationOverview: React.FC = () => {
       console.error("Error removing member:", err);
       toast.error("Failed to remove member");
     } finally {
+      await fetchMembers();
       setIsLoading(false);
     }
   };
@@ -125,6 +129,7 @@ const OrganizationOverview: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <div
+              // eslint-disable-next-line react/no-array-index-key
               key={i}
               className="h-32 bg-neutral-200 dark:bg-gray-700 rounded-xl"
             ></div>
@@ -133,6 +138,26 @@ const OrganizationOverview: React.FC = () => {
       </div>
     );
   }
+
+  const getMembersClass = (member: User) => {
+    if (member.status === "pending") {
+      return "bg-warning-100 dark:bg-warning-900/50";
+    }
+    if (member.status === "active") {
+      return "bg-success-100 dark:bg-success-900/50";
+    }
+    return "bg-neutral-100 dark:bg-gray-700";
+  };
+
+  const getIconClass = (member: User) => {
+    if (member.status === "pending") {
+      return "text-warning-700 dark:text-warning-400";
+    }
+    if (member.status === "active") {
+      return "text-success-700 dark:text-success-400";
+    }
+    return "text-neutral-700 dark:text-gray-400";
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -155,7 +180,7 @@ const OrganizationOverview: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
         <StatsCard
           title="Total Members"
-          value={members.length}
+          value={members?.length ?? 0}
           icon={UsersIcon}
         />
         <StatsCard
@@ -205,11 +230,7 @@ const OrganizationOverview: React.FC = () => {
                     {team.name}
                   </h3>
                   <p className="text-sm text-neutral-500 dark:text-gray-400 truncate">
-                    {
-                      members.filter((m) => m.teamIds?.includes(team._id))
-                        .length
-                    }{" "}
-                    members
+                    {team.memberIds?.length || 0} members
                   </p>
                 </div>
               </div>
@@ -264,23 +285,11 @@ const OrganizationOverview: React.FC = () => {
               >
                 <div className="flex items-center min-w-0">
                   <div
-                    className={`w-10 h-10 ${
-                      member.status === "pending"
-                        ? "bg-warning-100"
-                        : member.status === "active"
-                        ? "bg-success-100"
-                        : "bg-neutral-100"
-                    } dark:bg-gray-700 rounded-lg flex items-center justify-center`}
+                    className={`w-10 h-10 ${getMembersClass(
+                      member
+                    )} dark:bg-gray-700 rounded-lg flex items-center justify-center`}
                   >
-                    <UsersIcon
-                      className={`w-6 h-6 ${
-                        member.status === "pending"
-                          ? "text-warning-700"
-                          : member.status === "active"
-                          ? "text-success-700"
-                          : "text-neutral-700"
-                      }`}
-                    />
+                    <UsersIcon className={`w-6 h-6 ${getIconClass(member)}`} />
                   </div>
                   <div className="ml-4 min-w-0">
                     <h3 className="text-sm font-medium text-neutral-900 dark:text-white truncate">
@@ -361,7 +370,8 @@ const OrganizationOverview: React.FC = () => {
           }}
           team={selectedTeam}
           organizationMembers={members}
-          onTeamUpdate={() => fetchTeams()}
+          // onTeamUpdate={() => teamsApi.getTeams(user!.organizationId!)}
+          onTeamUpdate={() => teamsApi.getTeams(user!.organizationId!)}
         />
       )}
     </div>

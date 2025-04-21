@@ -5,7 +5,8 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { ROUTES } from "../../utils/contstants";
 import socialApi from "../../api/socialApi";
-import { useAuth } from "../../store/hooks";
+// import { useAuth } from "../../store/hooks";
+import { allTimezones } from "../../utils/timezone";
 
 const EditScheduledPost = () => {
   //   const { postId } = useParams<{ postId: string }>();
@@ -15,30 +16,21 @@ const EditScheduledPost = () => {
   const [post, setPost] = useState<any>(null);
   const [content, setContent] = useState("");
   const [scheduledDate, setScheduledDate] = useState(new Date());
-  const [userTimezone, setUserTimezone] = useState("America/New_York");
+  const [userTimezone, setUserTimezone] = useState("");
   const [timezones, setTimezones] = useState<string[]>([]);
 
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const params = useParams();
 
   useEffect(() => {
     // Get list of common timezones
-    const commonTimezones = [
-      "America/New_York",
-      "America/Chicago",
-      "America/Denver",
-      "America/Los_Angeles",
-      "Europe/London",
-      "Europe/Paris",
-      "Asia/Tokyo",
-      "Australia/Sydney",
-    ];
+    const commonTimezones = Object.values(allTimezones)
+      .flat()
+      .map((tz: any) => tz.value);
     setTimezones(commonTimezones);
 
-    console.log({ params });
-
-    setUserTimezone(user?.timezone ?? "America/New_York");
+    // setUserTimezone(user?.timezone ?? "America/New_York");
 
     // Fetch the scheduled post
     const fetchScheduledPost = async () => {
@@ -51,9 +43,10 @@ const EditScheduledPost = () => {
         setPost(fetchedPost);
         setContent(fetchedPost.content);
         setScheduledDate(new Date(fetchedPost.scheduledFor));
+        setUserTimezone(fetchedPost.timezone);
       } catch (error) {
         console.error("Failed to fetch scheduled post:", error);
-        // navigate(`${ROUTES.POST}/scheduled`);
+        navigate(`${ROUTES.POST}/scheduled`);
       } finally {
         setLoading(false);
       }
@@ -76,6 +69,7 @@ const EditScheduledPost = () => {
       const updateData = {
         content,
         scheduledFor: scheduledDate,
+        timezone: userTimezone,
       };
 
       await socialApi.updateScheduledPost(params.id!, updateData);

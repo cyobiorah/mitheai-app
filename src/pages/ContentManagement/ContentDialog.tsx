@@ -86,11 +86,10 @@ export default function ContentDialog({
   const [tagInput, setTagInput] = useState<string>("");
 
   useEffect(() => {
-    console.log({ content });
     if (content) {
       setFormData({
         title: content.title,
-        description: content.description || "",
+        description: content.description ?? "",
         type: content.type,
         content: content.content,
         url: content.url,
@@ -122,7 +121,6 @@ export default function ContentDialog({
     try {
       setIsLoadingAccounts(true);
       const accounts = await socialApi.getAccounts();
-      console.log({ accounts });
       setSocialAccounts(accounts);
       setIsLoadingAccounts(false);
     } catch (error) {
@@ -218,7 +216,7 @@ export default function ContentDialog({
       let savedContent;
 
       if (content) {
-        savedContent = await updateContent(content.id, {
+        savedContent = await updateContent(content._id, {
           ...formData,
           ...contentMetadata,
           updatedAt: new Date().toISOString(),
@@ -228,7 +226,7 @@ export default function ContentDialog({
           ...formData,
           ...contentMetadata,
           status: "pending",
-          createdBy: user.uid,
+          createdBy: user._id,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -274,7 +272,7 @@ export default function ContentDialog({
           ...formData,
           ...contentMetadata,
           status: "pending",
-          createdBy: user.uid,
+          createdBy: user._id,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -293,22 +291,17 @@ export default function ContentDialog({
       }
 
       // Post to Twitter
-      console.log("Posting to Twitter:", {
-        accountId: selectedAccountId,
-        content: contentToPost.content,
-      });
 
       try {
         const result = await postContentToTwitter(
           selectedAccountId,
           contentToPost
         );
-        console.log("Twitter post result:", result);
 
         // Update content with post status
         if (result && result.tweet) {
           await updateContentPostStatus(
-            contentToPost.id,
+            contentToPost?._id,
             "twitter",
             result.tweet.id,
             "posted"
@@ -331,7 +324,7 @@ export default function ContentDialog({
         ) {
           // Set content status to failed
           await updateContentPostStatus(
-            contentToPost.id,
+            contentToPost?._id,
             "twitter",
             null,
             "failed",
@@ -359,7 +352,7 @@ export default function ContentDialog({
           postError.message.includes("Developer Portal")
         ) {
           await updateContentPostStatus(
-            contentToPost.id,
+            contentToPost?._id,
             "twitter",
             null,
             "failed",
@@ -399,7 +392,7 @@ export default function ContentDialog({
         // For duplicate content errors
         else if (postError.message.includes("duplicate content")) {
           await updateContentPostStatus(
-            contentToPost.id,
+            contentToPost?._id,
             "twitter",
             null,
             "failed",
@@ -419,11 +412,11 @@ export default function ContentDialog({
         } else {
           // For other errors, show the error message and set status to failed
           await updateContentPostStatus(
-            contentToPost.id,
+            contentToPost?._id,
             "twitter",
             null,
             "failed",
-            postError.message || "Unknown error"
+            postError.message ?? "Unknown error"
           );
 
           toast.error(
@@ -474,7 +467,7 @@ export default function ContentDialog({
           ...formData,
           ...contentMetadata,
           status: "pending",
-          createdBy: user.uid,
+          createdBy: user._id,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -485,7 +478,7 @@ export default function ContentDialog({
           contentToPost.description !== formData.description)
       ) {
         // Update content if it has changed
-        contentToPost = await updateContent(contentToPost.id, {
+        contentToPost = await updateContent(contentToPost._id, {
           ...formData,
           ...contentMetadata,
           updatedAt: new Date().toISOString(),
@@ -493,10 +486,10 @@ export default function ContentDialog({
       }
 
       // Track the manual posting attempt
-      await trackManualPostAttempt(contentToPost.id, "twitter");
+      await trackManualPostAttempt(contentToPost?._id, "twitter");
 
       // Create Twitter intent URL and open in new tab
-      const twitterUrl = createTwitterIntentUrl(contentToPost.content);
+      const twitterUrl = createTwitterIntentUrl(contentToPost?.content);
       window.open(twitterUrl, "_blank");
 
       toast.success(

@@ -5,20 +5,17 @@ import {
   CalendarIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  UsersIcon,
-  ArrowLeftOnRectangleIcon,
+  ArrowLeftStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
   PencilSquareIcon,
-  DocumentTextIcon,
   QueueListIcon,
 } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { ROUTES } from "../utils/contstants";
-import { useAuth } from "../store/hooks";
-import TeamSelector from "./TeamSelector";
-import MemberSelector from "./MemberSelector";
-import ThemeToggle from "./ThemeToggle";
+import { ROUTES } from "../../utils/contstants";
+import { useAuth } from "../../store/hooks";
+import ThemeToggle from "../ThemeToggle";
+import { getInitials } from "../../utils/helpers";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -31,10 +28,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
       { name: "Create Post", href: ROUTES.POST, icon: PencilSquareIcon },
       { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
-      { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
-      { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
+      // { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
+      // { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
       {
-        name: "Profile & Settings",
+        name: "Profile",
         href: ROUTES.SETTINGS,
         icon: Cog6ToothIcon,
       },
@@ -59,18 +56,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-  };
-
-  const isActive = (path: string) => {
-    return location.pathname === path ? "bg-primary" : "hover:bg-background";
-  };
-
-  // Get user's initials for avatar
-  const getInitials = () => {
-    if (!user) return "?";
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(
-      0
-    )}`.toUpperCase();
   };
 
   return (
@@ -106,7 +91,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Logo section */}
           <div className="h-16 flex items-center justify-between px-4">
             <Link to={ROUTES.DASHBOARD} className="flex items-center">
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400">
@@ -115,17 +99,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </Link>
           </div>
 
-          {/* Theme toggle and user info */}
           <div className="px-4 py-2 flex items-center justify-between border-t border-neutral-200 dark:border-gray-700">
             <ThemeToggle />
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-600 dark:text-primary-300">
-                {getInitials()}
+                {getInitials(user)}
               </div>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-4">
             {navigationItems.map((item) => (
               <Link
@@ -152,20 +134,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ))}
           </nav>
 
-          {/* Team and Member Selectors - Only show for organization users */}
-          {user?.organizationId && (
-            <div className="flex-shrink-0 border-t border-b border-neutral-200 dark:border-gray-700 py-4 space-y-4">
-              <TeamSelector />
-              <MemberSelector />
-            </div>
-          )}
-
-          {/* User section */}
           <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-gray-700">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-600 to-primary-400 flex items-center justify-center text-white font-medium">
-                  {getInitials()}
+                  {getInitials(user)}
                 </div>
               </div>
               <div className="ml-3">
@@ -182,7 +155,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 onClick={handleLogout}
                 className="ml-auto flex items-center justify-center h-10 w-10 rounded-full text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300"
               >
-                <ArrowLeftOnRectangleIcon
+                <ArrowLeftStartOnRectangleIcon
                   className="h-5 w-5"
                   aria-hidden="true"
                 />

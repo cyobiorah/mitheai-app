@@ -41,16 +41,16 @@ export const useAuthStore = create<AuthState>()(
           set({
             token: data.token,
             user: data.user,
-            organization: data.organization || null,
-            teams: data.teams || [],
+            organization: data.organization ?? null,
+            teams: data.teams ?? [],
             isLoading: false,
           });
-          
+
           // Initialize team store with teams from login
           if (data.teams && data.teams.length > 0) {
             const teamStore = useTeamStore.getState();
             teamStore.setTeams(data.teams);
-            
+
             // Set active team to the first team
             teamStore.setActiveTeam(data.teams[0]);
           }
@@ -83,7 +83,8 @@ export const useAuthStore = create<AuthState>()(
           set({
             token: response.token,
             user: response.user,
-            organization: response.organization || null,
+            organization: response.organization ?? null,
+            teams: response.teams ?? [],
             isLoading: false,
           });
         } catch (error: any) {
@@ -101,6 +102,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: data.user,
             organization: data.organization || null,
+            teams: data.teams || [],
             isLoading: false,
           });
         } catch (error: any) {

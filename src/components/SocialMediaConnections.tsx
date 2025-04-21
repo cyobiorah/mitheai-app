@@ -51,12 +51,10 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
   const { user } = useAuth();
 
   useEffect(() => {
-    console.log({ user });
     const fetchTeams = async () => {
       try {
         setLoading(true);
         const data = await teamsApi.getTeams(user?.organizationId as string);
-        console.log({ data });
         setTeams(data);
       } catch (error) {
         console.error("Failed to fetch teams:", error);
@@ -255,8 +253,7 @@ export const SocialMediaConnections: React.FC = () => {
 
   const handleDisconnect = async (accountId: string) => {
     try {
-      const response = socialApi.disconnectSocialAccount({ accountId });
-      console.log({ response });
+      await socialApi.disconnectSocialAccount({ accountId });
 
       // Refresh the accounts list
       fetchAccounts();

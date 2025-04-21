@@ -3,7 +3,9 @@ import { ContentItem, ContentCollection, AnalysisTemplate } from "../types";
 import { AIAssistantRequest, AIAssistantResponse } from "./types";
 
 // AI Content Generation
-export const generateContent = async (request: AIAssistantRequest): Promise<AIAssistantResponse> => {
+export const generateContent = async (
+  request: AIAssistantRequest
+): Promise<AIAssistantResponse> => {
   const response = await axiosInstance.post("/content/generate", request, {
     timeout: 60000, // 60 seconds specifically for AI generation
   });
@@ -35,8 +37,8 @@ export const deleteContent = async (contentId: string) => {
 };
 
 // Personal Content Management
-export const getPersonalContent = async () => {
-  const response = await axiosInstance.get("/content/personal");
+export const getPersonalContent = async (userId: string) => {
+  const response = await axiosInstance.get(`/social-posts/${userId}`);
   return response.data;
 };
 
@@ -52,26 +54,19 @@ export const getPersonalTemplates = async () => {
 
 // Team Content Management
 export const listTeamContent = async (teamId: string) => {
-  if (teamId === 'personal') {
-    return getPersonalContent();
-  }
   const response = await axiosInstance.get(`/content/team/${teamId}`);
   return response.data;
 };
 
 export const listTeamCollections = async (teamId: string) => {
-  if (teamId === 'personal') {
-    return getPersonalCollections();
-  }
   const response = await axiosInstance.get(`/collections/team/${teamId}`);
   return response.data;
 };
 
 export const listTeamTemplates = async (teamId: string) => {
-  if (teamId === 'personal') {
-    return getPersonalTemplates();
-  }
-  const response = await axiosInstance.get(`/analysis/templates/team/${teamId}`);
+  const response = await axiosInstance.get(
+    `/analysis/templates/team/${teamId}`
+  );
   return response.data;
 };
 
