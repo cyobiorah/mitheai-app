@@ -28,7 +28,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   onClose,
   teams,
 }) => {
-  const { organization } = useAuth();
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -39,7 +39,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     if (!email.trim() || !firstName.trim() || !lastName.trim()) {
       setError("All fields are required");
@@ -55,7 +55,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
         firstName,
         lastName,
         role,
-        organizationId: organization.id,
+        organizationId: user.organizationId,
       });
 
       toast.success("Invitation sent successfully");

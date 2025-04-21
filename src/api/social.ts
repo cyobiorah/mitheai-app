@@ -14,6 +14,7 @@ export interface SocialAccount {
   refreshToken: string;
   tokenExpiry: string;
   profileData: any;
+  displayName: string;
   createdAt: string;
   updatedAt: string;
   accountId: string;

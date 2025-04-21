@@ -14,7 +14,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { fetchApiAnalytics, fetchApiPlatformAnalytics, fetchApiExportAnalytics } from "../api/analytics";
+import {
+  fetchApiAnalytics,
+  fetchApiPlatformAnalytics,
+  fetchApiExportAnalytics,
+} from "../api/analytics";
 
 const Analytics: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -33,23 +37,31 @@ const Analytics: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        
+
         const response = await fetchApiAnalytics(period);
         setAnalytics(response.data);
 
         // Fetch Twitter platform data
         try {
           const twitterResponse = await fetchApiPlatformAnalytics("twitter");
-          setPlatformData((prev: any) => ({ ...prev, twitter: twitterResponse.data }));
+          setPlatformData((prev: any) => ({
+            ...prev,
+            twitter: twitterResponse.data,
+          }));
         } catch (platformError: any) {
-          console.log("Platform data not available:", platformError.response?.data?.error || platformError.message);
+          console.log(
+            "Platform data not available:",
+            platformError.response?.data?.error || platformError.message
+          );
           // Don't set error state for platform data - just log it
         }
 
         setLoading(false);
       } catch (error: any) {
         console.error("Error fetching analytics:", error);
-        setError(error.response?.data?.error || "Failed to load analytics data");
+        setError(
+          error.response?.data?.error || "Failed to load analytics data"
+        );
         setLoading(false);
       }
     };
@@ -61,22 +73,27 @@ const Analytics: React.FC = () => {
   const handleExport = async (format: string) => {
     try {
       const response = await fetchApiExportAnalytics(format);
-      
+
       if (format === "csv") {
         // For CSV, create a download
         const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = url;
-        link.setAttribute('download', `analytics_export.${format}`);
+        link.setAttribute("download", `analytics_export.${format}`);
         document.body.appendChild(link);
         link.click();
         link.remove();
       } else {
         // For JSON, open in new tab
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(response.data, null, 2));
-        const downloadAnchorNode = document.createElement('a');
+        const dataStr =
+          "data:text/json;charset=utf-8," +
+          encodeURIComponent(JSON.stringify(response.data, null, 2));
+        const downloadAnchorNode = document.createElement("a");
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `analytics_export.${format}`);
+        downloadAnchorNode.setAttribute(
+          "download",
+          `analytics_export.${format}`
+        );
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
@@ -121,9 +138,7 @@ const Analytics: React.FC = () => {
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-6">
           Error
         </h1>
-        <p className="text-lg text-neutral-600 dark:text-gray-400">
-          {error}
-        </p>
+        <p className="text-lg text-neutral-600 dark:text-gray-400">{error}</p>
       </div>
     );
   }

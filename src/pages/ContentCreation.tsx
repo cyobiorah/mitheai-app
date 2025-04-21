@@ -191,7 +191,6 @@ const ContentCreation: React.FC = () => {
       };
 
       const savedContent = await createContent(newContent);
-      console.log("Saved content:", savedContent);
       toast.success("Content saved successfully!", { id: "content-saving" });
 
       // Navigate to content view or library
@@ -230,6 +229,7 @@ const ContentCreation: React.FC = () => {
               <option value="twitter">Twitter</option>
               <option value="facebook">Facebook</option>
               <option value="instagram">Instagram</option>
+              <option value="threads">Threads</option>
             </select>
           </div>
 
