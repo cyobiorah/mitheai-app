@@ -50,7 +50,6 @@ const ManageTeamModal: React.FC<ManageTeamModalProps> = ({
   }, [isOpen, team._id, organizationMembers]);
 
   const handleAddMember = async (user: User) => {
-    // console.log({ user });
     try {
       setLoading(true);
       await teamsApi.addTeamMember(team._id, user._id);

@@ -73,7 +73,6 @@ export default function ContentManagement() {
   };
 
   useEffect(() => {
-    // console.log({ currentTeam });
     if (currentTeam?._id) fetchTeamsContent();
   }, [currentTeam]);
 
@@ -139,7 +138,7 @@ export default function ContentManagement() {
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                 <ul className="divide-y divide-neutral-200 dark:divide-gray-700">
                   {content.map((item) => (
-                    <li key={item.id} className="px-6 py-4">
+                    <li key={item._id} className="px-6 py-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <h3 className="text-sm font-medium text-neutral-900 dark:text-white">
@@ -164,7 +163,7 @@ export default function ContentManagement() {
                               setDeleteConfirm({
                                 open: true,
                                 type: "content",
-                                id: item.id,
+                                id: item._id,
                                 title: item.title,
                               });
                             }}

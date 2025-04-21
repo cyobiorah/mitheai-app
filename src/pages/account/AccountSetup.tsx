@@ -212,7 +212,10 @@ const AccountSetup: React.FC = () => {
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const accounts = await socialApi.getAccounts();
+      const accounts =
+        user?.userType === "individual"
+          ? await socialApi.listAccountsIndividual({ userId: user?._id })
+          : await socialApi.getAccounts();
       setAccounts(accounts);
     } catch (error) {
       console.error("Failed to fetch social accounts:", error);
@@ -236,7 +239,6 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleDisconnect = async (accountId: string, platformName: string) => {
-    // console.log({ accountId, platformName });
     try {
       await socialApi.disconnectSocialAccount({ accountId });
       toast.success(`${platformName} account disconnected successfully`);
@@ -274,7 +276,6 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleAssignTeam = async (accountId: string, teamId: string) => {
-    // console.log({ accountId, teamId });
     setShowModal(false);
     try {
       setLoading(true);
@@ -395,6 +396,7 @@ const AccountSetup: React.FC = () => {
             handleAssignTeam={(accountId: string, teamId: string) =>
               handleAssignTeam(accountId, teamId)
             }
+            user={user}
           />
         )}
 

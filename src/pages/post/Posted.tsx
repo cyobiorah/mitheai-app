@@ -89,7 +89,7 @@ const Posted = () => {
       const response = await socialApi.getPosts(filters);
       setPosts(response.data);
     } catch (err: any) {
-      setError(err.message || "Failed to load posts");
+      setError(err.message ?? "Failed to load posts");
       console.error("Error fetching posts:", err);
     } finally {
       setLoading(false);
@@ -608,7 +608,6 @@ const Posted = () => {
           title="Delete Post?"
           message="Are you sure you want to delete this post? This action cannot be undone."
           onConfirm={async () => {
-            console.log({ postToDelete });
             if (postToDelete) {
               try {
                 await socialApi.deletePost(postToDelete);

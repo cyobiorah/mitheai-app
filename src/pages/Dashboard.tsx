@@ -14,6 +14,7 @@ import {
 import StatsCard from "../components/StatsCard";
 import * as contentApi from "../api/content";
 import { ROUTES } from "../utils/contstants";
+import socialApi from "../api/socialApi";
 
 const Dashboard: React.FC = () => {
   const { user, organization, teams } = useAuth();
@@ -38,8 +39,11 @@ const Dashboard: React.FC = () => {
     setIsLoading(true);
     try {
       // Fetch personal content
-      const content = await contentApi.getPersonalContent();
-      setRecentContent(content.slice(0, 5)); // Show only 5 most recent items
+      const content = await socialApi.getPosts({
+        userId: user?._id,
+        status: "posted",
+      });
+      setRecentContent(content.data.slice(0, 5)); // Show only 5 most recent items
 
       // Fetch personal collections
       // const personalCollections = await contentApi.getPersonalCollections();
@@ -47,9 +51,9 @@ const Dashboard: React.FC = () => {
 
       // Calculate stats
       setStats({
-        totalContent: content.length,
+        totalContent: content.data.length,
         totalCollections: 0,
-        analyzedContent: content.filter(
+        analyzedContent: content.data.filter(
           (item: any) => item.status === "published"
         ).length,
         totalTeams: teams?.length || 0,
@@ -57,15 +61,15 @@ const Dashboard: React.FC = () => {
       });
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
-      setError("Failed to load dashboard data");
-      toast.error("Failed to load dashboard data");
+      // setError("Failed to load dashboard data");
+      // toast.error("Failed to load dashboard data");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCreateContent = () => {
-    navigate(ROUTES.CONTENT);
+    navigate(ROUTES.POST);
   };
 
   // Render different welcome message based on user type
@@ -190,7 +194,7 @@ const Dashboard: React.FC = () => {
             Recent Content
           </h2>
           <Link
-            to={ROUTES.MANAGE}
+            to={`${ROUTES.POST}/posted`}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
           >
             View all
@@ -201,12 +205,12 @@ const Dashboard: React.FC = () => {
             {recentContent.length > 0 ? (
               recentContent.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   className="flex items-center justify-between rounded-md border p-4 dark:border-gray-700"
                 >
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                      {item.title}
+                      {item.content}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(item.createdAt).toLocaleDateString()}
@@ -231,42 +235,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Collections */}
-      {/* <div className="rounded-lg border bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-          Your Collections
-        </h2>
-        <div className="mt-4 space-y-4">
-          {collections.length > 0 ? (
-            collections.map((collection) => (
-              <div
-                key={collection.id}
-                className="flex items-center justify-between rounded-md border p-4 dark:border-gray-700"
-              >
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                    {collection.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {collection.contentIds?.length || 0} items
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate(`/collections/${collection.id}`)}
-                  className="text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                >
-                  View
-                </button>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No collections created yet
-            </p>
-          )}
-        </div>
-      </div> */}
 
       {error && (
         <div className="rounded-md bg-red-50 p-4">

@@ -12,7 +12,7 @@ import { SiBluesky } from "react-icons/si";
 import { SocialAccount } from "../../api/social";
 import socialApi from "../../api/socialApi";
 import AssignTeamModal from "./AssignTeamModal";
-import { Team } from "../../types";
+import { Team, User } from "../../types";
 
 const RenderStepContent = ({
   activeStep,
@@ -27,6 +27,7 @@ const RenderStepContent = ({
   selectedAccount,
   setSelectedAccount,
   handleAssignTeam,
+  user,
 }: {
   activeStep: number;
   getConnectedAccountsForPlatform: (platformId: string) => SocialAccount[];
@@ -40,6 +41,7 @@ const RenderStepContent = ({
   selectedAccount: SocialAccount | null;
   setSelectedAccount: (account: SocialAccount | null) => void;
   handleAssignTeam: (accountId: string, teamId: string) => void;
+  user: User | null;
 }) => {
   // Social platform configuration
   const platforms = [
@@ -191,17 +193,18 @@ const RenderStepContent = ({
                                 </span>
                               </div>
                               <div className="flex items-center space-x-2">
-                                {!account.teamId && (
-                                  <button
-                                    onClick={() => {
-                                      setShowModal(true);
-                                      setSelectedAccount(account);
-                                    }}
-                                    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                                  >
-                                    Assign Team
-                                  </button>
-                                )}
+                                {!account.teamId &&
+                                  user?.userType === "organization" && (
+                                    <button
+                                      onClick={() => {
+                                        setShowModal(true);
+                                        setSelectedAccount(account);
+                                      }}
+                                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                    >
+                                      Assign Team
+                                    </button>
+                                  )}
                                 {account.teamId && (
                                   <button
                                     onClick={() => {
@@ -215,7 +218,10 @@ const RenderStepContent = ({
                                 )}
                                 <button
                                   onClick={() =>
-                                    handleDisconnect(account._id.toString(), platform.name)
+                                    handleDisconnect(
+                                      account._id.toString(),
+                                      platform.name
+                                    )
                                   }
                                   className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                                 >

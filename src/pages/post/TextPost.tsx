@@ -71,47 +71,33 @@ const TextPost = () => {
         timezone: userTimezone,
         mediaType: "TEXT",
       };
-      console.log("Scheduled post:", scheduledPost);
 
-      const response = await socialApi.schedulePost(scheduledPost);
-      console.log("Scheduled post response:", response);
+      await socialApi.schedulePost(scheduledPost);
       alert("Post scheduled successfully!");
       navigate(`${ROUTES.POST}/scheduled`);
     } else {
       // Post now
-      const post = {
-        caption,
-        accountId: selectedAccountId,
-      };
-      console.log("Post:", post);
       try {
         setLoading(true);
 
         // Check which platform to post to
-        if (selectedAccount.platform === "threads") {
-          const response = await socialApi.postToThreads(
-            selectedAccountId,
-            caption,
-            "TEXT"
-          );
-          console.log("Threads post response:", response);
-          alert("Posted successfully to Threads!");
-        } else if (selectedAccount.platform === "linkedin") {
-          const response = await socialApi.postToLinkedIn(
-            selectedAccountId,
-            caption
-          );
-          console.log("LinkedIn post response:", response);
-          alert("Posted successfully to LinkedIn!");
-        } else if (selectedAccount.platform === "twitter") {
-          const response = await socialApi.postToTwitter(
-            selectedAccountId,
-            caption
-          );
-          console.log("Twitter post response:", response);
-          alert("Posted successfully to Twitter!");
-        } else {
-          alert(`Posting to ${selectedAccount.platform} is not yet supported.`);
+        switch (selectedAccount.platform) {
+          case "threads":
+            await socialApi.postToThreads(selectedAccountId, caption, "TEXT");
+            alert("Posted successfully to Threads!");
+            break;
+          case "linkedin":
+            await socialApi.postToLinkedIn(selectedAccountId, caption);
+            alert("Posted successfully to LinkedIn!");
+            break;
+          case "twitter":
+            await socialApi.postToTwitter(selectedAccountId, caption);
+            alert("Posted successfully to Twitter!");
+            break;
+          default:
+            alert(
+              `Posting to ${selectedAccount.platform} is not yet supported.`
+            );
         }
       } catch (error) {
         console.error("Failed to post:", error);
@@ -125,7 +111,10 @@ const TextPost = () => {
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const accounts = await socialApi.getAccounts();
+      const accounts =
+        user?.userType === "individual"
+          ? await socialApi.listAccountsIndividual({ userId: user?._id })
+          : await socialApi.getAccounts();
       setAccounts(accounts);
     } catch (error) {
       console.error("Failed to fetch social accounts:", error);
@@ -185,7 +174,7 @@ const TextPost = () => {
             const isSelected = selectedAccountId === account._id;
             return (
               <button
-                key={account.id}
+                key={account._id}
                 onClick={() => setSelectedAccountId(account._id)}
                 className={`relative flex items-center p-3 border rounded-lg transition-all ${
                   isSelected

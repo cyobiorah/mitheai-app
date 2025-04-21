@@ -191,7 +191,6 @@ const ContentCreation: React.FC = () => {
       };
 
       const savedContent = await createContent(newContent);
-      console.log("Saved content:", savedContent);
       toast.success("Content saved successfully!", { id: "content-saving" });
 
       // Navigate to content view or library

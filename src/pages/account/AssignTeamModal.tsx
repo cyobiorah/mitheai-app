@@ -16,7 +16,6 @@ const AssignTeamModal: React.FC<AssignTeamModalProps> = ({
   teams,
   selectedAccount,
 }) => {
-//   console.log({ selectedAccount });
   const [currentSelection, setCurrentSelection] = React.useState(
     selectedAccount?.teamId ?? ""
   );

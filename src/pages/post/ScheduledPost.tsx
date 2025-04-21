@@ -5,9 +5,14 @@ import { ROUTES } from "../../utils/contstants";
 import socialApi from "../../api/socialApi";
 import { FaCalendarAlt, FaEdit, FaTrash } from "react-icons/fa";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import ModalConfirmation from "../../components/ModalConfirmation";
 
 const ScheduledPosts = () => {
   const [scheduledPosts, setScheduledPosts] = useState([]);
+  const [modalOptions, setModalOptions] = useState<any>({
+    id: "",
+    showDeleteModal: false,
+  });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -28,20 +33,20 @@ const ScheduledPosts = () => {
   }, []);
 
   const handleDelete = async (postId: string) => {
-    if (
-      !window.confirm("Are you sure you want to delete this scheduled post?")
-    ) {
-      return;
-    }
-
     try {
       await socialApi.deleteScheduledPost(postId);
       fetchScheduledPosts();
     } catch (error) {
       console.error("Failed to delete scheduled post:", error);
       alert("Failed to delete scheduled post. Please try again.");
+    } finally {
+      setModalOptions({ id: "", showDeleteModal: false });
     }
   };
+
+  // const handleDelete = async (postId: string) => {
+  //   setModalOptions({ id: postId, showDeleteModal: true });
+  // };
 
   const handleEdit = (postId: string) => {
     navigate(`${ROUTES.SCHEDULE}/${postId}`);
@@ -88,7 +93,18 @@ const ScheduledPosts = () => {
         getPlatformColor={getPlatformColor}
         getStatusStyles={getStatusStyles}
         handleEdit={handleEdit}
-        handleDelete={handleDelete}
+        // handleDelete={async (postId: string) => {
+        //   try {
+        //     await socialApi.deleteScheduledPost(postId);
+        //     fetchScheduledPosts();
+        //   } catch (error) {
+        //     console.error("Failed to delete scheduled post:", error);
+        //     alert("Failed to delete scheduled post. Please try again.");
+        //   }
+        // }}
+        handleDelete={(postId: string) =>
+          setModalOptions({ id: postId, showDeleteModal: true })
+        }
       />
     );
   };
@@ -142,6 +158,15 @@ const ScheduledPosts = () => {
         </div>
       ) : (
         handleScheduledPostsView()
+      )}
+
+      {modalOptions.showDeleteModal && (
+        <ModalConfirmation
+          title="Delete Scheduled Post"
+          message="Are you sure you want to delete this scheduled post?"
+          onConfirm={() => handleDelete(modalOptions.id)}
+          onCancel={() => setModalOptions({ id: "", showDeleteModal: false })}
+        />
       )}
     </div>
   );

@@ -15,6 +15,20 @@ export const socialApi = {
     }
   },
 
+  listAccountsIndividual: async ({ userId }: { userId: string }) => {
+    try {
+      const response = await axiosInstance.get(`/social-accounts/${userId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch social accounts:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch social accounts"
+      );
+    }
+  },
+
   connectTwitter: async ({ skipWelcome }: { skipWelcome: boolean }) => {
     try {
       const response = await axiosInstance.get(
@@ -182,9 +196,7 @@ export const socialApi = {
 
   deletePost: async (postId: string) => {
     try {
-      const response = await axiosInstance.delete(
-        `/social-posts/${postId}`
-      );
+      const response = await axiosInstance.delete(`/social-posts/${postId}`);
       return response.data;
     } catch (error: any) {
       console.error("Failed to delete social post:", error);
