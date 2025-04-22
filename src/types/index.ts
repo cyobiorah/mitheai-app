@@ -1,8 +1,8 @@
 export interface Organization {
-  id: string;  // Firestore document ID
+  id: string; // Firestore document ID
   name: string;
   description?: string;
-  type: 'enterprise' | 'business' | 'startup';
+  type: "enterprise" | "business" | "startup";
   settings: {
     permissions: string[];
     maxTeams: number;
@@ -11,10 +11,11 @@ export interface Organization {
   };
   createdAt: string;
   updatedAt: string;
+  memberIds: string[];
 }
 
 export interface Team {
-  id: string;  // Firestore document ID
+  _id: string;
   name: string;
   description?: string;
   organizationId: string;
@@ -27,22 +28,25 @@ export interface Team {
 }
 
 export interface User {
-  uid: string;  // Firebase Auth UID
+  _id: string;
   email: string;
   firstName: string;
   lastName: string;
-  organizationId: string;
-  role: 'super_admin' | 'org_owner' | 'team_manager' | 'user';
-  teamIds: string[];
-  status: 'pending' | 'active' | 'inactive';
+  userType: "individual" | "organization";
+  organizationId?: string; // Optional for individual users
+  role?: "super_admin" | "org_owner" | "team_manager" | "user"; // Optional for individual users
+  teamIds?: string[]; // Optional for individual users
+  status: "pending" | "active" | "inactive";
   invitationToken?: string;
   settings: {
     permissions: string[];
-    theme: 'light' | 'dark';
+    theme: "light" | "dark";
     notifications: any[];
+    personalPreferences?: Record<string, any>; // For individual user preferences
   };
   createdAt: string;
   updatedAt: string;
+  timezone?: string;
 }
 
 export interface AuthState {
@@ -53,18 +57,64 @@ export interface AuthState {
 }
 
 export interface ContentItem {
-  id: string;
+  _id: string;
   title: string;
   description?: string;
-  type: 'article' | 'social_post' | 'video' | 'image' | 'document';
+  type: "article" | "social_post" | "video" | "image" | "document";
   url?: string;
   content: string;
+  version: number;
+
   metadata: {
-    source: string;
+    source: "ai_generated" | "manual" | "imported";
+    sourceDetails?: {
+      aiModel?: string;
+      importSource?: string;
+      prompt?: string;
+    };
     language: string;
     tags: string[];
+    collections: string[]; // Collection IDs this content belongs to
+    visibility: "private" | "team" | "organization" | "public";
     customFields: Record<string, any>;
   };
+
+  status: "draft" | "published" | "archived" | "pending_review" | "rejected";
+  statusHistory: Array<{
+    status: ContentItem["status"];
+    timestamp: string;
+    updatedBy: string;
+    comment?: string;
+  }>;
+
+  versionHistory: Array<{
+    version: number;
+    content: string;
+    timestamp: string;
+    updatedBy: string;
+    comment?: string;
+  }>;
+
+  review?: {
+    requestedBy: string;
+    requestedAt: string;
+    reviewers: Array<{
+      userId: string;
+      status: "pending" | "approved" | "rejected";
+      comment?: string;
+      timestamp?: string;
+    }>;
+    requiredApprovals: number;
+  };
+
+  publishing: {
+    firstPublishedAt?: string;
+    lastPublishedAt?: string;
+    publishedBy?: string;
+    scheduledPublishDate?: string;
+    expiryDate?: string;
+  };
+
   analysis: {
     sentiment?: number;
     keywords?: string[];
@@ -76,9 +126,12 @@ export interface ContentItem {
     }>;
     customAnalytics?: Record<string, any>;
   };
-  status: 'pending' | 'analyzed' | 'archived';
-  teamId: string;
-  organizationId: string;
+
+  // Organization context
+  teamId?: string; // Optional for individual users
+  organizationId?: string; // Optional for individual users
+
+  // Audit fields
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -108,7 +161,7 @@ export interface AnalysisTemplate {
   id: string;
   name: string;
   description?: string;
-  type: 'sentiment' | 'classification' | 'extraction' | 'custom';
+  type: "sentiment" | "classification" | "extraction" | "custom";
   config: {
     models: string[];
     parameters: Record<string, any>;
@@ -120,7 +173,7 @@ export interface AnalysisTemplate {
   settings: {
     permissions: string[];
     autoApply: boolean;
-    contentTypes: ContentItem['type'][];
+    contentTypes: ContentItem["type"][];
   };
   createdBy: string;
   createdAt: string;

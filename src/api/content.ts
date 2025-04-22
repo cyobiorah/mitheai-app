@@ -3,8 +3,12 @@ import { ContentItem, ContentCollection, AnalysisTemplate } from "../types";
 import { AIAssistantRequest, AIAssistantResponse } from "./types";
 
 // AI Content Generation
-export const generateContent = async (request: AIAssistantRequest): Promise<AIAssistantResponse> => {
-  const response = await axiosInstance.post("/content/generate", request);
+export const generateContent = async (
+  request: AIAssistantRequest
+): Promise<AIAssistantResponse> => {
+  const response = await axiosInstance.post("/content/generate", request, {
+    timeout: 60000, // 60 seconds specifically for AI generation
+  });
   return response.data;
 };
 
@@ -32,9 +36,37 @@ export const deleteContent = async (contentId: string) => {
   return response.data;
 };
 
+// Personal Content Management
+export const getPersonalContent = async (userId: string) => {
+  const response = await axiosInstance.get(`/social-posts/${userId}`);
+  return response.data;
+};
+
+export const getPersonalCollections = async () => {
+  const response = await axiosInstance.get("/collections/personal");
+  return response.data;
+};
+
+export const getPersonalTemplates = async () => {
+  const response = await axiosInstance.get("/analysis/personal/templates");
+  return response.data;
+};
+
+// Team Content Management
 export const listTeamContent = async (teamId: string) => {
-  console.log(`Fetching content for team: ${teamId}`);
   const response = await axiosInstance.get(`/content/team/${teamId}`);
+  return response.data;
+};
+
+export const listTeamCollections = async (teamId: string) => {
+  const response = await axiosInstance.get(`/collections/team/${teamId}`);
+  return response.data;
+};
+
+export const listTeamTemplates = async (teamId: string) => {
+  const response = await axiosInstance.get(
+    `/analysis/templates/team/${teamId}`
+  );
   return response.data;
 };
 
@@ -76,12 +108,6 @@ export const updateCollection = async (
 
 export const deleteCollection = async (collectionId: string) => {
   const response = await axiosInstance.delete(`/collections/${collectionId}`);
-  return response.data;
-};
-
-export const listTeamCollections = async (teamId: string) => {
-  console.log(`Fetching collections for team: ${teamId}`);
-  const response = await axiosInstance.get(`/collections/team/${teamId}`);
   return response.data;
 };
 
@@ -133,12 +159,6 @@ export const deleteTemplate = async (templateId: string) => {
   const response = await axiosInstance.delete(
     `/analysis/templates/${templateId}`
   );
-  return response.data;
-};
-
-export const listTeamTemplates = async (teamId: string) => {
-  console.log(`Fetching templates for team: ${teamId}`);
-  const response = await axiosInstance.get(`/analysis/templates/team/${teamId}`);
   return response.data;
 };
 

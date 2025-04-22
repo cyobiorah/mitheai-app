@@ -8,7 +8,7 @@ import {
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Team, User } from "../types";
 import { usersApi } from "../api/users";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../store/hooks";
 import { toast } from "react-hot-toast";
 
 interface InviteMemberModalProps {
@@ -28,7 +28,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   onClose,
   teams,
 }) => {
-  const { organization } = useAuth();
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -39,7 +39,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!organization) return;
+    if (!user?.organizationId) return;
 
     if (!email.trim() || !firstName.trim() || !lastName.trim()) {
       setError("All fields are required");
@@ -55,7 +55,7 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
         firstName,
         lastName,
         role,
-        organizationId: organization.id,
+        organizationId: user.organizationId,
       });
 
       toast.success("Invitation sent successfully");
@@ -78,7 +78,10 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30 dark:bg-black/50" aria-hidden="true" />
+      <div
+        className="fixed inset-0 bg-black/30 dark:bg-black/50"
+        aria-hidden="true"
+      />
 
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <DialogPanel className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-6">
@@ -185,18 +188,18 @@ const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
               <div className="space-y-2">
                 {teams.map((team) => (
                   <label
-                    key={team.id}
+                    key={team._id}
                     className="flex items-center space-x-2 text-sm text-neutral-700 dark:text-gray-200"
                   >
                     <input
                       type="checkbox"
-                      checked={selectedTeams.includes(team.id)}
+                      checked={selectedTeams.includes(team._id)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedTeams([...selectedTeams, team.id]);
+                          setSelectedTeams([...selectedTeams, team._id]);
                         } else {
                           setSelectedTeams(
-                            selectedTeams.filter((id) => id !== team.id)
+                            selectedTeams.filter((id) => id !== team._id)
                           );
                         }
                       }}
