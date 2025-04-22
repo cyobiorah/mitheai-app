@@ -59,7 +59,7 @@ const AssignTeamModal: React.FC<AssignTeamModalProps> = ({
           </button>
           <button
             onClick={() => {
-              onConfirm(selectedAccount?.id ?? "", currentSelection);
+              onConfirm(selectedAccount?._id!, currentSelection);
             }}
             disabled={!currentSelection}
             className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
