@@ -26,7 +26,6 @@ export const useTeamStore = create<TeamState>()((set, get) => ({
 
   // Actions
   fetchTeams: async () => {
-    console.log("here");
     const organizationId = useAuthStore.getState().organization?.id;
     if (!organizationId) return;
 

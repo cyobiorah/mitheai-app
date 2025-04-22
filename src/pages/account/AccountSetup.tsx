@@ -276,14 +276,11 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleAssignTeam = async (accountId: string, teamId: string) => {
+    console.log({ accountId });
     setShowModal(false);
     try {
       setLoading(true);
-      await teamApi.assignTeam(
-        accountId,
-        teamId,
-        user?.organizationId as string
-      );
+      await teamApi.assignTeam(accountId, teamId);
       toast.success("Team assigned successfully");
       fetchAccounts();
     } catch (error) {

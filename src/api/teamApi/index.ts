@@ -9,8 +9,8 @@ export const teamApi = {
     } catch (error: any) {
       console.error("Failed to list team content:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to list team content"
       );
     }
@@ -25,33 +25,28 @@ export const teamApi = {
     } catch (error: any) {
       console.error("Failed to get personal content:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to get personal content"
       );
     }
   },
 
   // Assign Team
-  assignTeam: async (
-    accountId: string,
-    teamId: string,
-    organizationId: string
-  ) => {
+  assignTeam: async (accountId: string, teamId: string | null) => {
     try {
-      const response = await axiosInstance.post(
-        `/social-accounts/${accountId}/team`,
+      const response = await axiosInstance.patch(
+        `/social-accounts/${accountId}/assign`,
         {
           teamId,
-          organizationId,
         }
       );
       return response.data;
     } catch (error: any) {
       console.error("Failed to assign team:", error);
       throw new Error(
-        error.response?.data?.message ||
-          error.message ||
+        error.response?.data?.message ??
+          error.message ??
           "Failed to assign team"
       );
     }
