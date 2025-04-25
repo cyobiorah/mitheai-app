@@ -20,11 +20,9 @@ import { invitationsApi } from "../api/invitations";
 import { ChartBarIcon } from "@heroicons/react/16/solid";
 import SectionLoader from "../components/SectionLoader";
 import ManageTeamModal from "../components/ManageTeamModal";
-import { useTeamStore } from "../store/teamStore";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams } = useAuth();
-  // const { fetchTeams } = useTeamStore();
+  const { user, organization, teams, isAdmin } = useAuth();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
@@ -171,9 +169,11 @@ const OrganizationOverview: React.FC = () => {
             {organization?.type} Plan
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-          Edit Organization
-        </button>
+        {isAdmin && (
+          <button className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+            Edit Organization
+          </button>
+        )}
       </div>
 
       {/* Stats Overview */}
@@ -199,13 +199,15 @@ const OrganizationOverview: React.FC = () => {
             <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
               Teams
             </h2>
-            <button
-              onClick={() => setIsAddTeamModalOpen(true)}
-              className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
-            >
-              <PlusIcon className="w-5 h-5 mr-2" />
-              Add Team
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setIsAddTeamModalOpen(true)}
+                className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                Add Team
+              </button>
+            )}
           </div>
         )}
 
@@ -234,24 +236,26 @@ const OrganizationOverview: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    setSelectedTeam(team);
-                    setIsManageTeamModalOpen(true);
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-gray-300 hover:bg-neutral-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Manage
-                </button>
-                <button
-                  onClick={() => handleDeleteTeam(team._id)}
-                  className="p-1.5 text-neutral-400 dark:text-gray-500 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
-                  disabled={isLoading}
-                >
-                  <TrashIcon className="w-5 h-5" />
-                </button>
-              </div>
+              {isAdmin && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setSelectedTeam(team);
+                      setIsManageTeamModalOpen(true);
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-gray-300 hover:bg-neutral-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    Manage
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTeam(team._id)}
+                    className="p-1.5 text-neutral-400 dark:text-gray-500 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
+                    disabled={isLoading}
+                  >
+                    <TrashIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -263,13 +267,15 @@ const OrganizationOverview: React.FC = () => {
           <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">
             Members
           </h2>
-          <button
-            onClick={() => setIsInviteMemberModalOpen(true)}
-            className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
-          >
-            <PlusIcon className="w-5 h-5 mr-2" />
-            Invite Member
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setIsInviteMemberModalOpen(true)}
+              className="flex items-center px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/50 rounded-lg transition-colors"
+            >
+              <PlusIcon className="w-5 h-5 mr-2" />
+              Invite Member
+            </button>
+          )}
         </div>
 
         <div className="divide-y divide-neutral-200 dark:divide-gray-700">
@@ -335,13 +341,15 @@ const OrganizationOverview: React.FC = () => {
                         Resend
                       </button>
                     )}
-                    <button
-                      onClick={() => handleRemoveMember(member._id)}
-                      className="p-2 text-neutral-500 dark:text-gray-400 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
-                      disabled={isLoading}
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleRemoveMember(member._id)}
+                        className="p-2 text-neutral-500 dark:text-gray-400 hover:text-error-600 dark:hover:text-error-400 rounded-lg transition-colors"
+                        disabled={isLoading}
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

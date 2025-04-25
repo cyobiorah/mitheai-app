@@ -13,8 +13,7 @@ export const ROUTES = {
   LOGIN: "/login",
   REGISTER: "/register",
   ACCEPT_INVITATION: "/accept-invitation",
-  // SCHEDULED_POSTS: "/scheduled",
-  // EDIT_SCHEDULED_POST: "/schedule/:id",
+  COLLECTIONS: "/collections",
   HOME: "/",
 } as const;
 

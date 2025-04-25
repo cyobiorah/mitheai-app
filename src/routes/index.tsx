@@ -22,6 +22,7 @@ import AccountSetup from "../pages/account/AccountSetup";
 import ScheduledPosts from "../pages/post/ScheduledPost";
 import EditScheduledPost from "../pages/post/EditScheduledPost";
 import HomePage from "../pages/home/HomePage";
+import Collections from "../pages/Collections";
 
 // Wrapper component to conditionally render dashboard
 const DashboardRouter: React.FC = () => {
@@ -93,6 +94,7 @@ const AppRoutes = () => {
                 <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
                 <Route path={ROUTES.SETTINGS} element={<Settings />} />
                 <Route path={ROUTES.ACCOUNT_SETUP} element={<AccountSetup />} />
+                <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
               </Routes>
             </Layout>
           </ProtectedRoute>

@@ -15,6 +15,7 @@ import {
 import { PiButterflyBold } from "react-icons/pi";
 import { useAuth } from "../../store/hooks";
 import { allTimezones } from "../../utils/timezone";
+import { useTeamStore } from "../../store/teamStore";
 
 const TextPost = () => {
   const [caption, setCaption] = useState("");
@@ -32,6 +33,7 @@ const TextPost = () => {
   const navigate = useNavigate();
 
   const { user } = useAuth();
+  const { activeTeam } = useTeamStore();
 
   useEffect(() => {
     if (user?.timezone) {
@@ -108,13 +110,22 @@ const TextPost = () => {
     }
   };
 
+  const handleGetSocials = async () => {
+    if (user?.userType === "individual") {
+      return await socialApi.listAccountsIndividual({ userId: user?._id });
+    } else if (user?.role === "user") {
+      return await socialApi.listSocialAccountsByTeam({
+        teamId: activeTeam?._id!,
+      });
+    } else {
+      return await socialApi.getAccounts();
+    }
+  };
+
   const fetchAccounts = async () => {
     try {
       setLoading(true);
-      const accounts =
-        user?.userType === "individual"
-          ? await socialApi.listAccountsIndividual({ userId: user?._id })
-          : await socialApi.getAccounts();
+      const accounts = await handleGetSocials();
       setAccounts(accounts);
     } catch (error) {
       console.error("Failed to fetch social accounts:", error);
@@ -126,7 +137,7 @@ const TextPost = () => {
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [activeTeam, user]);
 
   // Get platform icon based on platform name
   const getPlatformIcon = (platform: string) => {

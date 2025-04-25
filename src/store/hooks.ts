@@ -15,6 +15,7 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearError: clearAuthError,
+    isAdmin,
   } = useAuthStore();
 
   const {
@@ -54,7 +55,7 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearAuthError,
-
+    isAdmin,
     // Team actions
     fetchTeams,
     setActiveTeam,

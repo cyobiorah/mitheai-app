@@ -29,6 +29,22 @@ export const socialApi = {
     }
   },
 
+  listSocialAccountsByTeam: async ({ teamId }: { teamId: string }) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/team/${teamId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch social accounts:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch social accounts"
+      );
+    }
+  },
+
   connectTwitter: async ({ skipWelcome }: { skipWelcome: boolean }) => {
     try {
       const response = await axiosInstance.get(

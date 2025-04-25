@@ -50,6 +50,7 @@ const platforms = [
     color: "#4267B2",
     connectFn: () => socialApi.connectFacebook(),
     description: "Share updates with your Facebook audience and pages.",
+    disabled: true,
   },
   {
     id: "linkedin",
@@ -164,39 +165,12 @@ const AccountSetup: React.FC = () => {
         // Handle specific error types
         const errorType = searchParams.get("error");
         console.log("Error detected:", errorType);
-
-        if (errorType === "account_already_connected") {
-          const errorDetailsParam = searchParams.get("details");
-          console.log("Error details:", errorDetailsParam);
-          let errorDetails = null;
-
-          if (errorDetailsParam) {
-            try {
-              errorDetails = JSON.parse(decodeURIComponent(errorDetailsParam));
-              setConnectionError(errorDetails);
-            } catch (e) {
-              console.error("Failed to parse error details:", e);
-              setConnectionError({
-                code: "account_already_connected",
-                message:
-                  "This social account is already connected to another user.",
-              });
-            }
-          } else {
-            setConnectionError({
-              code: "account_already_connected",
-              message:
-                "This social account is already connected to another user.",
-            });
-          }
-        } else {
-          // Generic error handling
-          console.error("Failed to connect social account:", errorType);
-          setConnectionError({
-            code: errorType as string,
-            message: "Failed to connect social account",
-          });
-        }
+        const message = searchParams.get("message");
+        console.log("Error message:", message);
+        setConnectionError({
+          code: errorType as string,
+          message: message ?? "Failed to connect social account",
+        });
 
         // Clear URL params without causing a reload
         window.history.replaceState({}, "", "/account-setup");

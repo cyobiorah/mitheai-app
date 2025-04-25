@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { teamsApi } from "../api/teams";
+import { persist } from "zustand/middleware";
 import { Team } from "../types";
 import { useAuthStore } from "./authStore";
 
@@ -17,59 +18,70 @@ interface TeamState {
   createTeam: (name: string) => Promise<void>;
 }
 
-export const useTeamStore = create<TeamState>()((set, get) => ({
-  // Initial state
-  teams: [],
-  activeTeam: null,
-  isLoading: false,
-  error: null,
+export const useTeamStore = create<TeamState>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      teams: [],
+      activeTeam: null,
+      isLoading: false,
+      error: null,
 
-  // Actions
-  fetchTeams: async () => {
-    const organizationId = useAuthStore.getState().organization?.id;
-    if (!organizationId) return;
+      // Actions
+      fetchTeams: async () => {
+        const organizationId = useAuthStore.getState().organization?.id;
+        if (!organizationId) return;
 
-    set({ isLoading: true });
-    try {
-      const teams = await teamsApi.getTeams(organizationId);
-      set({ teams, isLoading: false });
+        set({ isLoading: true });
+        try {
+          const teams = await teamsApi.getTeams(organizationId);
+          set({ teams, isLoading: false });
 
-      // Set active team if none is selected
-      if (!get().activeTeam && teams.length > 0) {
-        set({ activeTeam: teams[0] });
-      }
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+          // Set active team if none is selected
+          if (!get().activeTeam && teams.length > 0) {
+            set({ activeTeam: teams[0] });
+          }
+        } catch (error: any) {
+          set({ error: error.message, isLoading: false });
+        }
+      },
+
+      setActiveTeam: (team) => {
+        set({ activeTeam: team });
+      },
+
+      setTeams: (teams) => {
+        set({ teams });
+
+        // Set active team if none is selected
+        if (!get().activeTeam && teams.length > 0) {
+          set({ activeTeam: teams[0] });
+        }
+      },
+
+      createTeam: async (name) => {
+        const organizationId = useAuthStore.getState().organization?.id;
+        if (!organizationId) return;
+
+        set({ isLoading: true });
+        try {
+          const newTeam = await teamsApi.createTeam(name, organizationId);
+          set({
+            teams: [...get().teams, newTeam],
+            activeTeam: newTeam,
+            isLoading: false,
+          });
+        } catch (error: any) {
+          set({ error: error.message, isLoading: false });
+        }
+      },
+    }),
+    {
+      name: "mitheai-team-storage",
+      partialize: (state) => ({
+        teams: state.teams,
+        activeTeam: state.activeTeam,
+      }),
     }
-  },
-
-  setActiveTeam: (team) => {
-    set({ activeTeam: team });
-  },
-
-  setTeams: (teams) => {
-    set({ teams });
-
-    // Set active team if none is selected
-    if (!get().activeTeam && teams.length > 0) {
-      set({ activeTeam: teams[0] });
-    }
-  },
-
-  createTeam: async (name) => {
-    const organizationId = useAuthStore.getState().organization?.id;
-    if (!organizationId) return;
-
-    set({ isLoading: true });
-    try {
-      const newTeam = await teamsApi.createTeam(name, organizationId);
-      set({
-        teams: [...get().teams, newTeam],
-        activeTeam: newTeam,
-        isLoading: false,
-      });
-    } catch (error: any) {
-      set({ error: error.message, isLoading: false });
-    }
-  },
-}));
+  )
+);

@@ -7,21 +7,22 @@ import {
 import clsx from "clsx";
 import { useAuth } from "../store/hooks";
 import { Team } from "../types";
+import { useTeamStore } from "../store/teamStore";
 
 const TeamSelector: React.FC = () => {
   const { user, teams } = useAuth();
+  const { activeTeam, setActiveTeam } = useTeamStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
   // Initialize selected team when teams are loaded
   useEffect(() => {
-    if (teams && teams.length > 0 && !selectedTeam) {
-      setSelectedTeam(teams[0]);
+    if (teams && teams.length > 0 && !activeTeam) {
+      setActiveTeam(teams[0]);
     }
-  }, [teams, selectedTeam]);
+  }, [teams, activeTeam]);
 
   // If not an organization user or no teams, show nothing
-  if (!user?.organizationId || !teams || teams.length === 0) {
+  if (user?.userType === "individual") {
     return null;
   }
 
@@ -29,17 +30,15 @@ const TeamSelector: React.FC = () => {
     <div className="px-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-medium text-gray-500 dark:text-gray-400">
-          Teams
+          Active Team
         </h3>
-        <button
+        {/* <button
           className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-          onClick={() => {
-            /* Handle team creation */
-          }}
+          onClick={() => {}}
         >
           <PlusIcon className="h-3 w-3 inline mr-1" />
           Add
-        </button>
+        </button> */}
       </div>
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -47,7 +46,7 @@ const TeamSelector: React.FC = () => {
       >
         <div className="flex items-center">
           <UsersIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
-          <span>{selectedTeam?.name || "Select Team"}</span>
+          <span>{activeTeam?.name}</span>
         </div>
         <ChevronDownIcon
           className={clsx(
@@ -63,15 +62,15 @@ const TeamSelector: React.FC = () => {
         <div className="mt-2 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
           {teams.map((team) => (
             <button
-              key={team.id}
+              key={team._id}
               onClick={() => {
-                setSelectedTeam(team);
+                setActiveTeam(team);
                 setIsOpen(false);
                 // Here you would typically update the active team in your context
               }}
               className={clsx(
                 "w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50",
-                selectedTeam?.id === team.id
+                activeTeam?._id === team._id
                   ? "bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300"
                   : "text-gray-700 dark:text-gray-200"
               )}

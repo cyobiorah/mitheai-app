@@ -13,6 +13,9 @@ import socialApi from "../../api/socialApi";
 import { format } from "date-fns";
 import { useAuth } from "../../store/hooks";
 import ModalConfirmation from "../../components/ModalConfirmation";
+import toast from "react-hot-toast";
+import { collectionsApi } from "../../api/collectionsApi";
+import CollectionPickerModal from "../Collections/CollectionPickerModal";
 
 // Platform icons mapping
 const platformIcons: Record<string, JSX.Element> = {
@@ -47,6 +50,7 @@ interface Post {
   shares?: number;
   impressions?: number;
   createdAt: string;
+  collectionsId?: string;
 }
 
 // Filter interface
@@ -80,6 +84,11 @@ const Posted = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [collectionsData, setCollectionsData] = useState({
+    show: false,
+    collectionsId: "",
+    contentId: "",
+  });
 
   // Fetch posts based on filters
   const fetchPosts = async () => {
@@ -98,16 +107,6 @@ const Posted = () => {
 
   // Delete a post
   const handleDeletePost = async (postId: string) => {
-    // if (window.confirm("Are you sure you want to delete this post?")) {
-    //   try {
-    //     await socialApi.deletePost(postId);
-    //     // Refresh posts after deletion
-    //     fetchPosts();
-    //   } catch (err: any) {
-    //     console.error("Error deleting post:", err);
-    //     alert(err.message || "Failed to delete post");
-    //   }
-    // }
     setPostToDelete(postId);
     setShowDeleteModal(true);
   };
@@ -137,6 +136,7 @@ const Posted = () => {
     try {
       return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
     } catch (e) {
+      console.error("Error formatting date:", e);
       return "Unknown date";
     }
   };
@@ -151,6 +151,35 @@ const Posted = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
+
+  // const handlePostCollections = async (postId: string) => {
+  //   setCollectionsData({
+  //     show: true,
+  //     collectionId: postId,
+  //     contentId: postId,
+  //   });
+  // };
+
+  const handleAddCollection = async (
+    collectionId: string,
+    contentId: string,
+    type: string
+  ) => {
+    try {
+      await collectionsApi.addContent(collectionId, contentId, type);
+      toast.success("Collection added successfully");
+    } catch (err: any) {
+      console.log({ err });
+      setError(err.message);
+    } finally {
+      setCollectionsData({
+        show: false,
+        collectionsId: "",
+        contentId: "",
+      });
+      fetchPosts();
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 text-gray-800 dark:text-gray-100">
@@ -596,6 +625,27 @@ const Posted = () => {
                       <span>{post.impressions}</span>
                     </div>
                   )}
+                  <button
+                    // onClick={() => handlePostCollections(post._id)}
+                    onClick={() => {
+                      setCollectionsData({
+                        show: true,
+                        collectionsId: post.collectionsId ?? "",
+                        contentId: post._id,
+                      });
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                    title="Post collections"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 mr-1 text-blue-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M4 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1H4zM4 11a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 00-1-1H4zM11 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1V4zM11 12a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-3z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -624,6 +674,20 @@ const Posted = () => {
             setShowDeleteModal(false);
             setPostToDelete(null);
           }}
+        />
+      )}
+
+      {collectionsData.show && (
+        <CollectionPickerModal
+          collectionData={collectionsData}
+          onClose={() =>
+            setCollectionsData({
+              show: false,
+              collectionsId: "",
+              contentId: "",
+            })
+          }
+          onSelect={handleAddCollection}
         />
       )}
     </div>

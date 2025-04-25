@@ -10,7 +10,10 @@ import { SiTiktok } from "react-icons/si";
 import { PiButterflyBold } from "react-icons/pi";
 import { LiaBlogger } from "react-icons/lia";
 import { BsPencilSquare, BsCardImage, BsCameraVideo } from "react-icons/bs";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useAuth } from "../../store/hooks";
+import { ROUTES } from "../../utils/contstants";
 
 const platformIcons = {
   facebook: { icon: <FaFacebookF />, name: "Facebook" },
@@ -26,6 +29,7 @@ const platformIcons = {
 
 const CreatePost = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const postTypes = [
     {
@@ -48,6 +52,7 @@ const CreatePost = () => {
         "pinterest",
         "tiktok",
       ],
+      disabled: true,
     },
     {
       type: "video",
@@ -63,8 +68,25 @@ const CreatePost = () => {
         "tiktok",
         "youtube",
       ],
+      disabled: true,
     },
   ];
+
+  const getStyles = (type: string, disabled: boolean) => {
+    if (disabled) {
+      return "bg-gray-100 dark:bg-gray-700";
+    }
+    switch (type) {
+      case "text":
+        return "bg-blue-500";
+      case "image":
+        return "bg-pink-500";
+      case "video":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10 text-gray-800 dark:text-gray-100">
@@ -146,21 +168,21 @@ const CreatePost = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-        {postTypes.map(({ title, icon, platforms, type }) => (
-          <div
+        {postTypes.map(({ title, icon, platforms, type, disabled }) => (
+          <button
             key={type}
-            onClick={() => navigate(type)}
+            onClick={() => {
+              if (disabled) {
+                toast.error("This feature is not available yet.");
+                return;
+              }
+              navigate(type);
+            }}
             className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all cursor-pointer group"
           >
             <div className="relative">
               <div
-                className={`h-3 w-full ${
-                  type === "text"
-                    ? "bg-blue-500"
-                    : type === "image"
-                    ? "bg-pink-500"
-                    : "bg-red-500"
-                }`}
+                className={`h-3 w-full ${getStyles(type, disabled || false)}`}
               ></div>
               <div className="p-6">
                 <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 shadow-sm">
@@ -196,28 +218,32 @@ const CreatePost = () => {
                 </div>
 
                 <div className="flex justify-center">
-                  <button className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-800/40 transition-colors">
+                  <span className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-800/40 transition-colors">
                     Create {title}
-                  </button>
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between bg-gray-50 dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-medium">
-            🔗 Connect your social media accounts
-          </span>
-          <span>to publish your content.</span>
+      {isAdmin && (
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-gray-50 dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+            <span className="font-medium">
+              🔗 Connect your social media accounts
+            </span>
+            <span>to publish your content.</span>
+          </div>
+          <Link
+            to={ROUTES.ACCOUNT_SETUP}
+            className="mt-3 sm:mt-0 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold py-2 px-4 rounded-md transition"
+          >
+            Connect Accounts
+          </Link>
         </div>
-        <button className="mt-3 sm:mt-0 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold py-2 px-4 rounded-md transition">
-          Connect Accounts
-        </button>
-      </div>
-
+      )}
       <Outlet />
     </div>
   );

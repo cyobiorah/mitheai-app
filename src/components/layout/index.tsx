@@ -16,10 +16,11 @@ import { ROUTES } from "../../utils/contstants";
 import { useAuth } from "../../store/hooks";
 import ThemeToggle from "../ThemeToggle";
 import { getInitials } from "../../utils/helpers";
+import TeamSelector from "../TeamSelector";
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const navigationItems = useMemo(() => {
@@ -28,6 +29,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       { name: "Create Content", href: ROUTES.CONTENT, icon: PencilSquareIcon },
       { name: "Create Post", href: ROUTES.POST, icon: PencilSquareIcon },
       { name: "Manage Content", href: ROUTES.MANAGE, icon: QueueListIcon },
+      { name: "Collections", href: ROUTES.COLLECTIONS, icon: QueueListIcon },
       // { name: "Schedule", href: ROUTES.SCHEDULE, icon: CalendarIcon },
       // { name: "Analytics", href: ROUTES.ANALYTICS, icon: ChartBarIcon },
       {
@@ -39,11 +41,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         name: "Account Setup",
         href: ROUTES.ACCOUNT_SETUP,
         icon: Cog6ToothIcon,
+        isAdmin: !isAdmin,
       },
     ];
 
     return baseNavigation;
-  }, [user]);
+  }, [user, isAdmin]);
 
   const handleLogout = async () => {
     try {
@@ -109,30 +112,34 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           <nav className="flex-1 space-y-1 px-4 py-4">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={clsx(
-                  "flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
-                  location.pathname === item.href
-                    ? "bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300"
-                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                )}
-              >
-                <item.icon
+            {navigationItems
+              .filter((item) => !item.isAdmin)
+              .map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
                   className={clsx(
-                    "mr-3 h-5 w-5",
+                    "flex items-center px-2 py-2 text-sm font-medium rounded-lg transition-colors",
                     location.pathname === item.href
-                      ? "text-primary-600 dark:text-primary-300"
-                      : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300"
+                      ? "bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300"
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   )}
-                  aria-hidden="true"
-                />
-                {item.name}
-              </Link>
-            ))}
+                >
+                  <item.icon
+                    className={clsx(
+                      "mr-3 h-5 w-5",
+                      location.pathname === item.href
+                        ? "text-primary-600 dark:text-primary-300"
+                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-300"
+                    )}
+                    aria-hidden="true"
+                  />
+                  {item.name}
+                </Link>
+              ))}
           </nav>
+
+          <TeamSelector />
 
           <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-gray-700">
             <div className="flex items-center">
