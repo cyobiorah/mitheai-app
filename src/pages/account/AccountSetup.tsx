@@ -250,7 +250,6 @@ const AccountSetup: React.FC = () => {
   };
 
   const handleAssignTeam = async (accountId: string, teamId: string) => {
-    console.log({ accountId });
     setShowModal(false);
     try {
       setLoading(true);

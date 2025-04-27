@@ -22,7 +22,7 @@ import SectionLoader from "../components/SectionLoader";
 import ManageTeamModal from "../components/ManageTeamModal";
 
 const OrganizationOverview: React.FC = () => {
-  const { user, organization, teams, isAdmin } = useAuth();
+  const { user, organization, isAdmin, teams, fetchTeams } = useAuth();
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
   const [isInviteMemberModalOpen, setIsInviteMemberModalOpen] = useState(false);
   const [isManageTeamModalOpen, setIsManageTeamModalOpen] = useState(false);
@@ -33,11 +33,9 @@ const OrganizationOverview: React.FC = () => {
   const [isMembersLoading, setIsMembersLoading] = useState(true);
 
   const fetchMembers = async () => {
-    if (!user?.organizationId) return;
-
     try {
       setIsMembersLoading(true);
-      const orgDetails = await usersApi.getUsers(user.organizationId);
+      const orgDetails = await usersApi.getUsers(user?.organizationId!);
       setMembers(orgDetails.members);
     } catch (err) {
       console.error("Error fetching members:", err);
@@ -49,7 +47,10 @@ const OrganizationOverview: React.FC = () => {
 
   useEffect(() => {
     fetchMembers();
+    fetchTeams();
   }, [user?.organizationId]);
+
+  // console.log({ teams });
 
   const handleCreateTeam = async (name: string) => {
     if (!user?.organizationId) return;
@@ -61,12 +62,13 @@ const OrganizationOverview: React.FC = () => {
       await teamsApi.createTeam(name, user.organizationId);
       setIsAddTeamModalOpen(false);
       toast.success("Team created successfully");
-      await teamsApi.getTeams(user.organizationId);
     } catch (err) {
       setError("Failed to create team");
       console.error("Error creating team:", err);
       toast.error("Failed to create team");
     } finally {
+      fetchTeams();
+      fetchMembers();
       setIsLoading(false);
     }
   };
@@ -80,12 +82,13 @@ const OrganizationOverview: React.FC = () => {
     try {
       await teamsApi.deleteTeam(teamId);
       toast.success("Team deleted successfully");
-      await teamsApi.getTeams(user!.organizationId!);
+      fetchTeams();
     } catch (err) {
       setError("Failed to delete team");
       console.error("Error deleting team:", err);
       toast.error("Failed to delete team");
     } finally {
+      fetchMembers();
       setIsLoading(false);
     }
   };
@@ -96,13 +99,12 @@ const OrganizationOverview: React.FC = () => {
     try {
       setIsLoading(true);
       await usersApi.deleteUser(userId);
-      await fetchMembers();
       toast.success("Member removed successfully");
     } catch (err) {
       console.error("Error removing member:", err);
       toast.error("Failed to remove member");
     } finally {
-      await fetchMembers();
+      fetchMembers();
       setIsLoading(false);
     }
   };

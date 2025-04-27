@@ -39,10 +39,7 @@ const Dashboard: React.FC = () => {
     setIsLoading(true);
     try {
       // Fetch personal content
-      const content = await socialApi.getPosts({
-        userId: user?._id,
-        status: "posted",
-      });
+      const content = await socialApi.getPostsByUserId(user?._id!);
       setRecentContent(content.data.slice(0, 5)); // Show only 5 most recent items
 
       // Fetch personal collections
@@ -213,7 +210,8 @@ const Dashboard: React.FC = () => {
                       {item.content}
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(item.createdAt).toLocaleDateString()}
+                      {new Date(item.createdAt).toLocaleDateString() ??
+                        new Date().toLocaleDateString()}
                     </p>
                   </div>
                   <span

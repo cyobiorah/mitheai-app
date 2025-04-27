@@ -7,7 +7,7 @@ export const useAuth = () => {
     user,
     token,
     organization,
-    teams,
+    // teams,
     isLoading: authLoading,
     error: authError,
     login,
@@ -19,7 +19,7 @@ export const useAuth = () => {
   } = useAuthStore();
 
   const {
-    // teams,
+    teams,
     activeTeam,
     isLoading: teamsLoading,
     error: teamsError,

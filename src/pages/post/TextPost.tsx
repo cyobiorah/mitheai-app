@@ -23,9 +23,13 @@ const TextPost = () => {
   const [scheduledDate, setScheduledDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null
-  );
+  // const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+  //   null
+  // );
+  const [selectedAccountDetails, setSelectedAccountDetails] = useState({
+    accountId: "",
+    id: "",
+  });
   const [userTimezone, setUserTimezone] = useState<string>(
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
@@ -42,14 +46,14 @@ const TextPost = () => {
   }, [user]);
 
   const handlePost = async () => {
-    if (!selectedAccountId) {
+    if (!selectedAccountDetails.accountId) {
       alert("Please select an account to post to");
       return;
     }
 
     // Find the selected account object
     const selectedAccount = accounts.find(
-      (acc) => acc._id === selectedAccountId
+      (acc) => acc.accountId === selectedAccountDetails.accountId
     );
     if (!selectedAccount) {
       alert("Selected account not found");
@@ -63,7 +67,7 @@ const TextPost = () => {
         platforms: [
           {
             platformId: selectedAccount.platform,
-            accountId: selectedAccountId,
+            accountId: selectedAccountDetails.accountId,
           },
         ],
         scheduledFor: scheduledDate,
@@ -82,20 +86,43 @@ const TextPost = () => {
       try {
         setLoading(true);
 
+        const data = {
+          content: caption,
+          accountId: selectedAccountDetails.accountId,
+          id: selectedAccountDetails.id,
+          teamId: activeTeam?._id,
+          organizationId: user?.organizationId,
+        };
+
         // Check which platform to post to
         switch (selectedAccount.platform) {
-          case "threads":
-            await socialApi.postToThreads(selectedAccountId, caption, "TEXT");
+          case "threads": {
+            const threadsData = {
+              ...data,
+              mediaType: "TEXT",
+            };
+            await socialApi.postToThreads(
+              selectedAccountDetails.accountId,
+              threadsData
+            );
             alert("Posted successfully to Threads!");
             break;
+          }
           case "linkedin":
-            await socialApi.postToLinkedIn(selectedAccountId, caption);
+            await socialApi.postToLinkedIn(
+              selectedAccountDetails.accountId,
+              caption
+            );
             alert("Posted successfully to LinkedIn!");
             break;
-          case "twitter":
-            await socialApi.postToTwitter(selectedAccountId, caption);
+          case "twitter": {
+            await socialApi.postToTwitter(
+              selectedAccountDetails.accountId,
+              data
+            );
             alert("Posted successfully to Twitter!");
             break;
+          }
           default:
             alert(
               `Posting to ${selectedAccount.platform} is not yet supported.`
@@ -182,11 +209,18 @@ const TextPost = () => {
       renderAccountsSection = (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {accounts.map((account) => {
-            const isSelected = selectedAccountId === account._id;
+            const isSelected =
+              selectedAccountDetails.accountId === account.accountId;
             return (
               <button
                 key={account._id}
-                onClick={() => setSelectedAccountId(account._id)}
+                // onClick={() => setSelectedAccountId(account.accountId)}
+                onClick={() =>
+                  setSelectedAccountDetails({
+                    accountId: account.accountId,
+                    id: account._id,
+                  })
+                }
                 className={`relative flex items-center p-3 border rounded-lg transition-all ${
                   isSelected
                     ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 dark:border-primary-500"
@@ -237,7 +271,7 @@ const TextPost = () => {
 
         {handleRenderAccountsSection()}
 
-        {accounts.length > 0 && !selectedAccountId && (
+        {accounts.length > 0 && !selectedAccountDetails.accountId && (
           <p className="mt-2 text-sm text-red-500 dark:text-red-400">
             * Please select an account to post to
           </p>
@@ -268,7 +302,7 @@ const TextPost = () => {
             setScheduledDate={setScheduledDate}
             caption={caption}
             handlePost={handlePost}
-            isValid={!!selectedAccountId && caption.length > 0}
+            isValid={!!selectedAccountDetails.accountId && caption.length > 0}
             userTimezone={userTimezone}
             setUserTimezone={setUserTimezone}
           />

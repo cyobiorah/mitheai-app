@@ -1,5 +1,5 @@
 export interface Organization {
-  id: string; // Firestore document ID
+  _id: string;
   name: string;
   description?: string;
   type: "enterprise" | "business" | "startup";

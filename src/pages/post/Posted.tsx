@@ -16,6 +16,7 @@ import ModalConfirmation from "../../components/ModalConfirmation";
 import toast from "react-hot-toast";
 import { collectionsApi } from "../../api/collectionsApi";
 import CollectionPickerModal from "../Collections/CollectionPickerModal";
+import { useTeamStore } from "../../store/teamStore";
 
 // Platform icons mapping
 const platformIcons: Record<string, JSX.Element> = {
@@ -68,6 +69,7 @@ interface Filters {
 
 const Posted = () => {
   const { user } = useAuth();
+  const { activeTeam } = useTeamStore();
   const navigate = useNavigate();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -95,7 +97,15 @@ const Posted = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await socialApi.getPosts(filters);
+      // const response = await socialApi.getPosts(filters);
+      let response: any;
+      if (user?.userType === "individual") {
+        response = await socialApi.getPostsByUserId(user._id);
+      } else if (user?.userType === "organization" && user?.role === "user") {
+        response = await socialApi.getPostsByTeamId(activeTeam!._id);
+      } else {
+        response = await socialApi.getPostsByOrgId(user?.organizationId!);
+      }
       setPosts(response.data);
     } catch (err: any) {
       setError(err.message ?? "Failed to load posts");
@@ -150,7 +160,7 @@ const Posted = () => {
   // Load posts on component mount and when filters change
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [activeTeam, user]);
 
   // const handlePostCollections = async (postId: string) => {
   //   setCollectionsData({

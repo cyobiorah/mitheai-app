@@ -29,7 +29,7 @@ export const useTeamStore = create<TeamState>()(
 
       // Actions
       fetchTeams: async () => {
-        const organizationId = useAuthStore.getState().organization?.id;
+        const organizationId = useAuthStore.getState().organization?._id;
         if (!organizationId) return;
 
         set({ isLoading: true });
@@ -60,7 +60,7 @@ export const useTeamStore = create<TeamState>()(
       },
 
       createTeam: async (name) => {
-        const organizationId = useAuthStore.getState().organization?.id;
+        const organizationId = useAuthStore.getState().organization?._id;
         if (!organizationId) return;
 
         set({ isLoading: true });

@@ -126,17 +126,12 @@ export const socialApi = {
     }
   },
 
-  postToThreads: async (
-    accountId: string,
-    content: string,
-    mediaType: string
-  ) => {
+  postToThreads: async (accountId: string, data: any) => {
     try {
       const response = await axiosInstance.post(
         `/social-accounts/threads/${accountId}/post`,
         {
-          content,
-          mediaType,
+          data,
         }
       );
       return response.data;
@@ -175,12 +170,12 @@ export const socialApi = {
     }
   },
 
-  postToTwitter: async (accountId: string, content: string) => {
+  postToTwitter: async (accountId: string, data: any) => {
     try {
       const response = await axiosInstance.post(
         `/social-accounts/twitter/${accountId}/post`,
         {
-          content,
+          data,
         }
       );
       return response.data;
@@ -302,6 +297,50 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to delete scheduled post"
+      );
+    }
+  },
+
+  getPostsByOrgId: async (organizationId: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-posts/organization/${organizationId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by organization:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by organization"
+      );
+    }
+  },
+
+  getPostsByUserId: async (userId: string) => {
+    try {
+      const response = await axiosInstance.get(`/social-posts/${userId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by user:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by user"
+      );
+    }
+  },
+
+  getPostsByTeamId: async (teamId: string) => {
+    try {
+      const response = await axiosInstance.get(`/social-posts/team/${teamId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by team:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by team"
       );
     }
   },

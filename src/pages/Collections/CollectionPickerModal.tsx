@@ -88,20 +88,20 @@ const CollectionPickerModal: React.FC<CollectionPickerModalProps> = ({
                 </label>
               ))}
             </div>
-            <div className="flex gap-2 mt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 disabled:opacity-60"
-                disabled={!selected}
-              >
-                Add
-              </button>
+            <div className="flex justify-end gap-2 mt-2">
               <button
                 type="button"
                 className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded"
                 onClick={onClose}
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 disabled:opacity-60"
+                disabled={!selected}
+              >
+                Add
               </button>
             </div>
           </form>
