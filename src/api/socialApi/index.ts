@@ -78,38 +78,6 @@ export const socialApi = {
     return response;
   },
 
-  // connectThreads: async () => {
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       `/social-accounts/threads/direct-auth`
-  //     );
-  //     return response.data;
-  //   } catch (error: any) {
-  //     console.error("Failed to connect to Threads:", error);
-  //     throw new Error(
-  //       error.response?.data?.message ??
-  //         error.message ??
-  //         "Failed to connect to Threads"
-  //     );
-  //   }
-  // },
-
-  // connectLinkedIn: async () => {
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       `/social-accounts/linkedin/direct-auth`
-  //     );
-  //     return response.data;
-  //   } catch (error: any) {
-  //     console.error("Failed to connect to LinkedIn:", error);
-  //     throw new Error(
-  //       error.response?.data?.message ??
-  //         error.message ??
-  //         "Failed to connect to LinkedIn"
-  //     );
-  //   }
-  // },
-
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach
@@ -126,22 +94,6 @@ export const socialApi = {
       );
     }
   },
-
-  // connectFacebook: async () => {
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       `/social-accounts/facebook/direct-auth`
-  //     );
-  //     return response.data;
-  //   } catch (error: any) {
-  //     console.error("Failed to connect to Facebook:", error);
-  //     throw new Error(
-  //       error.response?.data?.message ??
-  //         error.message ??
-  //         "Failed to connect to Facebook"
-  //     );
-  //   }
-  // },
 
   postToThreads: async (accountId: string, data: any) => {
     try {
