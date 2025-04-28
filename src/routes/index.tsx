@@ -6,8 +6,6 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Toaster } from "../components/ui/toaster";
 import HomePage from "../pages";
 import WaitlistPage from "../pages/waitlist";
-import LoginPage from "../pages/login";
-import RegisterPage from "../pages/register";
 import ForgotPasswordPage from "../pages/forgot-password";
 import DashboardPage from "../pages/dashboard";
 import CreatePostPage from "../pages/dashboard/create-post";
@@ -15,10 +13,12 @@ import AccountsPage from "../pages/dashboard/accounts";
 import CollectionsPage from "../pages/dashboard/collections";
 import TeamsPage from "../pages/dashboard/teams";
 import SchedulePage from "../pages/dashboard/schedule";
-import SettingsPage from "../pages/settings";
 import NotFound from "../pages/not-found";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
+import LoginPage from "../pages/Login";
+import RegisterPage from "../pages/Register";
+import SettingsPage from "../pages/Settings";
 
 const AppRoutes = () => {
   return (
