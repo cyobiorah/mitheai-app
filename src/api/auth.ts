@@ -1,3 +1,4 @@
+import { apiRequest } from "../lib/queryClient";
 import { Team, User } from "../types";
 import axiosInstance from "./axios";
 import { VerifyInvitationResponse } from "./invitations";
@@ -19,58 +20,23 @@ export interface RegisterData {
 }
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<LoginResponse> => {
-    try {
-      const response = await axiosInstance.post("/auth/login", {
-        email,
-        password,
-      });
-
-      return response.data;
-    } catch (error: any) {
-      console.error("Login error:", error.response?.data || error.message);
-      throw new Error(
-        error.response?.data?.message || error.message || "Login failed"
-      );
-    }
+  loginUser: async (credentials: any) => {
+    const response = await apiRequest("POST", "/auth/login", credentials);
+    return response;
   },
 
-  register: async (userData: RegisterData): Promise<LoginResponse> => {
-    try {
-      const response = await axiosInstance.post("/auth/register", userData);
-
-      return response.data;
-    } catch (error: any) {
-      console.error(
-        "Registration error:",
-        error.response?.data || error.message
-      );
-      throw new Error(
-        error.response?.data?.message || error.message || "Registration failed"
-      );
-    }
+  registerUser: async (userData: RegisterData): Promise<LoginResponse> => {
+    const response = await apiRequest("POST", "/auth/register", userData);
+    return response;
   },
 
-  getMe: async (): Promise<{
+  getCurrentUser: async (): Promise<{
     teams: Team[];
     user: User;
     organization?: any;
   }> => {
-    try {
-      const response = await axiosInstance.get("/users/me");
-
-      return response.data;
-    } catch (error: any) {
-      console.error(
-        "Failed to fetch user data:",
-        error.response?.data || error.message
-      );
-      throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch user data"
-      );
-    }
+    const response = await apiRequest("GET", "/users/me");
+    return response;
   },
 
   logout: async (): Promise<void> => {

@@ -1,3 +1,4 @@
+import { apiRequest } from "../../lib/queryClient";
 import axiosInstance from "../axios";
 
 export const socialApi = {
@@ -46,36 +47,68 @@ export const socialApi = {
   },
 
   connectTwitter: async ({ skipWelcome }: { skipWelcome: boolean }) => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Twitter:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Twitter"
-      );
-    }
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
+    );
+    return response;
+  },
+
+  connectThreads: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/threads/direct-auth`
+    );
+    return response;
   },
 
   connectLinkedIn: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/linkedin/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to LinkedIn:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to LinkedIn"
-      );
-    }
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/linkedin/direct-auth`
+    );
+    return response;
   },
+
+  connectFacebook: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/facebook/direct-auth`
+    );
+    return response;
+  },
+
+  // connectThreads: async () => {
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/social-accounts/threads/direct-auth`
+  //     );
+  //     return response.data;
+  //   } catch (error: any) {
+  //     console.error("Failed to connect to Threads:", error);
+  //     throw new Error(
+  //       error.response?.data?.message ??
+  //         error.message ??
+  //         "Failed to connect to Threads"
+  //     );
+  //   }
+  // },
+
+  // connectLinkedIn: async () => {
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/social-accounts/linkedin/direct-auth`
+  //     );
+  //     return response.data;
+  //   } catch (error: any) {
+  //     console.error("Failed to connect to LinkedIn:", error);
+  //     throw new Error(
+  //       error.response?.data?.message ??
+  //         error.message ??
+  //         "Failed to connect to LinkedIn"
+  //     );
+  //   }
+  // },
 
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
@@ -94,49 +127,28 @@ export const socialApi = {
     }
   },
 
-  connectFacebook: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/facebook/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Facebook:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Facebook"
-      );
-    }
-  },
+  // connectFacebook: async () => {
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/social-accounts/facebook/direct-auth`
+  //     );
+  //     return response.data;
+  //   } catch (error: any) {
+  //     console.error("Failed to connect to Facebook:", error);
+  //     throw new Error(
+  //       error.response?.data?.message ??
+  //         error.message ??
+  //         "Failed to connect to Facebook"
+  //     );
+  //   }
+  // },
 
-  connectThreads: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/threads/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Threads:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Threads"
-      );
-    }
-  },
-
-  postToThreads: async (
-    accountId: string,
-    content: string,
-    mediaType: string
-  ) => {
+  postToThreads: async (accountId: string, data: any) => {
     try {
       const response = await axiosInstance.post(
         `/social-accounts/threads/${accountId}/post`,
         {
-          content,
-          mediaType,
+          data,
         }
       );
       return response.data;
@@ -175,12 +187,12 @@ export const socialApi = {
     }
   },
 
-  postToTwitter: async (accountId: string, content: string) => {
+  postToTwitter: async (accountId: string, data: any) => {
     try {
       const response = await axiosInstance.post(
         `/social-accounts/twitter/${accountId}/post`,
         {
-          content,
+          data,
         }
       );
       return response.data;
@@ -302,6 +314,50 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to delete scheduled post"
+      );
+    }
+  },
+
+  getPostsByOrgId: async (organizationId: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-posts/organization/${organizationId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by organization:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by organization"
+      );
+    }
+  },
+
+  getPostsByUserId: async (userId: string) => {
+    try {
+      const response = await axiosInstance.get(`/social-posts/${userId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by user:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by user"
+      );
+    }
+  },
+
+  getPostsByTeamId: async (teamId: string) => {
+    try {
+      const response = await axiosInstance.get(`/social-posts/team/${teamId}`);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to fetch posts by team:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to fetch posts by team"
       );
     }
   },

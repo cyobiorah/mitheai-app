@@ -1,106 +1,133 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "../components/layout";
-import ContentLibrary from "../pages/ContentLibrary";
-import ContentCreation from "../pages/ContentCreation";
-import ContentManagement from "../pages/ContentManagement/ContentManagement";
-import Scheduling from "../pages/Scheduling";
-import Analytics from "../pages/Analytics";
-import Settings from "../pages/Settings";
-import OrganizationOverview from "../pages/OrganizationOverview";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import { AcceptInvitation } from "../pages/AcceptInvitation";
-import { ProtectedRoute } from "../components/ProtectedRoute";
-import { PublicRoute } from "../components/PublicRoute";
-import { ROUTES } from "../utils/contstants";
-import Dashboard from "../pages/Dashboard";
-import { useAuth } from "../store/hooks";
-import CreatePost from "../pages/post/CreatePost";
-import TextPost from "../pages/post/TextPost";
-import Posted from "../pages/post/Posted";
-import AccountSetup from "../pages/account/AccountSetup";
-import ScheduledPosts from "../pages/post/ScheduledPost";
-import EditScheduledPost from "../pages/post/EditScheduledPost";
-import HomePage from "../pages/home/HomePage";
-import Collections from "../pages/Collections";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-// Wrapper component to conditionally render dashboard
-const DashboardRouter: React.FC = () => {
-  const { user } = useAuth();
-  return user?.organizationId && user?.organizationId !== null ? (
-    <OrganizationOverview />
-  ) : (
-    <Dashboard />
-  );
-};
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "../lib/queryClient";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { Toaster } from "../components/ui/toaster";
+import HomePage from "../pages";
+import WaitlistPage from "../pages/waitlist";
+import LoginPage from "../pages/login";
+import RegisterPage from "../pages/register";
+import ForgotPasswordPage from "../pages/forgot-password";
+import DashboardPage from "../pages/dashboard";
+import CreatePostPage from "../pages/dashboard/create-post";
+import AccountsPage from "../pages/dashboard/accounts";
+import CollectionsPage from "../pages/dashboard/collections";
+import TeamsPage from "../pages/dashboard/teams";
+import SchedulePage from "../pages/dashboard/schedule";
+import SettingsPage from "../pages/settings";
+import NotFound from "../pages/not-found";
+import { PublicRoute } from "./PublicRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route
-        path={ROUTES.LOGIN}
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path={ROUTES.REGISTER}
-        element={
-          <PublicRoute>
-            <Register />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path={ROUTES.ACCEPT_INVITATION}
-        element={
-          <PublicRoute>
-            <AcceptInvitation />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path={ROUTES.HOME}
-        element={
-          <PublicRoute>
-            <HomePage />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="*"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <Routes>
-                <Route path={ROUTES.DASHBOARD} element={<DashboardRouter />} />
-                <Route path={ROUTES.LIBRARY} element={<ContentLibrary />} />
-                <Route path={ROUTES.CONTENT} element={<ContentCreation />} />
-                <Route path={ROUTES.MANAGE} element={<ContentManagement />} />
-                <Route path={ROUTES.POST} element={<CreatePost />} />
-                <Route path={`${ROUTES.POST}/text`} element={<TextPost />} />
-                <Route path={`${ROUTES.POST}/posted`} element={<Posted />} />
-                <Route
-                  path={`${ROUTES.POST}/scheduled`}
-                  element={<ScheduledPosts />}
-                />
-                <Route
-                  path={`${ROUTES.SCHEDULE}/:id`}
-                  element={<EditScheduledPost />}
-                />
-                <Route path={ROUTES.SCHEDULE} element={<Scheduling />} />
-                <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
-                <Route path={ROUTES.SETTINGS} element={<Settings />} />
-                <Route path={ROUTES.ACCOUNT_SETUP} element={<AccountSetup />} />
-                <Route path={ROUTES.COLLECTIONS} element={<Collections />} />
-              </Routes>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <HomePage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/waitlist"
+              element={
+                <PublicRoute>
+                  <WaitlistPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <PublicRoute>
+                  <RegisterPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <PublicRoute>
+                  <ForgotPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/create-post"
+              element={
+                <ProtectedRoute>
+                  <CreatePostPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/accounts"
+              element={
+                <ProtectedRoute>
+                  <AccountsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/collections"
+              element={
+                <ProtectedRoute>
+                  <CollectionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/teams"
+              element={
+                <ProtectedRoute>
+                  <TeamsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/schedule"
+              element={
+                <ProtectedRoute>
+                  <SchedulePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
