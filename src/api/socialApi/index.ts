@@ -1,3 +1,4 @@
+import { apiRequest } from "../../lib/queryClient";
 import axiosInstance from "../axios";
 
 export const socialApi = {
@@ -46,35 +47,35 @@ export const socialApi = {
   },
 
   connectTwitter: async ({ skipWelcome }: { skipWelcome: boolean }) => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Twitter:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Twitter"
-      );
-    }
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
+    );
+    return response;
+  },
+
+  connectThreads: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/threads/direct-auth`
+    );
+    return response;
   },
 
   connectLinkedIn: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/linkedin/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to LinkedIn:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to LinkedIn"
-      );
-    }
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/linkedin/direct-auth`
+    );
+    return response;
+  },
+
+  connectFacebook: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/facebook/direct-auth`
+    );
+    return response;
   },
 
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
@@ -90,38 +91,6 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to disconnect account"
-      );
-    }
-  },
-
-  connectFacebook: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/facebook/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Facebook:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Facebook"
-      );
-    }
-  },
-
-  connectThreads: async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/social-accounts/threads/direct-auth`
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to connect to Threads:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to connect to Threads"
       );
     }
   },

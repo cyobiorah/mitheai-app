@@ -47,6 +47,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   timezone?: string;
+  avatar?: string;
+  username?: string;
 }
 
 export interface AuthState {
