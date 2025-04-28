@@ -20,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../../components/ui/dialog";
 import {
   Form,
@@ -123,26 +122,25 @@ export default function Collections() {
     });
 
   // Delete collection mutation
-  const { mutate: deleteCollection, isPending: isDeletingPending } =
-    useMutation({
-      mutationFn: async (id: number) => {
-        return await apiRequest("DELETE", `/collections/${id}`);
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/collections"] });
-        toast({
-          title: "Collection deleted",
-          description: "The collection has been deleted",
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Deletion failed",
-          description: "Failed to delete the collection. Please try again.",
-          variant: "destructive",
-        });
-      },
-    });
+  const { mutate: deleteCollection } = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/collections/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/collections"] });
+      toast({
+        title: "Collection deleted",
+        description: "The collection has been deleted",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Deletion failed",
+        description: "Failed to delete the collection. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const createForm = useForm<CollectionFormData>({
     resolver: zodResolver(collectionSchema),
@@ -174,7 +172,7 @@ export default function Collections() {
     setCurrentCollection(collection);
     editForm.reset({
       name: collection.name,
-      description: collection.description || "",
+      description: collection.description ?? "",
     });
     setIsEditing(true);
   }

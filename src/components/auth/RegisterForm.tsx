@@ -33,14 +33,10 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
-  onSuccess?: () => void;
   onLogin?: () => void;
 }
 
-export default function RegisterForm({
-  onSuccess,
-  onLogin,
-}: RegisterFormProps) {
+export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -63,13 +59,6 @@ export default function RegisterForm({
     try {
       const { confirmPassword, ...registerData } = data;
       await register(registerData);
-      // if (success) {
-      //   if (onSuccess) {
-      //     onSuccess();
-      //   } else {
-      //     navigate("/dashboard");
-      //   }
-      // }
     } finally {
       setIsLoading(false);
     }

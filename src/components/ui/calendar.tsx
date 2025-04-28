@@ -52,12 +52,16 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
-        ),
+        Chevron: ({ className, ...props }) => {
+          if (props.orientation === "left") {
+            return (
+              <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
+            );
+          }
+          return (
+            <ChevronRight className={cn("h-4 w-4", className)} {...props} />
+          );
+        },
       }}
       {...props}
     />

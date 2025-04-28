@@ -1,7 +1,5 @@
 import { apiRequest } from "../lib/queryClient";
 import { Team, User } from "../types";
-import axiosInstance from "./axios";
-import { VerifyInvitationResponse } from "./invitations";
 
 export interface LoginResponse {
   token: string;

@@ -17,19 +17,15 @@ import RegisterForm from "./RegisterForm";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 
 interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  type: "login" | "register";
+  readonly isOpen: boolean;
+  readonly onClose: () => void;
+  readonly type: "login" | "register";
 }
 
 export default function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
   const [activeView, setActiveView] = useState<
     "login" | "register" | "forgot-password"
   >(type);
-
-  const handleSuccess = () => {
-    onClose();
-  };
 
   const goToLogin = () => setActiveView("login");
   const goToRegister = () => setActiveView("register");
@@ -55,7 +51,7 @@ export default function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
         </DialogHeader>
 
         {activeView === "forgot-password" ? (
-          <ForgotPasswordForm onSuccess={handleSuccess} onBack={goToLogin} />
+          <ForgotPasswordForm onBack={goToLogin} />
         ) : (
           <Tabs
             defaultValue={activeView}
@@ -67,13 +63,12 @@ export default function AuthModal({ isOpen, onClose, type }: AuthModalProps) {
             </TabsList>
             <TabsContent value="login" className="pt-4">
               <LoginForm
-                onSuccess={handleSuccess}
                 onForgotPassword={goToForgotPassword}
                 onRegister={goToRegister}
               />
             </TabsContent>
             <TabsContent value="register" className="pt-4">
-              <RegisterForm onSuccess={handleSuccess} onLogin={goToLogin} />
+              <RegisterForm onLogin={goToLogin} />
             </TabsContent>
           </Tabs>
         )}

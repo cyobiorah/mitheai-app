@@ -21,8 +21,8 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 interface ForgotPasswordFormProps {
-  onSuccess?: () => void;
-  onBack?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onBack?: () => void;
 }
 
 export default function ForgotPasswordForm({
@@ -43,6 +43,7 @@ export default function ForgotPasswordForm({
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsLoading(true);
     try {
+      console.log({ data });
       // In a real implementation, this would call an API endpoint to send a reset link
       // For now, we'll just simulate a successful submission
       // await apiRequest("POST", "/api/auth/forgot-password", data);
@@ -57,6 +58,7 @@ export default function ForgotPasswordForm({
         description: "Check your email for a link to reset your password.",
       });
     } catch (error) {
+      console.error(error);
       toast({
         title: "Something went wrong",
         description: "Failed to send reset link. Please try again.",

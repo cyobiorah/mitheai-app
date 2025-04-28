@@ -58,7 +58,7 @@ import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import { getInitials } from "../../lib/utils";
-import { Loader2, Plus, RefreshCw, UserPlus, X } from "lucide-react";
+import { Loader2, Plus, UserPlus, X } from "lucide-react";
 
 const teamSchema = z.object({
   name: z.string().min(1, "Team name is required"),

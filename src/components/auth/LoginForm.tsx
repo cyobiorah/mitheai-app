@@ -27,13 +27,11 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
-  onSuccess?: () => void;
   onForgotPassword?: () => void;
   onRegister?: () => void;
 }
 
 export default function LoginForm({
-  onSuccess,
   onForgotPassword,
   onRegister,
 }: Readonly<LoginFormProps>) {
