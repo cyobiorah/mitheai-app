@@ -16,19 +16,38 @@ import {
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 const registerSchema = z
   .object({
-    name: z.string().min(1, "Full name is required"),
-    username: z.string().min(3, "Username must be at least 3 characters"),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
+    userType: z.enum(["individual", "organization"], {
+      required_error: "Please select a user type",
+      invalid_type_error: "Invalid user type",
+    }),
+    organizationName: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => (data.userType === "organization" ? data.organizationName : true),
+    {
+      message: "Organization name is required",
+      path: ["organizationName"],
+    }
+  );
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -46,15 +65,18 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
-      username: "",
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
+      userType: "individual",
+      organizationName: "",
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    console.log({ data });
     setIsLoading(true);
     try {
       const { confirmPassword, ...registerData } = data;
@@ -69,12 +91,12 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="name"
+          name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Full Name</FormLabel>
+              <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="John" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,16 +104,12 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
         />
         <FormField
           control={form.control}
-          name="username"
+          name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Last Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="johndoe"
-                  autoComplete="username"
-                  {...field}
-                />
+                <Input placeholder="Doe" autoComplete="last-name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,6 +128,42 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="userType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>User Type</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select user type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="individual">Individual</SelectItem>
+                    <SelectItem value="organization">Organization</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        {form.watch("userType") === "organization" && (
+          <FormField
+            control={form.control}
+            name="organizationName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Organization Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Your Organization Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="password"
