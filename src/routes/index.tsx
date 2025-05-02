@@ -19,6 +19,9 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import LoginPage from "../pages/Login";
 import RegisterPage from "../pages/Register";
 import SettingsPage from "../pages/Settings";
+import PostsPage from "../pages/dashboard/posts";
+import AnalyticsPage from "../pages/dashboard/analytics";
+import PostFlowPage from "../pages/dashboard/post-flow";
 
 const AppRoutes = () => {
   return (
@@ -96,6 +99,30 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute>
                   <CollectionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/analytics"
+              element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/post-flow"
+              element={
+                <ProtectedRoute>
+                  <PostFlowPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/posts"
+              element={
+                <ProtectedRoute>
+                  <PostsPage />
                 </ProtectedRoute>
               }
             />

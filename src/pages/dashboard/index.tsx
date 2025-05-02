@@ -27,6 +27,7 @@ import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
+import { Badge } from "../../components/ui/badge";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -53,10 +54,12 @@ export default function DashboardPage() {
     enabled: isAuthenticated,
   }) as { data: { count: number; data: any[] } };
 
-  const recentPosts = posts?.data?.slice(0, 5);
-  const scheduledPosts = posts?.data
-    ?.filter((post: any) => post.status === "scheduled")
-    ?.slice(0, 3);
+  const { data: scheduledPosts } = useQuery({
+    queryKey: ["/scheduled-posts"],
+    enabled: isAuthenticated,
+  }) as { data: { data: any[] } };
+
+  const recentPosts = posts?.data?.slice(0, 3);
 
   if (authLoading) {
     return (
@@ -83,6 +86,19 @@ export default function DashboardPage() {
         post.createdAt ?? new Date(),
         "PPPpp"
       )}`;
+    }
+  }
+
+  function getStatusColor(status: string) {
+    switch (status) {
+      case "completed":
+        return "bg-green-500";
+      case "scheduled":
+        return "bg-amber-500";
+      case "failed":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   }
 
@@ -130,11 +146,7 @@ export default function DashboardPage() {
                 <CardHeader className="pb-2">
                   <CardDescription>Scheduled Posts</CardDescription>
                   <CardTitle className="text-3xl">
-                    {
-                      posts?.data?.filter(
-                        (post: any) => post.status === "scheduled"
-                      ).length
-                    }
+                    {scheduledPosts?.data?.length}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -248,9 +260,9 @@ export default function DashboardPage() {
                     <CardDescription>Your scheduled content</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {scheduledPosts?.length > 0 ? (
+                    {scheduledPosts?.data?.length > 0 ? (
                       <div className="space-y-4">
-                        {scheduledPosts?.map((post: any) => (
+                        {scheduledPosts?.data?.map((post: any) => (
                           <div
                             key={post._id}
                             className="border-b pb-4 last:border-none"
@@ -266,13 +278,20 @@ export default function DashboardPage() {
                                   <CalendarClock size={14} className="mr-1" />
                                   <span>
                                     Scheduled for{" "}
-                                    {post.scheduleTime
+                                    {post.scheduledFor
                                       ? formatDate(
-                                          post.scheduleTime,
+                                          post.scheduledFor,
                                           "PPP 'at' p"
                                         )
                                       : "—"}
                                   </span>
+                                  <Badge
+                                    className={`${getStatusColor(
+                                      post.status
+                                    )} capitalize ml-2`}
+                                  >
+                                    {post.status}
+                                  </Badge>
                                 </div>
                               </div>
                               <Button

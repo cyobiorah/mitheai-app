@@ -9,6 +9,7 @@ import {
   Link2,
   Users,
   Settings,
+  CalendarSync,
 } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import { useMemo } from "react";
@@ -65,6 +66,16 @@ export default function DashboardSidebar() {
         icon: <Link2 size={18} />,
         label: "Social Accounts",
         href: "/dashboard/accounts",
+      },
+      {
+        icon: <CalendarSync size={18} />,
+        label: "Posts",
+        href: "/dashboard/posts",
+      },
+      {
+        icon: <CalendarSync size={18} />,
+        label: "Post Flow",
+        href: "/dashboard/post-flow",
       },
       {
         icon: <Folder size={18} />,

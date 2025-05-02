@@ -236,7 +236,7 @@ export default function Collections() {
               </CardContent>
               <CardFooter className="bg-muted/40 py-2">
                 <Button variant="ghost" size="sm" className="w-full" asChild>
-                  <a href={`/dashboard/collections/${collection.id}`}>
+                  <a href={`/dashboard/collections/${collection._id}`}>
                     View Content
                   </a>
                 </Button>
