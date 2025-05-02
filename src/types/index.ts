@@ -1,5 +1,5 @@
 export interface Organization {
-  id: string; // Firestore document ID
+  _id: string;
   name: string;
   description?: string;
   type: "enterprise" | "business" | "startup";
@@ -47,6 +47,8 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   timezone?: string;
+  avatar?: string;
+  username?: string;
 }
 
 export interface AuthState {
