@@ -129,6 +129,8 @@ export default function PostCreate() {
             platform: selectedAccount.platform,
             platformId: selectedAccount.platformId,
             accountId: selectedAccount.accountId,
+            accountName: selectedAccount.accountName,
+            accountType: selectedAccount.accountType,
           },
         ],
         scheduledFor: data.scheduleTime,
@@ -144,6 +146,10 @@ export default function PostCreate() {
         accountId: selectedAccount.accountId,
         platformAccountId: selectedAccount.platformAccountId,
         media: mediaLinks,
+        accountName: selectedAccount.accountName,
+        accountType: selectedAccount.accountType,
+        platform: selectedAccount.platform,
+        platformId: selectedAccount.platformId,
       };
       setLoading(true);
 
@@ -234,7 +240,7 @@ export default function PostCreate() {
             className="flex items-center space-x-2 text-sm cursor-pointer"
           >
             <i className={`${getSocialIcon(account.platform)} text-lg`}></i>
-            <span>{account.accountName}</span>
+            <span>{account?.metadata?.username ?? account.accountName}</span>
           </label>
         </div>
       ));

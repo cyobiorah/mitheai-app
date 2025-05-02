@@ -63,7 +63,7 @@ export default function SocialAccounts() {
   // Delete social account mutation
   const { mutate: deleteAccount, isPending: isDeletingPending } = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/social-accounts/${id}`);
+      return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
@@ -284,7 +284,7 @@ export default function SocialAccounts() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => deleteAccount(account.id)}
+                  onClick={() => deleteAccount(account._id)}
                   disabled={isDeletingPending}
                 >
                   {isDeletingPending && (

@@ -58,17 +58,26 @@ export default function ScheduledPosts() {
   const queryClient = useQueryClient();
 
   // Get posts
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["/api/social-posts"],
-  }) as { data: any[]; isLoading: boolean };
+  const {
+    data: scheduledPosts = { data: [] },
+    isLoading: isFetchingScheduledPosts,
+  } = useQuery({
+    queryKey: ["/scheduled-posts"],
+  }) as { data: { data: any[] } } & { isLoading: boolean };
+
+  // const { data: socialAccounts = [], isLoading: isFetchingAccounts } = useQuery(
+  //   {
+  //     queryKey: [`/social-accounts/${user?._id}`],
+  //   }
+  // ) as { data: any[]; isLoading: boolean };
 
   // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest("DELETE", `/api/social-posts/${id}`);
+      return await apiRequest("DELETE", `/scheduled-posts/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/social-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
       toast({
         title: "Post deleted",
         description: "The post has been deleted successfully",
@@ -88,10 +97,10 @@ export default function ScheduledPosts() {
   // Change post status mutation
   const { mutate: updatePostStatus } = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      return await apiRequest("PATCH", `/api/social-posts/${id}`, { status });
+      return await apiRequest("PATCH", `/scheduled-posts/${id}`, { status });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/social-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/scheduled-posts"] });
       toast({
         title: "Status updated",
         description: "The post status has been updated",
@@ -109,7 +118,7 @@ export default function ScheduledPosts() {
   const filterPostsByDate = (date: Date | undefined) => {
     if (!date) return [];
 
-    return posts.filter((post: any) => {
+    return scheduledPosts.data.filter((post: any) => {
       if (!post.scheduleTime) return false;
       const postDate = new Date(post.scheduleTime);
       return (
@@ -121,14 +130,14 @@ export default function ScheduledPosts() {
   };
 
   const filterPostsByStatus = (status: string) => {
-    return posts.filter((post: any) => post.status === status);
+    return scheduledPosts.data.filter((post: any) => post.status === status);
   };
 
   // Group posts by date for showing on the calendar
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
 
-    posts.forEach((post: any) => {
+    scheduledPosts.data.forEach((post: any) => {
       if (post.scheduleTime) {
         const date = new Date(post.scheduleTime);
         const dateKey = date.toISOString().split("T")[0];
@@ -146,7 +155,7 @@ export default function ScheduledPosts() {
 
   const confirmDelete = () => {
     if (selectedPost) {
-      deletePost(selectedPost.id);
+      deletePost(selectedPost._id);
     }
   };
 
@@ -253,7 +262,7 @@ export default function ScheduledPosts() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isLoading ? (
+                  {isFetchingScheduledPosts ? (
                     <div className="flex justify-center p-8">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
@@ -318,19 +327,21 @@ export default function ScheduledPosts() {
                               </p>
                             )}
                           </CardContent>
+                          <h2>something here</h2>
                           <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
+                            something here
                             {post.platforms?.map(
                               (platform: any, index: number) => (
                                 <div
-                                  key={index}
+                                  key={`${platform.platform}-${index}`}
                                   className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
                                 >
                                   <i
                                     className={`${getSocialIcon(
-                                      platform.type
+                                      platform.platform
                                     )} mr-1`}
                                   ></i>
-                                  <span>{platform.name}</span>
+                                  <span>{platform.platform}ssss</span>
                                 </div>
                               )
                             )}
@@ -361,26 +372,26 @@ export default function ScheduledPosts() {
                 <CardTitle>All Posts</CardTitle>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
-                    Drafts ({filterPostsByStatus("draft").length})
-                  </Button>
-                  <Button variant="outline" size="sm">
                     Scheduled ({filterPostsByStatus("scheduled").length})
                   </Button>
                   <Button variant="outline" size="sm">
-                    Published ({filterPostsByStatus("published").length})
+                    Completed ({filterPostsByStatus("completed").length})
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Failed ({filterPostsByStatus("failed").length})
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              {isLoading ? (
+              {isFetchingScheduledPosts ? (
                 <div className="flex justify-center p-8">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-              ) : posts.length > 0 ? (
+              ) : scheduledPosts.data.length > 0 ? (
                 <div className="space-y-4">
-                  {posts.map((post: any) => (
-                    <Card key={post.id} className="overflow-hidden">
+                  {scheduledPosts.data.map((post: any) => (
+                    <Card key={post._id} className="overflow-hidden">
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <div>
@@ -430,31 +441,38 @@ export default function ScheduledPosts() {
                       </CardHeader>
                       <CardContent className="pb-2">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-muted-foreground">
-                          {post.scheduleTime && (
+                          {post.scheduledFor && (
                             <p className="flex items-center">
                               <Clock size={14} className="mr-1.5" />
-                              {formatDate(post.scheduleTime, "PPP 'at' p")}
+                              {formatDate(post.scheduledFor, "PPP 'at' p")}
                             </p>
                           )}
-                          {post.publishedTime && (
+                          {post.platforms[0].publishedAt && (
                             <p className="flex items-center">
                               <CheckCircle size={14} className="mr-1.5" />
                               Published:{" "}
-                              {formatDate(post.publishedTime, "PPP 'at' p")}
+                              {formatDate(
+                                post.platforms[0].publishedAt,
+                                "PPP 'at' p"
+                              )}
                             </p>
                           )}
                         </div>
                       </CardContent>
                       <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
-                        {post.platforms?.map((platform: any, index: number) => (
+                        {post.platforms?.map((platform: any) => (
                           <div
-                            key={index}
+                            key={platform.platformId}
                             className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
                           >
                             <i
-                              className={`${getSocialIcon(platform.type)} mr-1`}
+                              className={`${getSocialIcon(
+                                platform.platform ?? ""
+                              )} mr-1`}
                             ></i>
-                            <span>{platform.name}</span>
+                            <span>
+                              {platform.platform ?? platform.platformId}
+                            </span>
                           </div>
                         ))}
                       </CardFooter>
