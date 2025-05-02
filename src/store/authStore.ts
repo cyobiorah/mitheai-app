@@ -12,9 +12,10 @@ interface AuthState {
   teams: Team[];
   isLoading: boolean;
   error: string | null;
+  isAdmin: boolean;
 
   // Actions
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<void>;
   register: (data: any) => Promise<void>;
   fetchUserData: () => Promise<void>;
@@ -31,12 +32,12 @@ export const useAuthStore = create<AuthState>()(
       teams: [],
       isLoading: false,
       error: null,
-
+      isAdmin: false,
       // Actions
       login: async (email, password) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await authApi.login(email, password);
+          const data = await authApi.loginUser({ email, password });
           localStorage.setItem("auth_token", data.token);
           set({
             token: data.token,
@@ -44,6 +45,10 @@ export const useAuthStore = create<AuthState>()(
             organization: data.organization ?? null,
             teams: data.teams ?? [],
             isLoading: false,
+            isAdmin:
+              data.user?.userType === "individual" ||
+              data.user?.role === "super_admin" ||
+              data.user?.role === "org_owner",
           });
 
           // Initialize team store with teams from login
@@ -54,6 +59,7 @@ export const useAuthStore = create<AuthState>()(
             // Set active team to the first team
             teamStore.setActiveTeam(data.teams[0]);
           }
+          return data;
         } catch (error: any) {
           set({ error: error.message, isLoading: false });
         }
@@ -72,13 +78,14 @@ export const useAuthStore = create<AuthState>()(
             organization: null,
             teams: [],
           });
+          useTeamStore.setState({ activeTeam: null, teams: [] });
         }
       },
 
       register: async (data) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await authApi.register(data);
+          const response = await authApi.registerUser(data);
           localStorage.setItem("auth_token", response.token);
           set({
             token: response.token,
@@ -86,6 +93,10 @@ export const useAuthStore = create<AuthState>()(
             organization: response.organization ?? null,
             teams: response.teams ?? [],
             isLoading: false,
+            isAdmin:
+              response.user?.userType === "individual" ||
+              response.user?.role === "super_admin" ||
+              response.user?.role === "org_owner",
           });
         } catch (error: any) {
           set({ error: error.message, isLoading: false });
@@ -98,12 +109,16 @@ export const useAuthStore = create<AuthState>()(
 
         set({ isLoading: true });
         try {
-          const data = await authApi.getMe();
+          const data = await authApi.getCurrentUser();
           set({
             user: data.user,
-            organization: data.organization || null,
-            teams: data.teams || [],
+            organization: data.organization ?? null,
+            teams: data.teams ?? [],
             isLoading: false,
+            isAdmin:
+              data.user?.userType === "individual" ||
+              data.user?.role === "super_admin" ||
+              data.user?.role === "org_owner",
           });
         } catch (error: any) {
           set({ error: error.message, isLoading: false });
@@ -119,6 +134,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         organization: state.organization,
         teams: state.teams,
+        isAdmin: state.isAdmin,
       }),
     }
   )
