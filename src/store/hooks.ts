@@ -7,7 +7,7 @@ export const useAuth = () => {
     user,
     token,
     organization,
-    teams,
+    // teams,
     isLoading: authLoading,
     error: authError,
     login,
@@ -15,10 +15,11 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearError: clearAuthError,
+    isAdmin,
   } = useAuthStore();
 
   const {
-    // teams,
+    teams,
     activeTeam,
     isLoading: teamsLoading,
     error: teamsError,
@@ -54,7 +55,7 @@ export const useAuth = () => {
     register,
     fetchUserData,
     clearAuthError,
-
+    isAdmin,
     // Team actions
     fetchTeams,
     setActiveTeam,

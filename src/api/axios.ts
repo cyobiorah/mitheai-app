@@ -1,11 +1,23 @@
-import axios, { InternalAxiosRequestConfig, AxiosError } from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
 const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
+
+// Optional: Add interceptors for auth, logging, etc.
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.log({ error });
+    return Promise.reject(error as Error);
+  }
+);
 
 // Add a request interceptor
 axiosInstance.interceptors.request.use(
@@ -19,14 +31,6 @@ axiosInstance.interceptors.request.use(
 
       // Add timestamp to help debug caching issues
       config.headers["X-Request-Time"] = new Date().toISOString();
-
-      // Log the request for debugging
-      // console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-      //   headers: {
-      //     Authorization: "Bearer " + token.substring(0, 10) + "...",
-      //     "X-Request-Time": config.headers["X-Request-Time"]
-      //   }
-      // });
     } else {
       console.log("[DEBUG] No auth token found in localStorage");
     }
@@ -34,33 +38,6 @@ axiosInstance.interceptors.request.use(
   },
   (error: Error) => {
     console.error("[DEBUG] Request interceptor error:", error);
-    return Promise.reject(error);
-  }
-);
-
-// Add a response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error: AxiosError) => {
-    console.error("[DEBUG] Response error:", {
-      message: error.message,
-      config: error.config
-        ? {
-            method: error.config.method,
-            baseURL: error.config.baseURL,
-            url: error.config.url,
-            fullURL: `${error.config.baseURL}${error.config.url}`,
-          }
-        : "No config available",
-      response: {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-      },
-    });
     return Promise.reject(error);
   }
 );
