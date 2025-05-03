@@ -1,10 +1,12 @@
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import WaitlistForm from "../components/waitlist/WaitlistForm";
+import ScrollToTop from "../components/layout/ScrollToTop";
 
 export default function WaitlistPage() {
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Header />
 
       <main className="flex-1">
