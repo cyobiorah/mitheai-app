@@ -12,7 +12,7 @@ import { Button } from "../components/ui/button";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" id="home">
       <Header />
 
       <main className="flex-1">
