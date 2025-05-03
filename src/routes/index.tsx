@@ -22,6 +22,8 @@ import SettingsPage from "../pages/Settings";
 import PostsPage from "../pages/dashboard/posts";
 import AnalyticsPage from "../pages/dashboard/analytics";
 import PostFlowPage from "../pages/dashboard/post-flow";
+import TermsOfService from "../pages/TermsOfService";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
 
 const AppRoutes = () => {
   return (
@@ -35,6 +37,22 @@ const AppRoutes = () => {
               element={
                 <PublicRoute>
                   <HomePage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/terms"
+              element={
+                <PublicRoute>
+                  <TermsOfService />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/privacy"
+              element={
+                <PublicRoute>
+                  <PrivacyPolicy />
                 </PublicRoute>
               }
             />
