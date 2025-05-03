@@ -16,13 +16,20 @@ export default function WaitlistForm() {
         className="space-y-4"
       >
         <div>
-          <Input type="text" name="name" placeholder="Your name" required />
+          <Input
+            type="text"
+            name="name"
+            placeholder="Your name"
+            className="text-black dark:text-white"
+            required
+          />
         </div>
         <div>
           <Input
             type="email"
             name="email"
             placeholder="you@example.com"
+            className="text-black dark:text-white"
             required
           />
         </div>
@@ -31,6 +38,7 @@ export default function WaitlistForm() {
             type="text"
             name="organization"
             placeholder="Your company or team (optional)"
+            className="text-black dark:text-white"
           />
         </div>
         <div className="flex items-center space-x-2">
