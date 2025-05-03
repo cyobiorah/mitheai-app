@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import {
   Form,
@@ -239,6 +239,17 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             </FormItem>
           )}
         />
+        <input type="checkbox" required />
+        <label className="text-sm text-gray-600 dark:text-gray-400 ml-2">
+          I agree to the{" "}
+          <span className="text-primary-600 dark:text-primary-400">
+            <Link to="/terms"> Terms of Service </Link>
+          </span>
+          and{" "}
+          <span className="text-primary-600 dark:text-primary-400">
+            <Link to="/privacy"> Privacy Policy</Link>
+          </span>
+        </label>
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>
