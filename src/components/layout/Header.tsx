@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { ThemeToggle } from "../../components/ui/theme-toggle";
 import { useAuth } from "../../store/hooks";
+import { HashLink } from "react-router-hash-link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,8 @@ import AuthModal from "../../components/auth/AuthModal";
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState<
@@ -68,7 +71,14 @@ export default function Header() {
       }`}
     >
       <div className="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2 relative z-10">
+        <Link
+          to="/"
+          onClick={(e) => {
+            // e.preventDefault();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="flex items-center space-x-2 relative z-10"
+        >
           <div
             className={`font-bold flex items-center transition-all duration-300 ${
               scrolled
@@ -89,39 +99,42 @@ export default function Header() {
           <nav className="hidden lg:flex items-center">
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-full px-1 py-1 shadow-sm border border-gray-100 dark:border-gray-700 mr-4">
               <div className="flex space-x-1">
-                <Link to="/#features">
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      location.pathname.includes("/features")
-                        ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
-                    }`}
-                  >
-                    Features
-                  </span>
-                </Link>
-                <Link to="/#solutions">
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      location.pathname.includes("/solutions")
-                        ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
-                    }`}
-                  >
-                    Solutions
-                  </span>
-                </Link>
-                <Link to="/#pricing">
-                  <span
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      location.pathname.includes("/pricing")
-                        ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
-                    }`}
-                  >
-                    Pricing
-                  </span>
-                </Link>
+                <HashLink
+                  smooth
+                  to="/"
+                  elementId="features"
+                  className={`px-4 rounded-full text-sm font-medium transition-colors ${
+                    location.pathname.includes("/#features")
+                      ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  Features
+                </HashLink>
+                <HashLink
+                  smooth
+                  to="/"
+                  elementId="solutions"
+                  className={`px-4 rounded-full text-sm font-medium transition-colors ${
+                    location.pathname.includes("/solutions")
+                      ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  Solutions
+                </HashLink>
+                <HashLink
+                  smooth
+                  to="/"
+                  elementId="testimonials"
+                  className={`px-4 rounded-full text-sm font-medium transition-colors ${
+                    location.pathname.includes("/testimonials")
+                      ? "bg-primary-100 text-primary-900 dark:bg-primary-900/20 dark:text-primary-300"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700/50"
+                  }`}
+                >
+                  Testimonials
+                </HashLink>
               </div>
             </div>
 
@@ -283,33 +296,36 @@ export default function Header() {
               <div className="flex flex-col space-y-1">
                 {!isDashboard ? (
                   <>
-                    <Link
-                      to="/#features"
+                    <HashLink
+                      smooth
+                      to="/"
                       onClick={() => setMobileMenuOpen(false)}
+                      elementId="features"
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <LayoutGrid className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="font-medium">Features</span>
-                      </div>
-                    </Link>
-                    <Link
-                      to="/#solutions"
+                      <LayoutGrid className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium">Features</span>
+                    </HashLink>
+                    <HashLink
+                      smooth
+                      to="/"
                       onClick={() => setMobileMenuOpen(false)}
+                      elementId="solutions"
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="font-medium">Solutions</span>
-                      </div>
-                    </Link>
-                    <Link
-                      to="/#pricing"
+                      <Users className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium">Solutions</span>
+                    </HashLink>
+                    <HashLink
+                      smooth
+                      to="/"
                       onClick={() => setMobileMenuOpen(false)}
+                      elementId="testimonials"
+                      className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
-                      <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-                        <span className="font-medium">Pricing</span>
-                      </div>
-                    </Link>
+                      <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium">Testimonials</span>
+                    </HashLink>
 
                     <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 
@@ -359,7 +375,7 @@ export default function Header() {
                         <Button
                           className="w-full justify-start bg-gradient-to-r from-primary-500 to-primary-600"
                           onClick={() => {
-                            setShowAuthModal("register");
+                            navigate("/waitlist");
                             setMobileMenuOpen(false);
                           }}
                         >
