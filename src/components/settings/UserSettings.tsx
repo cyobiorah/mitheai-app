@@ -37,7 +37,8 @@ import {
   AvatarImage,
 } from "../../components/ui/avatar";
 import { getInitials } from "../../lib/utils";
-import { EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
+import { CreditCard, EyeIcon, EyeOffIcon, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const profileSchema = z.object({
   name: z.string().optional(),
@@ -142,11 +143,25 @@ export default function UserSettings() {
 
   return (
     <div className="space-y-6">
-      <div>
+      {/* <div>
         <h2 className="text-2xl font-bold">Account Settings</h2>
         <p className="text-muted-foreground">
           Manage your account preferences and security
         </p>
+      </div> */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Account Settings</h2>
+          <p className="text-muted-foreground">
+            Manage your account preferences and security
+          </p>
+        </div>
+        <Link to="/dashboard/billing">
+          <Button variant="outline" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Billing & Subscription
+          </Button>
+        </Link>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
