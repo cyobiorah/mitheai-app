@@ -123,9 +123,9 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold">Analytics Dashboard</h2>
+          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
           <p className="text-muted-foreground">
             Track your performance and engagement across all platforms
           </p>
