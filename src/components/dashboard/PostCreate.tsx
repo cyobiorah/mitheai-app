@@ -258,11 +258,13 @@ export default function PostCreate() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Create New Post</h2>
-        <p className="text-muted-foreground">
-          Compose and schedule your content across multiple platforms
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Create New Post</h2>
+          <p className="text-muted-foreground">
+            Compose and schedule your content across multiple platforms
+          </p>
+        </div>
       </div>
 
       <Form {...form}>

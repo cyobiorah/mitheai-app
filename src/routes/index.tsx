@@ -25,6 +25,7 @@ import PostFlowPage from "../pages/dashboard/post-flow";
 import BillingPage from "../pages/dashboard/billing";
 import TermsOfService from "../pages/TermsOfService";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
+import HelpSupportPage from "../pages/dashboard/help-support";
 
 const AppRoutes = () => {
   return (
@@ -174,6 +175,14 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute>
                   <BillingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <HelpSupportPage />
                 </ProtectedRoute>
               }
             />

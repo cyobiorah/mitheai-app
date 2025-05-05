@@ -16,10 +16,20 @@ import {
   AvatarImage,
 } from "../../components/ui/avatar";
 import { getInitials } from "../../lib/utils";
-import { Bell, Plus } from "lucide-react";
+import { Bell, Menu, Plus } from "lucide-react";
+import { useMobileMenuStore } from "../../store/layout";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import DashboardSidebar from "./DashboardSidebar";
 
 export default function DashboardHeader() {
   const { user, logout } = useAuth();
+
+  const mobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.mobileMenuOpen
+  );
+  const setMobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.setMobileMenuOpen
+  );
 
   return (
     <header className="h-16 border-b flex items-center px-6 sticky top-0 bg-background z-10">
@@ -74,7 +84,7 @@ export default function DashboardHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/dashboard/settings">Profile Settings</Link>
+              <Link to="/settings">Profile Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/dashboard/accounts">Manage Accounts</Link>
@@ -83,6 +93,25 @@ export default function DashboardHeader() {
             <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden mr-4"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="p-0 w-[240px] z-50">
+            <DashboardSidebar
+              closeMenu={() => setMobileMenuOpen(false)}
+              isMobile={mobileMenuOpen}
+            />
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );
