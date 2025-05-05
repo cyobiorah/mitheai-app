@@ -30,26 +30,6 @@ export function getSocialIcon(platform: string) {
   }
 }
 
-// export async function registerUser(userData: any) {
-//   const response = await apiRequest("POST", "/auth/register", userData);
-//   return response;
-// }
-
-// export async function loginUser(credentials: any) {
-//   const response = await apiRequest("POST", "/auth/login", credentials);
-//   return response;
-// }
-
-// export async function logoutUser() {
-//   const response = await apiRequest("POST", "/auth/logout");
-//   return response;
-// }
-
-// export async function getCurrentUser() {
-//   const response = await apiRequest("GET", "/users/me");
-//   return response;
-// }
-
 export async function joinWaitlist(data: any) {
   const response = await apiRequest("POST", "/waitlist", data);
   return response;

@@ -22,6 +22,7 @@ import SettingsPage from "../pages/Settings";
 import PostsPage from "../pages/dashboard/posts";
 import AnalyticsPage from "../pages/dashboard/analytics";
 import PostFlowPage from "../pages/dashboard/post-flow";
+import BillingPage from "../pages/dashboard/billing";
 import TermsOfService from "../pages/TermsOfService";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 
@@ -165,6 +166,14 @@ const AppRoutes = () => {
               element={
                 <ProtectedRoute>
                   <SettingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/billing"
+              element={
+                <ProtectedRoute>
+                  <BillingPage />
                 </ProtectedRoute>
               }
             />
