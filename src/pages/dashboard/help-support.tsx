@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import PostCreate from "../../components/dashboard/PostCreate";
+import { useNavigate } from "react-router-dom";
+import HelpSupport from "../../components/dashboard/HelpSupport";
 
-export default function CreatePostPage() {
+export default function HelpSupportPage() {
   const navigate = useNavigate();
   const { isAuthenticated, authLoading } = useAuth();
 
@@ -38,7 +38,7 @@ export default function CreatePostPage() {
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-6xl mx-auto">
-            <PostCreate />
+            <HelpSupport />
           </div>
         </main>
       </div>

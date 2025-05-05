@@ -143,12 +143,6 @@ export default function UserSettings() {
 
   return (
     <div className="space-y-6">
-      {/* <div>
-        <h2 className="text-2xl font-bold">Account Settings</h2>
-        <p className="text-muted-foreground">
-          Manage your account preferences and security
-        </p>
-      </div> */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Account Settings</h2>
