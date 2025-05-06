@@ -29,13 +29,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import AuthModal from "../../components/auth/AuthModal";
+import { useMobileMenuStore } from "../../store/layout";
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState<
     "login" | "register" | null
   >(null);
@@ -43,6 +43,13 @@ export default function Header() {
 
   const handleLogin = () => setShowAuthModal("login");
   const handleCloseModal = () => setShowAuthModal(null);
+
+  const mobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.mobileMenuOpen
+  );
+  const setMobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.setMobileMenuOpen
+  );
 
   const isDashboard = location.pathname.startsWith("/dashboard");
 
@@ -73,8 +80,7 @@ export default function Header() {
       <div className="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
         <Link
           to="/"
-          onClick={(e) => {
-            // e.preventDefault();
+          onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="flex items-center space-x-2 relative z-10"

@@ -16,13 +16,23 @@ import {
   AvatarImage,
 } from "../../components/ui/avatar";
 import { getInitials } from "../../lib/utils";
-import { Bell, Plus } from "lucide-react";
+import { Bell, Menu, Plus } from "lucide-react";
+import { useMobileMenuStore } from "../../store/layout";
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import DashboardSidebar from "./DashboardSidebar";
 
 export default function DashboardHeader() {
   const { user, logout } = useAuth();
 
+  const mobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.mobileMenuOpen
+  );
+  const setMobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.setMobileMenuOpen
+  );
+
   return (
-    <header className="h-16 border-b flex items-center px-6 sticky top-0 bg-background z-10">
+    <header className="h-16 border-b flex items-center px-4 sticky top-0 bg-background z-10">
       <div className="flex-1 flex">
         <Link to="/dashboard">
           <div className="text-primary-600 text-xl font-bold flex items-center dark:text-primary-400">
@@ -33,19 +43,19 @@ export default function DashboardHeader() {
       </div>
 
       <div className="flex items-center space-x-4">
-        <Button variant="outline" size="sm" asChild>
+        {/* <Button variant="outline" size="sm" asChild>
           <Link to="/dashboard/create-post">
             <Plus className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">New Post</span>
           </Link>
-        </Button>
+        </Button> */}
 
-        <Button variant="ghost" size="icon" className="relative">
+        {/* <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button>
+        </Button> */}
 
-        <ThemeToggle />
+        <ThemeToggle variant="ghost" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -74,7 +84,7 @@ export default function DashboardHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/dashboard/settings">Profile Settings</Link>
+              <Link to="/settings">Profile Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/dashboard/accounts">Manage Accounts</Link>
@@ -83,6 +93,25 @@ export default function DashboardHeader() {
             <DropdownMenuItem onClick={() => logout()}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="md:hidden mr-4"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="p-0 w-[240px] z-50">
+            <DashboardSidebar
+              closeMenu={() => setMobileMenuOpen(false)}
+              isMobile={mobileMenuOpen}
+            />
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );

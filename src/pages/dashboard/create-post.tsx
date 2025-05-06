@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import PostCreate from "../../components/dashboard/PostCreate";
+import PostCreate from "../../components/posts/PostCreate";
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function CreatePostPage() {
         </div>
 
         <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <PostCreate />
           </div>
         </main>

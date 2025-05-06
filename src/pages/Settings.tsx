@@ -37,7 +37,7 @@ export default function SettingsPage() {
         </div>
 
         <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <UserSettings />
           </div>
         </main>

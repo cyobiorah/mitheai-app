@@ -6,12 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../store/hooks";
 import { getSocialIcon } from "../../lib/utils";
-import { Calendar } from "../../components/ui/calendar";
+import { Calendar } from "../ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../components/ui/popover";
+} from "../ui/popover";
 import {
   Form,
   FormControl,
@@ -19,23 +19,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../../components/ui/form";
+} from "../ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "../ui/select";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
-import { Button } from "../../components/ui/button";
-import { Textarea } from "../../components/ui/textarea";
-import { Input } from "../../components/ui/input";
+} from "../ui/tabs";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
+import { Input } from "../ui/input";
 import { Loader2, Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import socialApi from "../../api/socialApi";
@@ -258,11 +258,13 @@ export default function PostCreate() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Create New Post</h2>
-        <p className="text-muted-foreground">
-          Compose and schedule your content across multiple platforms
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Create New Post</h2>
+          <p className="text-muted-foreground">
+            Compose and schedule your content across multiple platforms
+          </p>
+        </div>
       </div>
 
       <Form {...form}>

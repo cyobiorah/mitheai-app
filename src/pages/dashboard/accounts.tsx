@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import SocialAccounts from "../../components/dashboard/SocialAccounts";
+import SocialAccounts from "../../components/social-accounts";
 
 export default function AccountsPage() {
   const navigate = useNavigate();

@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/button";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../ui/tabs";
 import { toast } from "../../hooks/use-toast";
 import { Loader2, Save, Clock, Send, ChevronLeft } from "lucide-react";
 // import { mockService, mockSocialAccounts } from "../../lib/mockData";
@@ -214,17 +214,14 @@ export default function PostFlow() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <div className="flex items-center mb-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="mr-2"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-3xl font-bold">Create Post</h1>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Create Post</h1>
+          <p className="text-muted-foreground">
+            Compose and schedule your content across multiple platforms
+          </p>
+        </div>
       </div>
 
       {isLoading ? (

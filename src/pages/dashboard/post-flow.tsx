@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import PostFlow from "../../components/dashboard/PostFlow";
+import PostFlow from "../../components/posts/PostFlow";
 import { useNavigate } from "react-router-dom";
 
 export default function PostFlowPage() {

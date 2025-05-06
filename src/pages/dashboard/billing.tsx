@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import TeamManagement from "../../components/team-management";
+import Billing from "../../components/billing";
+import { useNavigate } from "react-router-dom";
 
-export default function TeamsPage() {
+export default function BillingPage() {
   const navigate = useNavigate();
   const { isAuthenticated, authLoading } = useAuth();
 
@@ -38,7 +38,7 @@ export default function TeamsPage() {
 
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-6xl mx-auto">
-            <TeamManagement />
+            <Billing />
           </div>
         </main>
       </div>

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "../../components/ui/button";
+import { Button } from "../ui/button";
 import { Plus } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import {
@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "../../components/ui/card";
+} from "../ui/card";
 import { Badge } from "../ui/badge";
 import { getSocialIcon } from "../../lib/utils";
 import { useNavigate } from "react-router-dom";

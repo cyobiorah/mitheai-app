@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import Posts from "../../components/dashboard/Posts";
+import Posts from "../../components/posts";
 import { useNavigate } from "react-router-dom";
 
 export default function PostsPage() {

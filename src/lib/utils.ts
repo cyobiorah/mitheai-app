@@ -7,6 +7,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const getDateKey = (date: string) =>
+  format(parseISO(date), "yyyy-MM-dd");
+
 export function formatDate(date: string | Date, formatStr: string = "PPP") {
   if (!date) return "";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
@@ -29,26 +32,6 @@ export function getSocialIcon(platform: string) {
       return "ri-global-line";
   }
 }
-
-// export async function registerUser(userData: any) {
-//   const response = await apiRequest("POST", "/auth/register", userData);
-//   return response;
-// }
-
-// export async function loginUser(credentials: any) {
-//   const response = await apiRequest("POST", "/auth/login", credentials);
-//   return response;
-// }
-
-// export async function logoutUser() {
-//   const response = await apiRequest("POST", "/auth/logout");
-//   return response;
-// }
-
-// export async function getCurrentUser() {
-//   const response = await apiRequest("GET", "/users/me");
-//   return response;
-// }
 
 export async function joinWaitlist(data: any) {
   const response = await apiRequest("POST", "/waitlist", data);

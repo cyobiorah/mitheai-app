@@ -141,7 +141,9 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="individual">Individual</SelectItem>
-                    <SelectItem value="organization">Organization</SelectItem>
+                    <SelectItem value="organization" disabled>
+                      Organization (coming soon)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>

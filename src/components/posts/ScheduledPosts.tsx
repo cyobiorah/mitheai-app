@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
 import { Link } from "react-router-dom";
-import { formatDate, getSocialIcon } from "../../lib/utils";
-import { Button } from "../../components/ui/button";
+import { formatDate, getDateKey, getSocialIcon } from "../../lib/utils";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -12,13 +12,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -26,15 +26,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog";
-import { Badge } from "../../components/ui/badge";
-import { Calendar } from "../../components/ui/calendar";
+} from "../ui/dialog";
+import { Badge } from "../ui/badge";
+import { Calendar } from "../ui/calendar";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../ui/tabs";
 import {
   Loader2,
   Calendar as CalendarIcon,
@@ -47,6 +47,7 @@ import {
   FileText,
   Plus,
 } from "lucide-react";
+import { format, parseISO } from "date-fns";
 
 export default function ScheduledPosts() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
@@ -65,11 +66,7 @@ export default function ScheduledPosts() {
     queryKey: ["/scheduled-posts"],
   }) as { data: { data: any[] } } & { isLoading: boolean };
 
-  // const { data: socialAccounts = [], isLoading: isFetchingAccounts } = useQuery(
-  //   {
-  //     queryKey: [`/social-accounts/${user?._id}`],
-  //   }
-  // ) as { data: any[]; isLoading: boolean };
+  console.log({ scheduledPosts });
 
   // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
@@ -119,8 +116,8 @@ export default function ScheduledPosts() {
     if (!date) return [];
 
     return scheduledPosts.data.filter((post: any) => {
-      if (!post.scheduleTime) return false;
-      const postDate = new Date(post.scheduleTime);
+      if (!post.scheduledFor) return false;
+      const postDate = new Date(post.scheduledFor);
       return (
         postDate.getFullYear() === date.getFullYear() &&
         postDate.getMonth() === date.getMonth() &&
@@ -138,9 +135,8 @@ export default function ScheduledPosts() {
     const postsByDate: Record<string, number> = {};
 
     scheduledPosts.data.forEach((post: any) => {
-      if (post.scheduleTime) {
-        const date = new Date(post.scheduleTime);
-        const dateKey = date.toISOString().split("T")[0];
+      if (post.scheduledFor) {
+        const dateKey = getDateKey(post.scheduledFor);
         postsByDate[dateKey] = (postsByDate[dateKey] || 0) + 1;
       }
     });
@@ -160,7 +156,7 @@ export default function ScheduledPosts() {
   };
 
   const scheduleHasPostsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = getDateKey(date.toISOString());
     return !!getPostsByDate()[dateStr];
   };
 
@@ -236,7 +232,7 @@ export default function ScheduledPosts() {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   modifiers={{
-                    hasPost: (date) => scheduleHasPostsForDate(date),
+                    hasPost: (date) => scheduleHasPostsForDate(new Date(date)),
                   }}
                   modifiersStyles={{
                     hasPost: {
@@ -269,7 +265,7 @@ export default function ScheduledPosts() {
                   ) : filterPostsByDate(selectedDate).length > 0 ? (
                     <div className="space-y-4">
                       {filterPostsByDate(selectedDate).map((post: any) => (
-                        <Card key={post.id} className="overflow-hidden">
+                        <Card key={post._id} className="overflow-hidden">
                           <CardHeader className="pb-2">
                             <div className="flex justify-between items-start">
                               <div>
@@ -289,7 +285,7 @@ export default function ScheduledPosts() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem asChild>
                                     <Link
-                                      to={`/dashboard/posts/${post.id}/edit`}
+                                      to={`/dashboard/posts/${post._id}/edit`}
                                     >
                                       <Edit size={14} className="mr-2" />
                                       Edit Post
@@ -299,7 +295,7 @@ export default function ScheduledPosts() {
                                     <DropdownMenuItem
                                       onClick={() =>
                                         updatePostStatus({
-                                          id: post.id,
+                                          id: post._id,
                                           status: "published",
                                         })
                                       }
@@ -327,9 +323,7 @@ export default function ScheduledPosts() {
                               </p>
                             )}
                           </CardContent>
-                          <h2>something here</h2>
                           <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
-                            something here
                             {post.platforms?.map(
                               (platform: any, index: number) => (
                                 <div
@@ -338,10 +332,13 @@ export default function ScheduledPosts() {
                                 >
                                   <i
                                     className={`${getSocialIcon(
-                                      platform.platform
+                                      platform.platform ?? ""
                                     )} mr-1`}
                                   ></i>
-                                  <span>{platform.platform}ssss</span>
+                                  <span>
+                                    {platform.platform} at{" "}
+                                    {formatDate(post.scheduledFor, "p")}
+                                  </span>
                                 </div>
                               )
                             )}
@@ -399,7 +396,7 @@ export default function ScheduledPosts() {
                             <CardTitle className="mt-2 text-base">
                               {post.content.length > 60
                                 ? post.content.substring(0, 60) + "..."
-                                : post.content || "No content"}
+                                : post.content ?? "No content"}
                             </CardTitle>
                           </div>
                           <DropdownMenu>
@@ -462,7 +459,7 @@ export default function ScheduledPosts() {
                       <CardFooter className="flex flex-wrap gap-1 border-t pt-2 bg-muted/30">
                         {post.platforms?.map((platform: any) => (
                           <div
-                            key={platform.platformId}
+                            key={platform.accountId}
                             className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
                           >
                             <i

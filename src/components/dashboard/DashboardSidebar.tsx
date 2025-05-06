@@ -10,43 +10,21 @@ import {
   Users,
   Settings,
   CalendarSync,
+  Plus,
+  HelpCircle,
+  CreditCard,
 } from "lucide-react";
 import { useAuth } from "../../store/hooks";
 import { useMemo } from "react";
+import { ScrollArea } from "../ui/scroll-area";
 
-interface SidebarItemProps {
-  readonly icon: React.ReactNode;
-  readonly label: string;
-  readonly href: string;
-  readonly active: boolean;
-  readonly disabled?: boolean;
-}
-
-function SidebarItem({
-  icon,
-  label,
-  href,
-  active,
-  disabled,
-}: SidebarItemProps) {
-  return (
-    <Link to={href}>
-      <Button
-        variant="ghost"
-        className={cn(
-          "w-full justify-start gap-2",
-          active && "bg-accent text-accent-foreground",
-          disabled && "hidden"
-        )}
-      >
-        {icon}
-        <span>{label}</span>
-      </Button>
-    </Link>
-  );
-}
-
-export default function DashboardSidebar() {
+export default function DashboardSidebar({
+  closeMenu,
+  isMobile = false,
+}: {
+  readonly closeMenu?: () => void;
+  readonly isMobile?: boolean;
+}) {
   const location = useLocation();
   const { isAdmin, user } = useAuth();
 
@@ -97,29 +75,92 @@ export default function DashboardSidebar() {
     [isAdmin, user]
   );
 
-  return (
-    <div className="h-full min-w-[220px] border-r bg-background px-3 py-4">
-      <div className="flex flex-col gap-2">
-        {menuItems.map((item) => (
-          <SidebarItem
-            key={item.href}
-            icon={item.icon}
-            label={item.label}
-            href={item.href}
-            active={location.pathname === item.href}
-            disabled={item.disabled}
-          />
-        ))}
-      </div>
+  const bottomNavItems = [
+    {
+      label: "Settings",
+      href: "/settings",
+      icon: <Settings className="h-5 w-5" />,
+    },
+    {
+      label: "Billing",
+      href: "/dashboard/billing",
+      icon: <CreditCard className="h-5 w-5" />,
+    },
+    {
+      label: "Help & Support",
+      href: "/help",
+      icon: <HelpCircle className="h-5 w-5" />,
+    },
+  ];
 
-      <div className="mt-auto pt-4 border-t">
-        <SidebarItem
-          icon={<Settings size={18} />}
-          label="Settings"
-          href="/settings"
-          active={location.pathname === "/settings"}
-        />
+  const handleNavigation = () => {
+    if (closeMenu && isMobile) {
+      closeMenu();
+    }
+  };
+
+  return (
+    <aside
+      className={cn(
+        "h-full min-w-[220px] border-r bg-background px-3 py-4",
+        isMobile ? "flex-col" : "w-64"
+      )}
+    >
+      <ScrollArea className="flex-1">
+        <div className="flex flex-col gap-2 p-4">
+          <Button asChild className="mb-4">
+            <Link to="/dashboard/create-post" onClick={handleNavigation}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Post
+            </Link>
+          </Button>
+          <nav className="space-y-1">
+            {menuItems.map((item) => (
+              <Button
+                key={item.href}
+                variant={
+                  location.pathname === item.href ? "secondary" : "ghost"
+                }
+                className={cn(
+                  "w-full justify-start font-normal",
+                  location.pathname === item.href &&
+                    "bg-accent text-accent-foreground",
+                  item.disabled && "hidden"
+                )}
+                asChild
+                onClick={() => handleNavigation()}
+              >
+                <Link to={item.href}>
+                  {item.icon}
+                  <span className="ml-3">{item.label}</span>
+                </Link>
+              </Button>
+            ))}
+          </nav>
+        </div>
+      </ScrollArea>
+      <div className="flex flex-col gap-2 border-t p-4">
+        <nav className="space-y-1">
+          {bottomNavItems.map((item) => (
+            <Button
+              key={item.href}
+              variant="ghost"
+              className={cn(
+                "w-full justify-start font-normal",
+                location.pathname === item.href &&
+                  "bg-accent text-accent-foreground"
+              )}
+              asChild
+              onClick={() => handleNavigation()}
+            >
+              <Link to={item.href}>
+                {item.icon}
+                <span className="ml-3">{item.label}</span>
+              </Link>
+            </Button>
+          ))}
+        </nav>
       </div>
-    </div>
+    </aside>
   );
 }
