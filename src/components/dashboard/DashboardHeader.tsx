@@ -32,7 +32,7 @@ export default function DashboardHeader() {
   );
 
   return (
-    <header className="h-16 border-b flex items-center px-6 sticky top-0 bg-background z-10">
+    <header className="h-16 border-b flex items-center px-4 sticky top-0 bg-background z-10">
       <div className="flex-1 flex">
         <Link to="/dashboard">
           <div className="text-primary-600 text-xl font-bold flex items-center dark:text-primary-400">
@@ -43,19 +43,19 @@ export default function DashboardHeader() {
       </div>
 
       <div className="flex items-center space-x-4">
-        <Button variant="outline" size="sm" asChild>
+        {/* <Button variant="outline" size="sm" asChild>
           <Link to="/dashboard/create-post">
             <Plus className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">New Post</span>
           </Link>
-        </Button>
+        </Button> */}
 
-        <Button variant="ghost" size="icon" className="relative">
+        {/* <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button>
+        </Button> */}
 
-        <ThemeToggle />
+        <ThemeToggle variant="ghost" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

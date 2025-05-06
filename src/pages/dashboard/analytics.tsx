@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import Analytics from "../../components/dashboard/Analytics";
+import Analytics from "../../components/analytics";
 import { useNavigate } from "react-router-dom";
 
 export default function AnalyticsPage() {

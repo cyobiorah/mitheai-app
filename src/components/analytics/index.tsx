@@ -5,8 +5,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
+} from "../ui/card";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   ResponsiveContainer,
   AreaChart,
