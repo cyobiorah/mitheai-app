@@ -7,6 +7,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const getDateKey = (date: string) =>
+  format(parseISO(date), "yyyy-MM-dd");
+
 export function formatDate(date: string | Date, formatStr: string = "PPP") {
   if (!date) return "";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
