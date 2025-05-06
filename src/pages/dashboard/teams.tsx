@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import TeamManagement from "../../components/dashboard/TeamManagement";
+import TeamManagement from "../../components/team-management";
 
 export default function TeamsPage() {
   const navigate = useNavigate();

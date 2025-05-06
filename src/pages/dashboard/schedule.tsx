@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import ScheduledPosts from "../../components/dashboard/ScheduledPosts";
+import ScheduledPosts from "../../components/posts/ScheduledPosts";
 
 export default function SchedulePage() {
   const navigate = useNavigate();

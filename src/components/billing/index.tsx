@@ -8,14 +8,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
-import { Button } from "../../components/ui/button";
+} from "../ui/tabs";
+import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../../components/ui/alert-dialog";
-import { Badge } from "../../components/ui/badge";
+} from "../ui/alert-dialog";
+import { Badge } from "../ui/badge";
 import {
   CheckCircle2,
   AlertCircle,
