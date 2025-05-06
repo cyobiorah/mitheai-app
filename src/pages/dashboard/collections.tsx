@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import Collections from "../../components/dashboard/Collections";
+import Collections from "../../components/collections/Collections";
 import { useNavigate } from "react-router-dom";
 
 export default function CollectionsPage() {

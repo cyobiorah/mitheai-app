@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/button";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
+} from "../ui/tabs";
 import { toast } from "../../hooks/use-toast";
 import { Loader2, Save, Clock, Send, ChevronLeft } from "lucide-react";
 // import { mockService, mockSocialAccounts } from "../../lib/mockData";
