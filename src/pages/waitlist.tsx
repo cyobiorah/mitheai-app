@@ -1,6 +1,6 @@
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import WaitlistForm from "../components/waitlist/WaitlistForm";
+import WaitlistForm from "./WaitlistForm";
 import ScrollToTop from "../components/layout/ScrollToTop";
 
 export default function WaitlistPage() {

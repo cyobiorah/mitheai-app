@@ -185,7 +185,7 @@ export default function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem className="cursor-pointer flex items-center py-2">
                         <Settings className="mr-2 h-4 w-4" />
-                        <Link to="/settings">Settings</Link>
+                        <Link to="/dashboard/settings">Settings</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -259,7 +259,7 @@ export default function Header() {
                 </div>
                 <DropdownMenuItem className="cursor-pointer flex items-center py-2">
                   <Settings className="mr-2 h-4 w-4" />
-                  <Link to="/settings">Settings</Link>
+                  <Link to="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -347,7 +347,7 @@ export default function Header() {
                           </div>
                         </Link>
                         <Link
-                          to="/settings"
+                          to="/dashboard/settings"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -451,7 +451,7 @@ export default function Header() {
                     <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 
                     <Link
-                      to="/settings"
+                      to="/dashboard/settings"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
