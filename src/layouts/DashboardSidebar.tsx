@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "../../lib/utils";
-import { Button } from "../../components/ui/button";
+import { cn } from "../lib/utils";
+import { Button } from "../components/ui/button";
 import {
   BarChart3,
   CalendarCheck,
@@ -14,9 +14,9 @@ import {
   HelpCircle,
   CreditCard,
 } from "lucide-react";
-import { useAuth } from "../../store/hooks";
+import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
-import { ScrollArea } from "../ui/scroll-area";
+import { ScrollArea } from "../components/ui/scroll-area";
 
 export default function DashboardSidebar({
   closeMenu,
@@ -78,7 +78,7 @@ export default function DashboardSidebar({
   const bottomNavItems = [
     {
       label: "Settings",
-      href: "/settings",
+      href: "/dashboard/settings",
       icon: <Settings className="h-5 w-5" />,
     },
     {
@@ -88,7 +88,7 @@ export default function DashboardSidebar({
     },
     {
       label: "Help & Support",
-      href: "/help",
+      href: "/dashboard/help",
       icon: <HelpCircle className="h-5 w-5" />,
     },
   ];
