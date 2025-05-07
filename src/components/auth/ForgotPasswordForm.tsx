@@ -13,6 +13,8 @@ import {
 } from "../../components/ui/form";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import { apiRequest } from "../../lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -31,7 +33,6 @@ export default function ForgotPasswordForm({
 }: ForgotPasswordFormProps) {
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -40,23 +41,29 @@ export default function ForgotPasswordForm({
     },
   });
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
-    setIsLoading(true);
-    try {
-      console.log({ data });
-      // In a real implementation, this would call an API endpoint to send a reset link
-      // For now, we'll just simulate a successful submission
-      // await apiRequest("POST", "/api/auth/forgot-password", data);
+  const { mutate: forgotPassword, isPending: isForgotPasswordPending } =
+    useMutation({
+      mutationFn: async (data: ForgotPasswordFormData) => {
+        return await apiRequest("POST", "/auth/forgot-password", data);
+      },
+      onSuccess: () => {
+        setIsSubmitted(true);
+      },
+      onError: () => {
+        toast({
+          title: "Something went wrong",
+          description: "Failed to send reset link. Please try again.",
+          variant: "destructive",
+        });
+      },
+    });
 
-      setIsSubmitted(true);
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    try {
+      forgotPassword(data);
       if (onSuccess) {
         onSuccess();
       }
-
-      toast({
-        title: "Reset link sent",
-        description: "Check your email for a link to reset your password.",
-      });
     } catch (error) {
       console.error(error);
       toast({
@@ -64,10 +71,10 @@ export default function ForgotPasswordForm({
         description: "Failed to send reset link. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = isForgotPasswordPending;
 
   if (isSubmitted) {
     return (

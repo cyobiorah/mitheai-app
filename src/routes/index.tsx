@@ -27,6 +27,7 @@ import Billing from "../components/billing";
 import HelpSupport from "../components/help-support";
 import PostCreate from "../components/posts/post-create/PostCreate";
 import UserSettings from "../components/settings";
+import ResetPasswordPage from "../pages/reset-password";
 
 const AppRoutes = () => {
   return (
@@ -88,6 +89,14 @@ const AppRoutes = () => {
               element={
                 <PublicRoute>
                   <ForgotPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <PublicRoute>
+                  <ResetPasswordPage />
                 </PublicRoute>
               }
             />

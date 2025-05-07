@@ -90,7 +90,6 @@ const Billing = () => {
             }),
           }
         );
-        console.log({ response });
         window.location.href = response.url;
       },
       onSuccess: () => {
@@ -147,7 +146,6 @@ const Billing = () => {
   };
 
   const handleUpgradeDowngrade = (plan: any) => {
-    console.log({ plan });
     let planId: string;
     if (isYearly) {
       planId = plan.priceYearlyId;

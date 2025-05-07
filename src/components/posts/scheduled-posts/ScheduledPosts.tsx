@@ -43,8 +43,6 @@ export default function ScheduledPosts() {
     queryKey: ["/scheduled-posts"],
   }) as { data: { data: any[] } } & { isLoading: boolean };
 
-  console.log({ scheduledPosts });
-
   // Delete post mutation
   const { mutate: deletePost, isPending: isDeleting } = useMutation({
     mutationFn: async (id: number) => {

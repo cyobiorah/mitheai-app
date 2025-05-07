@@ -109,7 +109,6 @@ export default function UserSettings() {
 
   function onProfileSubmit(data: ProfileFormData) {
     if (data.email) delete data.email;
-    console.log({ data });
     updateProfile(data);
   }
 
