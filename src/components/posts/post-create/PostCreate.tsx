@@ -3,15 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "../../hooks/use-toast";
-import { useAuth } from "../../store/hooks";
-import { getSocialIcon } from "../../lib/utils";
-import { Calendar } from "../ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover";
+import { useToast } from "../../../hooks/use-toast";
+import { useAuth } from "../../../store/hooks";
+import { cn } from "../../../lib/utils";
+import { Calendar } from "../../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import {
   Form,
   FormControl,
@@ -19,26 +15,27 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "../../ui/form";
 import {
   Select,
   SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
-import { Input } from "../ui/input";
+} from "../../ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
+import { Button } from "../../ui/button";
+import { Textarea } from "../../ui/textarea";
+import { Input } from "../../ui/input";
 import { Loader2, Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
-import socialApi from "../../api/socialApi";
+import socialApi from "../../../api/socialApi";
+import {
+  AccountSelection,
+  getCollectionDisplay,
+  MediaLinksInput,
+  PostStatusControls,
+} from "./methods";
+import Preview from "./Preview";
 
 const postSchema = z.object({
   content: z.string().min(1, "Content is required"),
@@ -213,49 +210,6 @@ export default function PostCreate() {
     }
   }, [form.watch("selectedAccount")]);
 
-  const getSocialAccountView = (field: any) => {
-    if (isFetchingAccounts) {
-      return (
-        <div className="flex items-center justify-center p-4">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      );
-    } else if (socialAccounts.length > 0) {
-      return socialAccounts.map((account: any) => (
-        <div
-          key={account._id}
-          className="flex items-center space-x-2 border p-2 rounded-md"
-        >
-          <input
-            type="radio"
-            id={account._id}
-            checked={field.value === account._id}
-            onChange={() => {
-              field.onChange(account._id);
-            }}
-            className="h-4 w-4"
-          />
-          <label
-            htmlFor={account._id}
-            className="flex items-center space-x-2 text-sm cursor-pointer"
-          >
-            <i className={`${getSocialIcon(account.platform)} text-lg`}></i>
-            <span>{account?.metadata?.username ?? account.accountName}</span>
-          </label>
-        </div>
-      ));
-    } else {
-      return (
-        <div className="text-center p-2 border rounded-md bg-muted">
-          <p className="text-muted-foreground">No social accounts connected</p>
-          <Button variant="link" size="sm" asChild className="mt-1">
-            <Link href="/dashboard/accounts">Connect an account</Link>
-          </Button>
-        </div>
-      );
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -294,40 +248,13 @@ export default function PostCreate() {
                 )}
               />
 
-              <div className="space-y-2">
-                <FormLabel>Media</FormLabel>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add image or video URL"
-                    value={newMediaLink}
-                    onChange={(e) => setNewMediaLink(e.target.value)}
-                  />
-                  <Button type="button" onClick={addMediaLink} size="sm">
-                    Add
-                  </Button>
-                </div>
-
-                {mediaLinks.length > 0 && (
-                  <div className="mt-2 space-y-2">
-                    {mediaLinks.map((link, index) => (
-                      <div
-                        key={`${link}-${index}`}
-                        className="flex items-center justify-between p-2 border rounded-md"
-                      >
-                        <div className="truncate flex-1">{link}</div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeMediaLink(link)}
-                        >
-                          <X size={16} />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <MediaLinksInput
+                mediaLinks={mediaLinks}
+                newMediaLink={newMediaLink}
+                setNewMediaLink={setNewMediaLink}
+                addMediaLink={addMediaLink}
+                removeMediaLink={removeMediaLink}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -338,7 +265,11 @@ export default function PostCreate() {
                       <FormItem>
                         <FormLabel>Select Accounts</FormLabel>
                         <div className="space-y-2">
-                          {getSocialAccountView(field)}
+                          <AccountSelection
+                            socialAccounts={socialAccounts}
+                            field={field}
+                            isFetching={isFetchingAccounts}
+                          />
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -353,32 +284,7 @@ export default function PostCreate() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <div className="flex space-x-2">
-                          <Button
-                            type="button"
-                            variant={
-                              field.value === "scheduled"
-                                ? "default"
-                                : "outline"
-                            }
-                            onClick={() => field.onChange("scheduled")}
-                            size="sm"
-                          >
-                            Schedule
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={
-                              field.value === "published"
-                                ? "default"
-                                : "outline"
-                            }
-                            onClick={() => field.onChange("published")}
-                            size="sm"
-                          >
-                            Post Now
-                          </Button>
-                        </div>
+                        <PostStatusControls field={field} />
                         <FormMessage />
                       </FormItem>
                     )}
@@ -400,23 +306,9 @@ export default function PostCreate() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {isFetchingCollections ? (
-                              <div className="flex items-center justify-center p-2">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              </div>
-                            ) : collections.count > 0 ? (
-                              collections.data.map((collection: any) => (
-                                <SelectItem
-                                  key={collection._id}
-                                  value={collection._id}
-                                >
-                                  {collection.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="none" disabled>
-                                No collections available
-                              </SelectItem>
+                            {getCollectionDisplay(
+                              isFetchingCollections,
+                              collections
                             )}
                           </SelectContent>
                         </Select>
@@ -517,79 +409,11 @@ export default function PostCreate() {
             </TabsContent>
 
             <TabsContent value="preview" className="pt-4">
-              <div className="border rounded-lg p-4 max-w-md mx-auto">
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="text-primary text-sm font-medium">
-                        {user?.firstName?.charAt(0) ??
-                          user?.username?.charAt(0) ??
-                          "U"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{user?.firstName ?? ""}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {form.watch("status") === "scheduled" &&
-                        form.watch("scheduleTime")
-                          ? `Scheduled for ${format(
-                              form.watch("scheduleTime") as Date,
-                              "PPP 'at' h:mm a"
-                            )}`
-                          : form.watch("status") === "published"
-                          ? "Publishing now"
-                          : ""}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-sm">
-                    {form.watch("content") || (
-                      <span className="text-muted-foreground italic">
-                        No content added yet
-                      </span>
-                    )}
-                  </div>
-
-                  {mediaLinks.length > 0 && (
-                    <div className="space-y-2">
-                      {mediaLinks.map((link, index) => (
-                        <div
-                          key={index}
-                          className="border rounded-md p-2 text-xs text-muted-foreground"
-                        >
-                          Media: {link}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="border-t pt-2 flex flex-wrap gap-1">
-                    {(() => {
-                      const selectedAccountId = form.watch("selectedAccount");
-                      const account = socialAccounts.find(
-                        (a: any) => a._id === selectedAccountId
-                      );
-
-                      if (!account) return null;
-
-                      return (
-                        <div
-                          key={account._id}
-                          className="text-xs bg-muted px-2 py-1 rounded-full flex items-center"
-                        >
-                          <i
-                            className={`${getSocialIcon(
-                              account.platform
-                            )} mr-1`}
-                          ></i>
-                          <span>{account.accountName}</span>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
+              <Preview
+                form={form}
+                mediaLinks={mediaLinks}
+                socialAccounts={socialAccounts}
+              />
             </TabsContent>
           </Tabs>
 
@@ -612,11 +436,3 @@ const getBtnText = (form: any) => {
   if (form.watch("status") === "scheduled") return "Scheduled Post";
   else return "Publish Now";
 };
-
-function Link({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href}>{children}</a>;
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
-}

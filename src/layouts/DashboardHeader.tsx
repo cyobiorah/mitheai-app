@@ -1,6 +1,6 @@
-import { Button } from "../../components/ui/button";
-import { ThemeToggle } from "../../components/ui/theme-toggle";
-import { useAuth } from "../../store/hooks";
+import { Button } from "../components/ui/button";
+import { ThemeToggle } from "../components/ui/theme-toggle";
+import { useAuth } from "../store/hooks";
 import { Link } from "react-router-dom";
 import {
   DropdownMenu,
@@ -9,16 +9,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../components/ui/avatar";
-import { getInitials } from "../../lib/utils";
-import { Bell, Menu, Plus } from "lucide-react";
-import { useMobileMenuStore } from "../../store/layout";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+} from "../components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { getInitials } from "../lib/utils";
+import { Menu } from "lucide-react";
+import { useMobileMenuStore } from "../store/layout";
+import { Sheet, SheetContent, SheetTrigger } from "../components/ui/sheet";
 import DashboardSidebar from "./DashboardSidebar";
 
 export default function DashboardHeader() {
@@ -43,18 +39,6 @@ export default function DashboardHeader() {
       </div>
 
       <div className="flex items-center space-x-4">
-        {/* <Button variant="outline" size="sm" asChild>
-          <Link to="/dashboard/create-post">
-            <Plus className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">New Post</span>
-          </Link>
-        </Button> */}
-
-        {/* <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button> */}
-
         <ThemeToggle variant="ghost" />
 
         <DropdownMenu>
@@ -84,7 +68,7 @@ export default function DashboardHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/settings">Profile Settings</Link>
+              <Link to="/dashboard/settings">Profile Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/dashboard/accounts">Manage Accounts</Link>
