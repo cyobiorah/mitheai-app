@@ -9,12 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
 import {
   AlertDialog,
@@ -95,7 +90,6 @@ const Billing = () => {
             }),
           }
         );
-        console.log({ response });
         window.location.href = response.url;
       },
       onSuccess: () => {
@@ -152,7 +146,6 @@ const Billing = () => {
   };
 
   const handleUpgradeDowngrade = (plan: any) => {
-    console.log({ plan });
     let planId: string;
     if (isYearly) {
       planId = plan.priceYearlyId;
@@ -205,8 +198,8 @@ const Billing = () => {
                 </p>
               )}
             </div>
-            {/* <div className="text-right">
-              <p className="text-2xl font-bold mb-1">
+            <div className="text-right">
+              {/* <p className="text-2xl font-bold mb-1">
                 {user?.subscriptionTier === "free"
                   ? "$0"
                   : user?.subscriptionTier === "basic"
@@ -216,11 +209,11 @@ const Billing = () => {
                   : user?.subscriptionTier === "business"
                   ? "$299"
                   : "$0"}
-              </p>
+              </p> */}
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 per month
               </p>
-            </div> */}
+            </div>
           </div>
 
           {user?.subscriptionStatus === "paid" && (

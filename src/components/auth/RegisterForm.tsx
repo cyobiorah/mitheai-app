@@ -76,7 +76,6 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    console.log({ data });
     setIsLoading(true);
     try {
       const { confirmPassword, ...registerData } = data;
