@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import {
@@ -10,8 +10,7 @@ import {
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../../hooks/use-toast";
-import { Loader2, Save, Clock, Send, ChevronLeft } from "lucide-react";
-// import { mockService, mockSocialAccounts } from "../../lib/mockData";
+import { Loader2, Save, Clock, Send } from "lucide-react";
 import AccountSelection from "../posting/AccountSelection";
 import PlatformCaptions from "../posting/PlatformCaption";
 import MediaUpload from "../posting/MediaUpload";
@@ -34,7 +33,7 @@ export default function PostFlow() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [activeStep, setActiveStep] = useState("accounts");
+  const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Post data state
@@ -89,6 +88,29 @@ export default function PostFlow() {
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
 
+  const tabItems = [
+    {
+      value: "accounts",
+      label: "Accounts",
+      disabled: false,
+    },
+    {
+      value: "caption",
+      label: "Caption",
+      disabled: isSubmitting || !canProceedToCaption,
+    },
+    {
+      value: "media",
+      label: "Media",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+    {
+      value: "schedule",
+      label: "Schedule",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+  ];
+
   // Submit the post
   const handleSubmit = async () => {
     if (selectedAccounts.length === 0) {
@@ -135,12 +157,12 @@ export default function PostFlow() {
     });
 
     // Type of post
-    const postType =
-      media.length > 0
-        ? media[0].type === "image"
-          ? "image"
-          : "video"
-        : "text";
+    let postType;
+    if (media.length > 0) {
+      postType = media[0].type === "image" ? "image" : "video";
+    } else {
+      postType = "text";
+    }
 
     // Prepare media URLs (In a real app, these would be uploaded to a server)
     const mediaUrls = media.map((item) => item.url);
@@ -229,29 +251,21 @@ export default function PostFlow() {
         </div>
       ) : (
         <div className="space-y-8">
-          <Tabs defaultValue={activeStep} onValueChange={setActiveStep}>
+          <Tabs
+            defaultValue={activeTab}
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value)}
+          >
             <TabsList className="w-full mb-8">
-              <TabsTrigger value="accounts" disabled={isSubmitting}>
-                1. Select Accounts
-              </TabsTrigger>
-              <TabsTrigger
-                value="caption"
-                disabled={!canProceedToCaption || isSubmitting}
-              >
-                2. Write Captions
-              </TabsTrigger>
-              <TabsTrigger
-                value="media"
-                disabled={!canProceedToMedia || isSubmitting}
-              >
-                3. Add Media
-              </TabsTrigger>
-              <TabsTrigger
-                value="schedule"
-                disabled={!canProceedToMedia || isSubmitting}
-              >
-                4. Schedule
-              </TabsTrigger>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  disabled={item.disabled}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="accounts" className="space-y-6">
@@ -263,7 +277,7 @@ export default function PostFlow() {
 
               <div className="flex justify-end space-x-3">
                 <Button
-                  onClick={() => setActiveStep("caption")}
+                  onClick={() => setActiveTab("caption")}
                   disabled={!canProceedToCaption}
                 >
                   Continue to Caption
@@ -283,12 +297,12 @@ export default function PostFlow() {
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("accounts")}
+                  onClick={() => setActiveTab("accounts")}
                 >
                   Back to Accounts
                 </Button>
                 <Button
-                  onClick={() => setActiveStep("media")}
+                  onClick={() => setActiveTab("media")}
                   disabled={!canProceedToMedia}
                 >
                   Continue to Media
@@ -302,11 +316,11 @@ export default function PostFlow() {
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("caption")}
+                  onClick={() => setActiveTab("caption")}
                 >
                   Back to Caption
                 </Button>
-                <Button onClick={() => setActiveStep("schedule")}>
+                <Button onClick={() => setActiveTab("schedule")}>
                   Continue to Schedule
                 </Button>
               </div>
@@ -413,7 +427,7 @@ export default function PostFlow() {
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("media")}
+                  onClick={() => setActiveTab("media")}
                   disabled={isSubmitting}
                 >
                   Back to Media
