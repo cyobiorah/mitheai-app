@@ -1,8 +1,140 @@
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { Loader2, X } from "lucide-react";
-import { getSocialIcon } from "../../../lib/utils";
+import { getSocialIcon, uploadToCloudinary } from "../../../lib/utils";
 import { SelectItem } from "../../ui/select";
+import { useRef, useState } from "react";
+import { toast } from "../../../hooks/use-toast";
+
+export type UploadedMedia = {
+  url: string;
+  publicId: string;
+  type: "image" | "video";
+  resourceType: string;
+};
+
+export function InstagramMediaDropzone({
+  uploadedMedia,
+  setUploadedMedia,
+}: {
+  readonly uploadedMedia: UploadedMedia[];
+  readonly setUploadedMedia: (media: UploadedMedia[]) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = async (files: File[]) => {
+    setIsUploading(true);
+    try {
+      // const uploads = await uploadToCloudinary(files[0]);
+      const uploadPromises = files.map((file) => uploadToCloudinary(file));
+      // setUploadedMedia([...uploadedMedia, ...uploads]);
+      try {
+        const uploaded = await Promise.all(uploadPromises);
+        setUploadedMedia([
+          ...uploadedMedia,
+          ...(uploaded.filter(Boolean) as any[]),
+        ]);
+      } catch (error) {
+        console.error("Error uploading files:", error);
+        setIsUploading(false);
+        toast({
+          title: "Error",
+          description: "Error uploading files",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(
+      (file) => file.type.startsWith("image/") || file.type.startsWith("video/")
+    );
+    if (droppedFiles.length) {
+      handleUpload(droppedFiles);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files ? Array.from(e.target.files) : [];
+    handleUpload(selected);
+  };
+
+  const handleRemove = (index: number) => {
+    const updated = [...uploadedMedia];
+    updated.splice(index, 1);
+    setUploadedMedia(updated);
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="font-medium">Instagram Media</label>
+
+      <div
+        onDrop={handleDrop}
+        onDragOver={(e) => e.preventDefault()}
+        className="border-2 border-dashed border-muted p-6 rounded-md text-sm text-muted-foreground text-center cursor-pointer"
+        onClick={() => inputRef.current?.click()}
+      >
+        {isUploading ? (
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Uploading...
+          </div>
+        ) : (
+          "Drag & drop media here, or click to select"
+        )}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          className="hidden"
+          onChange={handleFileChange}
+        />
+      </div>
+
+      {uploadedMedia.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+          {uploadedMedia.map((media, idx) => (
+            <div
+              key={media.publicId}
+              className="relative border rounded overflow-hidden bg-muted"
+            >
+              {media.type === "image" ? (
+                <img
+                  src={media.url}
+                  alt={`media-${idx}`}
+                  className="object-cover w-full h-32"
+                />
+              ) : (
+                <video
+                  src={media.url}
+                  className="w-full h-32 object-cover"
+                  controls
+                />
+              )}
+              <Button
+                size="icon"
+                variant="destructive"
+                className="absolute top-1 right-1 h-6 w-6"
+                onClick={() => handleRemove(idx)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function MediaLinksInput({
   mediaLinks,

@@ -32,8 +32,10 @@ import socialApi from "../../../api/socialApi";
 import {
   AccountSelection,
   getCollectionDisplay,
+  InstagramMediaDropzone,
   MediaLinksInput,
   PostStatusControls,
+  UploadedMedia,
 } from "./methods";
 import Preview from "./Preview";
 
@@ -55,6 +57,7 @@ export default function PostCreate() {
   const [mediaLinks, setMediaLinks] = useState<string[]>([]);
   const [newMediaLink, setNewMediaLink] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uploadedMedia, setUploadedMedia] = useState<UploadedMedia[]>([]);
 
   // Get social accounts
   const { data: socialAccounts = [], isLoading: isFetchingAccounts } = useQuery(
@@ -176,6 +179,19 @@ export default function PostCreate() {
               description: "Posted successfully to Twitter!",
             });
             break;
+          case "instagram":
+            console.log({ postData });
+            console.log({ uploadedMedia });
+            const igPostData = {
+              caption: postData.content,
+              media: uploadedMedia,
+            };
+            await socialApi.postToInstagram(selectedAccount._id, igPostData);
+            toast({
+              title: "Success",
+              description: "Posted successfully to Instagram!",
+            });
+            break;
           default:
             toast({
               title: "Error",
@@ -254,6 +270,11 @@ export default function PostCreate() {
                 setNewMediaLink={setNewMediaLink}
                 addMediaLink={addMediaLink}
                 removeMediaLink={removeMediaLink}
+              />
+
+              <InstagramMediaDropzone
+                uploadedMedia={uploadedMedia}
+                setUploadedMedia={setUploadedMedia}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

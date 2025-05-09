@@ -16,10 +16,34 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../components/ui/tooltip";
-import { TabsList, TabsTrigger } from "../ui/tabs";
+import { TabsList, TabsTrigger } from "../ui/tabs"; // Assuming this path is correct, e.g. ../../components/ui/tabs
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  Active,
+  Over,
+  DragStartEvent,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { toast } from "../../hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../../api/axios";
+import { uploadToCloudinary } from "../../lib/utils";
 
 // Media item interface
 export interface MediaItem {
+  id: string; // Add a stable unique ID for dnd-kit items
   file: File;
   type: "image" | "video";
   url: string;
@@ -32,7 +56,138 @@ interface MediaUploadProps {
   onChange: (media: MediaItem[]) => void;
 }
 
-export default function MediaUpload({ media, onChange }: MediaUploadProps) {
+// Component to display the media item, used in SortableMediaItem and DragOverlay
+function MediaItemDisplayContent({
+  item,
+  index,
+  isCover,
+}: {
+  item: MediaItem;
+  index: number;
+  isCover: boolean;
+}) {
+  return (
+    <>
+      <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
+        {item.type === "image" ? (
+          <img
+            src={item.url}
+            alt={`Media ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <img
+            src={item.thumbnailUrl || ""} // Provide a fallback empty string for thumbnailUrl
+            alt={`Media ${index + 1}`}
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-1 bg-black/50 text-white text-xs flex items-center justify-center pointer-events-none">
+        {item.type === "image" ? (
+          <FileImage className="h-3 w-3 mr-1" />
+        ) : (
+          <FileVideo className="h-3 w-3 mr-1" />
+        )}
+        {isCover ? "Cover" : `#${index + 1}`}
+      </div>
+    </>
+  );
+}
+
+// Sortable Media Item Component
+function SortableMediaItem({
+  item,
+  index,
+  onRemove,
+}: {
+  item: MediaItem;
+  index: number;
+  onRemove: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 10 : undefined, // Ensure dragged item placeholder doesn't overlap overlay
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`relative aspect-square border rounded-md overflow-hidden cursor-move ${
+        index === 0 ? "ring-2 ring-primary" : "shadow-sm"
+      }
+      }`}
+    >
+      <MediaItemDisplayContent
+        item={item}
+        index={index}
+        isCover={index === 0}
+      />
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-5 w-5 rounded-full z-20" // Ensure button is above overlays
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent drag from starting on remove click
+                onRemove();
+              }}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Remove</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
+  );
+}
+
+// Draggable Overlay Item (for ghosting effect)
+function DraggableOverlayItem({
+  item,
+  index,
+}: {
+  item: MediaItem;
+  index: number;
+}) {
+  return (
+    <div
+      className={`relative aspect-square border rounded-md overflow-hidden shadow-2xl ${
+        index === 0 ? "ring-2 ring-primary" : ""
+      } bg-background`}
+    >
+      <MediaItemDisplayContent
+        item={item}
+        index={index}
+        isCover={index === 0}
+      />
+    </div>
+  );
+}
+
+export default function MediaUpload({
+  media,
+  onChange,
+}: Readonly<MediaUploadProps>) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<string>("upload");
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -41,7 +196,8 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
   const [videoPreviewElement, setVideoPreviewElement] =
     useState<HTMLVideoElement | null>(null);
 
-  // When media changes, set the active tab
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
   useEffect(() => {
     if (media.length > 0) {
       setActiveTab("preview");
@@ -50,48 +206,41 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
     }
   }, [media]);
 
-  // Trigger file input click when upload button is clicked
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // Handle file input change
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       processFiles(files);
     }
-
-    // Reset the input so the same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Handle drag events
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOverEvent = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragLeaveEvent = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDropEvent = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragOver(false);
-
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       processFiles(files);
     }
   };
 
-  // Validate file type and size
   const validateFile = (file: File): { valid: boolean; message?: string } => {
     const imageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     const videoTypes = ["video/mp4", "video/quicktime", "video/webm"];
@@ -104,26 +253,23 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
           "Unsupported file type. Please upload images (JPG, PNG, GIF, WebP) or videos (MP4, QuickTime, WebM).",
       };
     }
-
     if (file.size > maxSize) {
       return {
         valid: false,
         message: "File is too large. Maximum size is 50MB.",
       };
     }
-
     return { valid: true };
   };
 
-  // Process files for upload
-  const processFiles = (files: FileList) => {
-    // Validate and process up to 10 files
+  const processFiles = async (files: FileList) => {
     const validFiles = Array.from(files)
       .slice(0, 10 - media.length)
       .filter((file) => {
         const validation = validateFile(file);
         if (!validation.valid) {
           console.error(validation.message);
+          // Consider showing this error to the user via a toast or message
           return false;
         }
         return true;
@@ -131,53 +277,68 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
 
     if (validFiles.length === 0) return;
 
-    // Simulate upload
     setIsUploading(true);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
 
-      if (progress >= 100) {
-        clearInterval(interval);
-        setIsUploading(false);
-        setUploadProgress(0);
+    // let progress = 0;
+    // const interval = setInterval(() => {
+    //   progress += 10;
+    //   setUploadProgress(progress);
+    //   if (progress >= 100) {
+    //     clearInterval(interval);
+    //     setIsUploading(false);
+    //     setUploadProgress(0);
 
-        // Process each file and create media items
-        const processFilePromises = validFiles.map(async (file) => {
-          const isImage = file.type.startsWith("image/");
-          const url = URL.createObjectURL(file);
+    //     const processFilePromises = validFiles.map(async (file, idx) => {
+    //       const isImage = file.type.startsWith("image/");
+    //       const url = URL.createObjectURL(file);
+    //       // Create a more stable ID, e.g., using file name, size, and a timestamp/random element
+    //       const uniqueId = `${file.name}-${file.size}-${Date.now()}-${idx}`;
 
-          const newItem: MediaItem = {
-            file,
-            type: isImage ? "image" : "video",
-            url,
-          };
+    //       const newItem: MediaItem = {
+    //         id: uniqueId,
+    //         file,
+    //         type: isImage ? "image" : "video",
+    //         url,
+    //       };
 
-          // For videos, generate a thumbnail at 0 seconds
-          if (!isImage) {
-            try {
-              const thumbnailUrl = await extractVideoThumbnail(file, 0);
-              if (thumbnailUrl) {
-                newItem.thumbnailUrl = thumbnailUrl;
-                newItem.thumbnailTime = 0;
-              }
-            } catch (error) {
-              console.error("Error generating thumbnail:", error);
-            }
-          }
+    //       if (!isImage) {
+    //         try {
+    //           const thumbnailUrl = await extractVideoThumbnail(file, 0);
+    //           if (thumbnailUrl) {
+    //             newItem.thumbnailUrl = thumbnailUrl;
+    //             newItem.thumbnailTime = 0;
+    //           }
+    //         } catch (error) {
+    //           console.error("Error generating thumbnail:", error);
+    //         }
+    //       }
+    //       return newItem;
+    //     });
 
-          return newItem;
-        });
+    //     Promise.all(processFilePromises).then((newItems) => {
+    //       onChange([
+    //         ...media,
+    //         ...newItems.filter((item) => item !== null),
+    //       ] as MediaItem[]);
+    //     });
+    //   }
+    // }, 200);
 
-        Promise.all(processFilePromises).then((newItems) => {
-          onChange([...media, ...newItems]);
-        });
-      }
-    }, 200);
+    const uploadPromises = validFiles.map((file) => uploadToCloudinary(file));
+    try {
+      const uploaded = await Promise.all(uploadPromises);
+      onChange([...media, ...(uploaded.filter(Boolean) as MediaItem[])]);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      setIsUploading(false);
+      toast({
+        title: "Error",
+        description: "Error uploading files",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Extract thumbnail from video
   const extractVideoThumbnail = async (
     file: File,
     time: number
@@ -187,81 +348,62 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
       video.preload = "metadata";
       video.muted = true;
       video.playsInline = true;
-
       const url = URL.createObjectURL(file);
       video.src = url;
 
       video.onloadedmetadata = () => {
-        // Make sure we seek to a valid time
-        const seekTime = Math.min(time, video.duration);
-        video.currentTime = seekTime;
+        video.currentTime = Math.min(time, video.duration || 0);
       };
-
       video.onseeked = () => {
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           const thumbnailUrl = canvas.toDataURL("image/jpeg");
-          URL.revokeObjectURL(url);
+          URL.revokeObjectURL(url); // Revoke object URL after use
           resolve(thumbnailUrl);
         } else {
           URL.revokeObjectURL(url);
           reject(new Error("Could not get canvas context"));
         }
       };
-
-      video.onerror = () => {
+      video.onerror = (err) => {
         URL.revokeObjectURL(url);
-        reject(new Error("Error loading video"));
+        reject(new Error(`Error loading video: ${err}`));
       };
     });
   };
 
-  // Remove a media item
-  const removeMediaItem = (index: number) => {
-    const newMedia = [...media];
-
-    // Revoke URL to avoid memory leaks
-    URL.revokeObjectURL(newMedia[index].url);
-    if (
-      newMedia[index].thumbnailUrl &&
-      newMedia[index].thumbnailUrl.startsWith("blob:")
-    ) {
-      URL.revokeObjectURL(newMedia[index].thumbnailUrl);
+  const removeMediaItem = (idToRemove: string) => {
+    const itemToRemove = media.find((m) => m.id === idToRemove);
+    if (itemToRemove) {
+      URL.revokeObjectURL(itemToRemove.url);
+      if (itemToRemove.thumbnailUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(itemToRemove.thumbnailUrl);
+      }
     }
-
-    newMedia.splice(index, 1);
-    onChange(newMedia);
+    onChange(media.filter((item) => item.id !== idToRemove));
   };
 
-  // Update video thumbnail time
-  const updateVideoThumbnailTime = async (index: number, time: number) => {
-    const item = media[index];
-    if (item.type !== "video") return;
+  const updateVideoThumbnailTime = async (idToUpdate: string, time: number) => {
+    const itemIndex = media.findIndex((m) => m.id === idToUpdate);
+    if (itemIndex === -1 || media[itemIndex].type !== "video") return;
 
+    const item = media[itemIndex];
     try {
       const thumbnailUrl = await extractVideoThumbnail(item.file, time);
       if (thumbnailUrl) {
         const newMedia = [...media];
-
-        // Revoke old thumbnail URL to avoid memory leaks
-        if (
-          newMedia[index].thumbnailUrl &&
-          newMedia[index].thumbnailUrl.startsWith("blob:")
-        ) {
-          URL.revokeObjectURL(newMedia[index].thumbnailUrl);
+        if (newMedia[itemIndex].thumbnailUrl?.startsWith("blob:")) {
+          URL.revokeObjectURL(newMedia[itemIndex].thumbnailUrl!);
         }
-
-        newMedia[index] = {
-          ...newMedia[index],
+        newMedia[itemIndex] = {
+          ...newMedia[itemIndex],
           thumbnailUrl,
           thumbnailTime: time,
         };
-
         onChange(newMedia);
       }
     } catch (error) {
@@ -269,32 +411,64 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
     }
   };
 
-  // Set up video preview element refs
-  const handleVideoRef = (element: HTMLVideoElement | null, index: number) => {
-    if (index === 0) {
+  const handleVideoRef = (element: HTMLVideoElement | null, itemId: string) => {
+    // Assuming the main preview always shows media[0]
+    if (media.length > 0 && media[0].id === itemId) {
       setVideoPreviewElement(element);
     }
   };
 
-  // Handle seeking in the video
-  const handleVideoSeek = (index: number, value: number[]) => {
+  const handleVideoSeek = (itemId: string, value: number[]) => {
     const time = value[0];
+    const item = media.find((m) => m.id === itemId);
 
-    // Update the video's current time if we have a reference to it
-    if (videoPreviewElement && index === 0) {
+    if (videoPreviewElement && media.length > 0 && media[0].id === itemId) {
       videoPreviewElement.currentTime = time;
     }
 
-    // Start a debounce to update the thumbnail
-    const item = media[index];
-    const debounceTimeout = setTimeout(() => {
-      if (item && item.type === "video") {
-        updateVideoThumbnailTime(index, time);
-      }
-    }, 200);
-
-    return () => clearTimeout(debounceTimeout);
+    // Debounce thumbnail update
+    // (Original code had a setTimeout, consider implementing a proper debounce if needed)
+    if (item && item.type === "video") {
+      updateVideoThumbnailTime(itemId, time);
+    }
   };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      // Require the mouse to move by 10 pixels before starting a drag
+      // Helps prevent accidental drags when clicking buttons inside items
+      activationConstraint: {
+        distance: 10,
+      },
+    })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = media.findIndex((item) => item.id === active.id);
+      const newIndex = media.findIndex((item) => item.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onChange(arrayMove(media, oldIndex, newIndex));
+      }
+    }
+  };
+
+  const handleDragCancel = () => {
+    setActiveDragId(null);
+  };
+
+  const activeDraggedItem = activeDragId
+    ? media.find((item) => item.id === activeDragId)
+    : null;
+  const activeDraggedItemIndex = activeDraggedItem
+    ? media.indexOf(activeDraggedItem)
+    : -1;
 
   return (
     <Card>
@@ -304,7 +478,6 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
             <CardTitle>Media</CardTitle>
             <CardDescription>Add photos or videos to your post</CardDescription>
           </div>
-
           <TabsList>
             <TabsTrigger
               value="upload"
@@ -320,7 +493,7 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
               disabled={media.length === 0 || isUploading}
             >
               <Image className="h-4 w-4 mr-2" />
-              Preview
+              Preview ({media.length})
             </TabsTrigger>
           </TabsList>
         </div>
@@ -333,9 +506,9 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
             } transition-colors`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            onDragOver={handleDragOverEvent}
+            onDragLeave={handleDragLeaveEvent}
+            onDrop={handleDropEvent}
           >
             <input
               type="file"
@@ -344,9 +517,8 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
               accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm"
               multiple
               onChange={handleFileInputChange}
-              disabled={isUploading}
+              disabled={isUploading || media.length >= 10}
             />
-
             {isUploading ? (
               <div className="space-y-4">
                 <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto"></div>
@@ -364,153 +536,146 @@ export default function MediaUpload({ media, onChange }: MediaUploadProps) {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">
-                    Drag & drop files here
+                    Drag & drop files here, or
                   </h3>
+                  <Button
+                    onClick={handleUploadClick}
+                    disabled={isUploading || media.length >= 10}
+                  >
+                    Select Files
+                  </Button>
                   <p className="text-sm text-muted-foreground">
-                    Support JPG, PNG, GIF, WebP, MP4 and QuickTime up to 50MB
+                    Support JPG, PNG, GIF, WebP, MP4, WebM and QuickTime up to
+                    50MB. Maximum 10 files.
                   </p>
                 </div>
-                <Button onClick={handleUploadClick} disabled={isUploading}>
-                  Select Files
-                </Button>
               </div>
             )}
           </div>
         )}
 
         {activeTab === "preview" && media.length > 0 && (
-          <div className="space-y-6">
-            <div className="flex flex-col items-center bg-black rounded-lg overflow-hidden">
-              {/* Main preview */}
-              {media[0].type === "image" ? (
-                <div className="w-full h-full flex items-center justify-center">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <div className="space-y-6">
+              {/* Main Preview Area */}
+              <div className="relative w-full flex items-center justify-center bg-muted/10 rounded-md min-h-[300px] max-h-[400px]">
+                {media[0].type === "image" ? (
                   <img
                     src={media[0].url}
                     alt="Media preview"
-                    className="max-h-[400px] object-contain"
+                    className="max-h-[400px] object-contain rounded-md"
                   />
-                </div>
-              ) : (
-                <div className="w-full">
-                  <video
-                    ref={(el) => handleVideoRef(el, 0)}
-                    src={media[0].url}
-                    controls
-                    className="w-full max-h-[400px] object-contain"
-                  />
-
-                  {/* Video thumbnail control */}
-                  <div className="p-3 bg-muted/20">
-                    <div className="flex items-center gap-3">
-                      <Label
-                        htmlFor="thumbnail-time"
-                        className="text-white text-sm whitespace-nowrap"
-                      >
-                        Cover frame:
-                      </Label>
-                      <div className="flex-1">
-                        <Slider
-                          id="thumbnail-time"
-                          defaultValue={[media[0].thumbnailTime || 0]}
-                          max={
-                            videoPreviewElement
-                              ? Math.floor(videoPreviewElement.duration)
-                              : 100
-                          }
-                          step={1}
-                          onValueChange={(value: any) =>
-                            handleVideoSeek(0, value)
-                          }
-                        />
+                ) : (
+                  <div className="w-full">
+                    <video
+                      ref={(el) => handleVideoRef(el, media[0].id)}
+                      src={media[0].url}
+                      controls
+                      className="w-full max-h-[400px] object-contain rounded-t-md"
+                    />
+                    <div className="p-3 bg-muted/20 rounded-b-md">
+                      <div className="flex items-center gap-3">
+                        <Label
+                          htmlFor={`thumbnail-time-${media[0].id}`}
+                          className="text-sm whitespace-nowrap"
+                        >
+                          Cover frame:
+                        </Label>
+                        <div className="flex-1">
+                          <Slider
+                            id={`thumbnail-time-${media[0].id}`}
+                            defaultValue={[media[0].thumbnailTime || 0]}
+                            max={
+                              videoPreviewElement
+                                ? Math.floor(videoPreviewElement.duration)
+                                : 100 // Fallback max if duration not available
+                            }
+                            step={1}
+                            onValueChange={(value) =>
+                              handleVideoSeek(media[0].id, value)
+                            }
+                          />
+                        </div>
+                        <span className="text-xs whitespace-nowrap">
+                          {Math.floor(media[0].thumbnailTime || 0)}s
+                        </span>
                       </div>
-                      <span className="text-white text-xs whitespace-nowrap">
-                        {media[0].thumbnailTime || 0}s
-                      </span>
                     </div>
                   </div>
+                )}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full"
+                        onClick={() => removeMediaItem(media[0].id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Remove current cover</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+
+              {/* Sortable Thumbnail Grid */}
+              <SortableContext
+                items={media.map((item) => item.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 pt-4 border-t border-border">
+                  {media.map((item, index) => (
+                    <SortableMediaItem
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      onRemove={() => removeMediaItem(item.id)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+
+              <DragOverlay dropAnimation={null}>
+                {activeDragId && activeDraggedItem ? (
+                  <DraggableOverlayItem
+                    item={activeDraggedItem}
+                    index={activeDraggedItemIndex}
+                  />
+                ) : null}
+              </DragOverlay>
+
+              {media.length < 10 && (
+                <div className="flex justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleUploadClick}
+                    disabled={isUploading}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Add More Media ({media.length}/10)
+                  </Button>
                 </div>
               )}
-            </div>
-
-            {/* Thumbnails of media */}
-            {media.length > 1 && (
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                {media.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`relative aspect-square border rounded-md overflow-hidden ${
-                      index === 0 ? "ring-2 ring-primary" : ""
-                    }`}
-                  >
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      {item.type === "image" ? (
-                        <img
-                          src={item.url}
-                          alt={`Media ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <img
-                          src={item.thumbnailUrl || ""}
-                          alt={`Media ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-
-                      <div className="absolute bottom-0 left-0 right-0 p-1 bg-black/50 text-white text-xs flex items-center justify-center">
-                        {item.type === "image" ? (
-                          <FileImage className="h-3 w-3 mr-1" />
-                        ) : (
-                          <FileVideo className="h-3 w-3 mr-1" />
-                        )}
-                        {index === 0 ? "Cover" : `#${index + 1}`}
-                      </div>
-                    </div>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-1 right-1 h-5 w-5 rounded-full"
-                            onClick={() => removeMediaItem(index)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Remove</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                ))}
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Drag to reorder. The first item is the cover.</p>
+                <p>Optimal dimensions: 1080 x 1080px (1:1 ratio recommended)</p>
+                <p>Maximum files: 10 (You've uploaded {media.length})</p>
               </div>
-            )}
-
-            {/* Upload more button */}
-            {media.length < 10 && (
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  onClick={handleUploadClick}
-                  disabled={isUploading}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Add More Media ({media.length}/10)
-                </Button>
-              </div>
-            )}
-
-            {/* Media limits info */}
-            <div className="text-center text-sm text-muted-foreground">
-              <p>Optimal dimensions: 1080 x 1080px (1:1 ratio)</p>
-              <p>Maximum files: 10 (You've used {media.length})</p>
             </div>
-          </div>
+          </DndContext>
         )}
       </CardContent>
+      {/* Removed SampleDragDrop component as it's likely for testing */}
     </Card>
   );
 }

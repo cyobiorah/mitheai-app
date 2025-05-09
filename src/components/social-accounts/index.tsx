@@ -166,15 +166,63 @@ export default function SocialAccounts() {
       },
     });
 
+  const { mutate: connectInstagram, isPending: isConnectingInstagramPending } =
+    useMutation({
+      mutationFn: async () => {
+        const response = await socialApi.connectInstagram();
+        console.log({ response });
+        window.location.href = response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        toast({
+          title: "Instagram connected",
+          description: "Your Instagram account has been connected successfully",
+        });
+        setIsAddingAccount(false);
+        form.reset();
+      },
+      onError: (error) => {
+        console.error({ error });
+        toast({
+          title: "Connection failed",
+          description:
+            "Failed to connect Instagram. It may already be connected or token is invalid.",
+          variant: "destructive",
+        });
+      },
+    });
+
   function onSubmit(data: SocialAccountFormData) {
-    if (data.platform === "twitter") {
-      connectTwitter({ skipWelcome: true });
-    }
-    if (data.platform === "threads") {
-      connectThreads();
-    }
-    if (data.platform === "linkedin") {
-      connectLinkedIn();
+    // if (data.platform === "twitter") {
+    //   connectTwitter({ skipWelcome: true });
+    // }
+    // if (data.platform === "threads") {
+    //   connectThreads();
+    // }
+    // if (data.platform === "linkedin") {
+    //   connectLinkedIn();
+    // }
+    switch (data.platform) {
+      case "twitter":
+        connectTwitter({ skipWelcome: true });
+        break;
+      case "threads":
+        connectThreads();
+        break;
+      case "linkedin":
+        connectLinkedIn();
+        break;
+      case "instagram":
+        connectInstagram();
+        break;
+      default:
+        toast({
+          title: "Connection failed",
+          description: "Failed to connect social account",
+          variant: "destructive",
+        });
+        break;
     }
   }
 
@@ -195,37 +243,49 @@ export default function SocialAccounts() {
     isConnectingTwitterPending ||
     isAccountsLoading ||
     isConnectingThreadsPending ||
-    isConnectingLinkedInPending;
+    isConnectingLinkedInPending ||
+    isConnectingInstagramPending;
 
   useEffect(() => {
     const fetchData = async () => {
-      // Check for OAuth callback success/error
-      const searchParams = new URLSearchParams(location.search);
+      const searchParams = new URLSearchParams(window.location.search);
+
+      // Legacy: ?success=true
       if (searchParams.get("success") === "true") {
         toast({
           title: "Social account connected",
           description: "Your social account has been connected successfully",
         });
-        // Clear URL params without causing a reload
         window.history.replaceState({}, "", "/dashboard/accounts");
-      } else if (searchParams.get("error")) {
-        // Handle specific error types
+        return;
+      }
+
+      // Legacy: ?error=someType
+      if (searchParams.get("error")) {
         const errorType = searchParams.get("error");
-        console.log("Error detected:", errorType);
         const message = searchParams.get("message");
-        console.log("Error message:", message);
+        console.log("OAuth error:", errorType, message);
         toast({
           title: "Social account connection failed",
           description: message ?? "Failed to connect social account",
           variant: "destructive",
         });
-
-        // Clear URL params without causing a reload
         window.history.replaceState({}, "", "/dashboard/accounts");
+        return;
       }
 
-      // Fetch accounts
-      // await fetchAccounts();
+      // Instagram Graph-style: ?status=failed&message=...
+      if (searchParams.get("status") === "failed") {
+        const decodedMessage = decodeURIComponent(
+          searchParams.get("message") || ""
+        );
+        toast({
+          title: "Social account connection failed",
+          description: decodedMessage || "Something went wrong",
+          variant: "destructive",
+        });
+        window.history.replaceState({}, "", "/dashboard/accounts");
+      }
     };
 
     fetchData();
@@ -365,9 +425,7 @@ export default function SocialAccounts() {
                         <SelectItem value="twitter">Twitter</SelectItem>
                         <SelectItem value="threads">Threads</SelectItem>
                         <SelectItem value="linkedin">LinkedIn</SelectItem>
-                        <SelectItem value="instagram" disabled>
-                          Instagram (coming soon)
-                        </SelectItem>
+                        <SelectItem value="instagram">Instagram</SelectItem>
                         <SelectItem value="facebook" disabled>
                           Facebook (coming soon)
                         </SelectItem>

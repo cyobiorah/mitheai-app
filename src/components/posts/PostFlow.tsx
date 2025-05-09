@@ -8,12 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../../hooks/use-toast";
 import { Loader2, Save, Clock, Send, ChevronLeft } from "lucide-react";
 // import { mockService, mockSocialAccounts } from "../../lib/mockData";
@@ -27,6 +22,7 @@ import { mockService } from "../../lib/mockData";
 
 // Interface for media item
 interface MediaItem {
+  id: string;
   file: File;
   type: "image" | "video";
   url: string;
