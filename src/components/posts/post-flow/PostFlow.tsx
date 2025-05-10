@@ -1,33 +1,30 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { toast } from "../../hooks/use-toast";
+} from "../../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
+import { toast } from "../../../hooks/use-toast";
 import { Loader2, Save, Clock, Send } from "lucide-react";
-import AccountSelection from "../posting/AccountSelection";
-import PlatformCaptions from "../posting/PlatformCaption";
-import MediaUpload from "../posting/MediaUpload";
-import SchedulingOptions from "../posting/SchedulingOptions";
+import AccountSelection from "./AccountSelection";
+import PlatformCaptions from "./PlatformCaption";
+import MediaUpload from "./MediaUpload";
+import SchedulingOptions from "./SchedulingOptions";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../../store/hooks";
-import { mockService } from "../../lib/mockData";
-
-// Interface for media item
-interface MediaItem {
-  id: string;
-  file: File;
-  type: "image" | "video";
-  url: string;
-  thumbnailUrl?: string;
-  thumbnailTime?: number;
-}
+import { useAuth } from "../../../store/hooks";
+import { mockService } from "../../../lib/mockData";
+import {
+  handleAccountSelection,
+  handleCaptionChange,
+  handleMediaChange,
+  handleSchedulingChange,
+} from "./methods";
+import { MediaItem } from "./mediaUploadComponents";
 
 export default function PostFlow() {
   const navigate = useNavigate();
@@ -54,34 +51,6 @@ export default function PostFlow() {
   ) as { data: any[]; isLoading: boolean };
 
   const isLoading = isFetchingAccounts;
-
-  // Handle account selection
-  const handleAccountSelection = (accountIds: string[]) => {
-    setSelectedAccounts(accountIds);
-  };
-
-  // Handle caption change
-  const handleCaptionChange = (platform: string, caption: string) => {
-    if (platform === "global") {
-      setGlobalCaption(caption);
-    } else {
-      setPlatformCaptions({
-        ...platformCaptions,
-        [platform]: caption,
-      });
-    }
-  };
-
-  // Handle media change
-  const handleMediaChange = (mediaItems: MediaItem[]) => {
-    setMedia(mediaItems);
-  };
-
-  // Handle scheduling change
-  const handleSchedulingChange = (scheduled: boolean, date: Date | null) => {
-    setIsScheduled(scheduled);
-    setScheduledDate(date);
-  };
 
   // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
@@ -272,7 +241,9 @@ export default function PostFlow() {
               <AccountSelection
                 accounts={socialAccounts}
                 selectedAccounts={selectedAccounts}
-                onSelectionChange={handleAccountSelection}
+                onSelectionChange={(accountIds) =>
+                  handleAccountSelection(accountIds, setSelectedAccounts)
+                }
               />
 
               <div className="flex justify-end space-x-3">
@@ -291,7 +262,15 @@ export default function PostFlow() {
                 selectedAccounts={selectedAccounts}
                 globalCaption={globalCaption}
                 platformCaptions={platformCaptions}
-                onPlatformCaptionChange={handleCaptionChange}
+                onPlatformCaptionChange={(platform, caption) =>
+                  handleCaptionChange(
+                    platform,
+                    caption,
+                    setGlobalCaption,
+                    setPlatformCaptions,
+                    platformCaptions
+                  )
+                }
               />
 
               <div className="flex justify-between">
@@ -311,7 +290,12 @@ export default function PostFlow() {
             </TabsContent>
 
             <TabsContent value="media" className="space-y-6">
-              <MediaUpload media={media} onChange={handleMediaChange} />
+              <MediaUpload
+                media={media}
+                onChange={(mediaItems) =>
+                  handleMediaChange(mediaItems, setMedia)
+                }
+              />
 
               <div className="flex justify-between">
                 <Button
@@ -330,7 +314,14 @@ export default function PostFlow() {
               <SchedulingOptions
                 isScheduled={isScheduled}
                 scheduledDate={scheduledDate}
-                onSchedulingChange={handleSchedulingChange}
+                onSchedulingChange={(scheduled, date) =>
+                  handleSchedulingChange(
+                    scheduled,
+                    date,
+                    setIsScheduled,
+                    setScheduledDate
+                  )
+                }
               />
 
               {/* Post preview */}

@@ -5,16 +5,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Label } from "../../components/ui/label";
-import { Switch } from "../../components/ui/switch";
-import { Button } from "../../components/ui/button";
-import { Calendar } from "../../components/ui/calendar";
+} from "../../ui/card";
+import { Label } from "../../ui/label";
+import { Switch } from "../../ui/switch";
+import { Button } from "../../ui/button";
+import { Calendar } from "../../ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "../../components/ui/popover";
+} from "../../ui/popover";
 import { format, addDays, isToday, isAfter, isBefore } from "date-fns";
 import {
   Clock,
@@ -57,7 +57,7 @@ export default function SchedulingOptions({
   isScheduled,
   scheduledDate,
   onSchedulingChange,
-}: SchedulingOptionsProps) {
+}: Readonly<SchedulingOptionsProps>) {
   const [date, setDate] = useState<Date | null>(scheduledDate || new Date());
   const [time, setTime] = useState<string>(
     scheduledDate ? format(scheduledDate, "HH:mm") : format(new Date(), "HH:mm")

@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { format, parseISO } from "date-fns";
 import { apiRequest } from "./queryClient";
 import axiosInstance from "../api/axios";
-import { MediaItem } from "../components/posting/uploadComponents";
+import { MediaItem } from "../components/posts/post-flow/mediaUploadComponents";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

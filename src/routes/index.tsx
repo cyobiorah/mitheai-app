@@ -22,7 +22,7 @@ import TeamManagement from "../components/team-management";
 import Collections from "../components/collections/Collections";
 import Posts from "../components/posts";
 import ScheduledPosts from "../components/posts/scheduled-posts/ScheduledPosts";
-import PostFlow from "../components/posts/PostFlow";
+import PostFlow from "../components/posts/post-flow/PostFlow";
 import Billing from "../components/billing";
 import HelpSupport from "../components/help-support";
 import PostCreate from "../components/posts/post-create/PostCreate";

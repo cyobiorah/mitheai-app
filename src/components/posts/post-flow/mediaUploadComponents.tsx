@@ -6,8 +6,8 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../ui/tooltip";
-import { Button } from "../ui/button";
+} from "../../ui/tooltip";
+import { Button } from "../../ui/button";
 
 export interface MediaItem {
   id: string; // Add a stable unique ID for dnd-kit items

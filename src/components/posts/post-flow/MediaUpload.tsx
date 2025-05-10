@@ -5,18 +5,18 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
+} from "../../ui/card";
 import { Image, Upload, X } from "lucide-react";
-import { Button } from "../../components/ui/button";
-import { Label } from "../../components/ui/label";
-import { Slider } from "../../components/ui/slider";
+import { Button } from "../../ui/button";
+import { Label } from "../../ui/label";
+import { Slider } from "../../ui/slider";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../../components/ui/tooltip";
-import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
+} from "../../ui/tooltip";
+import { Tabs, TabsList, TabsTrigger } from "../../ui/tabs";
 import {
   DndContext,
   closestCenter,
@@ -30,7 +30,7 @@ import {
   DraggableOverlayItem,
   MediaUploadProps,
   SortableMediaItem,
-} from "./uploadComponents";
+} from "./mediaUploadComponents";
 import {
   handleDragCancel,
   handleDragEnd,
@@ -44,7 +44,7 @@ import {
   handleVideoSeek,
   removeMediaItem,
   updateVideoThumbnailTime,
-} from "./methods";
+} from "../../posting/methods";
 
 export default function MediaUpload({
   media,

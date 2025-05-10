@@ -20,7 +20,7 @@ export default function Hero() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-heading text-gray-900 dark:text-white mb-6">
               One Dashboard For All Your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-500 dark:from-primary-400 dark:to-secondary-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-700 to-primary-300 dark:from-primary-500 dark:to-primary-200">
                 Social Content
               </span>
             </h1>

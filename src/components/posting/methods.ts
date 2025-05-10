@@ -1,5 +1,5 @@
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import { MediaItem } from "./uploadComponents";
+import { MediaItem } from "../posts/post-flow/mediaUploadComponents";
 import { arrayMove } from "@dnd-kit/sortable";
 import { toast } from "../../hooks/use-toast";
 import { uploadToCloudinary } from "../../lib/utils";
