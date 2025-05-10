@@ -138,6 +138,7 @@ export default function UserSettings() {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="password">Password</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -164,6 +165,16 @@ export default function UserSettings() {
 
         <TabsContent value="notifications">
           <NotificationSettings />
+        </TabsContent>
+
+        <TabsContent value="security" className="flex flex-col gap-4">
+          <p className="text-md text-red-500">
+            Deleting your account will remove all your data and cannot be
+            undone.
+          </p>
+          <div className="flex justify-end">
+            <Button variant="destructive">Delete Account</Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
