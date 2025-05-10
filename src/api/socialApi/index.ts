@@ -78,6 +78,14 @@ export const socialApi = {
     return response;
   },
 
+  connectInstagram: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/instagram/direct-auth`
+    );
+    return response;
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach
@@ -154,6 +162,25 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to post to Twitter"
+      );
+    }
+  },
+
+  postToInstagram: async (accountId: string, data: any) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/instagram/${accountId}/post`,
+        {
+          data,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error posting to Instagram:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to post to Instagram"
       );
     }
   },

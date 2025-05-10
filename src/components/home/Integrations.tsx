@@ -32,15 +32,14 @@ export default function Integrations() {
       color: "bg-[#0A66C2]",
     },
     {
-      name: "TikTok",
-      icon: <FaTiktok className="h-6 w-6" />,
-      color: "bg-black dark:bg-white dark:text-black",
-      comingSoon: true,
-    },
-    {
       name: "Instagram",
       icon: <FaInstagram className="h-6 w-6" />,
       color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
+    },
+    {
+      name: "TikTok",
+      icon: <FaTiktok className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
       comingSoon: true,
     },
     {
