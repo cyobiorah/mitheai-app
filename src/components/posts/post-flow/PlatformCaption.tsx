@@ -6,33 +6,30 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "../../components/ui/card";
+} from "../../ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "../../components/ui/tabs";
-import {
-  Instagram,
-  Twitter,
-  Facebook,
-  Linkedin,
-  Globe,
-  Image,
-  Info,
-} from "lucide-react";
-import { Label } from "../../components/ui/label";
-import { Badge } from "../../components/ui/badge";
-import { Button } from "../../components/ui/button";
-import { Textarea } from "../../components/ui/textarea";
-// import { SocialAccount } from "../../api/social";
+} from "../../ui/tabs";
+import { Globe, Image, Info } from "lucide-react";
+import { Label } from "../../ui/label";
+import { Badge } from "../../ui/badge";
+import { Button } from "../../ui/button";
+import { Textarea } from "../../ui/textarea";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../../components/ui/tooltip";
+} from "../../ui/tooltip";
+import {
+  FaXTwitter,
+  FaInstagram,
+  FaLinkedin,
+  FaFacebook,
+} from "react-icons/fa6";
 
 // Custom TikTok icon
 const TikTokIcon = () => (
@@ -72,7 +69,7 @@ export default function PlatformCaptions({
   globalCaption,
   platformCaptions,
   onPlatformCaptionChange,
-}: PlatformCaptionsProps) {
+}: Readonly<PlatformCaptionsProps>) {
   const [activeTab, setActiveTab] = useState("global");
 
   // Get platforms from selected accounts
@@ -153,13 +150,13 @@ export default function PlatformCaptions({
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case "instagram":
-        return <Instagram className="h-4 w-4" />;
+        return <FaInstagram className="h-4 w-4" />;
       case "twitter":
-        return <Twitter className="h-4 w-4" />;
+        return <FaXTwitter className="h-4 w-4" />;
       case "facebook":
-        return <Facebook className="h-4 w-4" />;
+        return <FaFacebook className="h-4 w-4" />;
       case "linkedin":
-        return <Linkedin className="h-4 w-4" />;
+        return <FaLinkedin className="h-4 w-4" />;
       case "tiktok":
         return <TikTokIcon />;
       case "threads":

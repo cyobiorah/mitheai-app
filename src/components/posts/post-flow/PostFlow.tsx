@@ -1,44 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
-import { toast } from "../../hooks/use-toast";
-import { Loader2, Save, Clock, Send, ChevronLeft } from "lucide-react";
-// import { mockService, mockSocialAccounts } from "../../lib/mockData";
-import AccountSelection from "../posting/AccountSelection";
-import PlatformCaptions from "../posting/PlatformCaption";
-import MediaUpload from "../posting/MediaUpload";
-import SchedulingOptions from "../posting/SchedulingOptions";
+} from "../../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
+import { toast } from "../../../hooks/use-toast";
+import { Loader2, Save, Clock, Send } from "lucide-react";
+import AccountSelection from "./AccountSelection";
+import PlatformCaptions from "./PlatformCaption";
+import MediaUpload from "./MediaUpload";
+import SchedulingOptions from "./SchedulingOptions";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../../store/hooks";
-import { mockService } from "../../lib/mockData";
-
-// Interface for media item
-interface MediaItem {
-  file: File;
-  type: "image" | "video";
-  url: string;
-  thumbnailUrl?: string;
-  thumbnailTime?: number;
-}
+import { useAuth } from "../../../store/hooks";
+import { mockService } from "../../../lib/mockData";
+import {
+  handleAccountSelection,
+  handleCaptionChange,
+  handleMediaChange,
+  handleSchedulingChange,
+} from "./methods";
+import { MediaItem } from "./mediaUploadComponents";
 
 export default function PostFlow() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [activeStep, setActiveStep] = useState("accounts");
+  const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Post data state
@@ -60,38 +52,33 @@ export default function PostFlow() {
 
   const isLoading = isFetchingAccounts;
 
-  // Handle account selection
-  const handleAccountSelection = (accountIds: string[]) => {
-    setSelectedAccounts(accountIds);
-  };
-
-  // Handle caption change
-  const handleCaptionChange = (platform: string, caption: string) => {
-    if (platform === "global") {
-      setGlobalCaption(caption);
-    } else {
-      setPlatformCaptions({
-        ...platformCaptions,
-        [platform]: caption,
-      });
-    }
-  };
-
-  // Handle media change
-  const handleMediaChange = (mediaItems: MediaItem[]) => {
-    setMedia(mediaItems);
-  };
-
-  // Handle scheduling change
-  const handleSchedulingChange = (scheduled: boolean, date: Date | null) => {
-    setIsScheduled(scheduled);
-    setScheduledDate(date);
-  };
-
   // Check if we can proceed to the next step
   const canProceedToCaption = selectedAccounts.length > 0;
   const canProceedToMedia =
     canProceedToCaption && globalCaption.trim().length > 0;
+
+  const tabItems = [
+    {
+      value: "accounts",
+      label: "Accounts",
+      disabled: false,
+    },
+    {
+      value: "caption",
+      label: "Caption",
+      disabled: isSubmitting || !canProceedToCaption,
+    },
+    {
+      value: "media",
+      label: "Media",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+    {
+      value: "schedule",
+      label: "Schedule",
+      disabled: isSubmitting || !canProceedToMedia,
+    },
+  ];
 
   // Submit the post
   const handleSubmit = async () => {
@@ -139,12 +126,12 @@ export default function PostFlow() {
     });
 
     // Type of post
-    const postType =
-      media.length > 0
-        ? media[0].type === "image"
-          ? "image"
-          : "video"
-        : "text";
+    let postType;
+    if (media.length > 0) {
+      postType = media[0].type === "image" ? "image" : "video";
+    } else {
+      postType = "text";
+    }
 
     // Prepare media URLs (In a real app, these would be uploaded to a server)
     const mediaUrls = media.map((item) => item.url);
@@ -233,41 +220,35 @@ export default function PostFlow() {
         </div>
       ) : (
         <div className="space-y-8">
-          <Tabs defaultValue={activeStep} onValueChange={setActiveStep}>
+          <Tabs
+            defaultValue={activeTab}
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value)}
+          >
             <TabsList className="w-full mb-8">
-              <TabsTrigger value="accounts" disabled={isSubmitting}>
-                1. Select Accounts
-              </TabsTrigger>
-              <TabsTrigger
-                value="caption"
-                disabled={!canProceedToCaption || isSubmitting}
-              >
-                2. Write Captions
-              </TabsTrigger>
-              <TabsTrigger
-                value="media"
-                disabled={!canProceedToMedia || isSubmitting}
-              >
-                3. Add Media
-              </TabsTrigger>
-              <TabsTrigger
-                value="schedule"
-                disabled={!canProceedToMedia || isSubmitting}
-              >
-                4. Schedule
-              </TabsTrigger>
+              {tabItems.map((item) => (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  disabled={item.disabled}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="accounts" className="space-y-6">
               <AccountSelection
                 accounts={socialAccounts}
                 selectedAccounts={selectedAccounts}
-                onSelectionChange={handleAccountSelection}
+                onSelectionChange={(accountIds) =>
+                  handleAccountSelection(accountIds, setSelectedAccounts)
+                }
               />
 
               <div className="flex justify-end space-x-3">
                 <Button
-                  onClick={() => setActiveStep("caption")}
+                  onClick={() => setActiveTab("caption")}
                   disabled={!canProceedToCaption}
                 >
                   Continue to Caption
@@ -281,18 +262,26 @@ export default function PostFlow() {
                 selectedAccounts={selectedAccounts}
                 globalCaption={globalCaption}
                 platformCaptions={platformCaptions}
-                onPlatformCaptionChange={handleCaptionChange}
+                onPlatformCaptionChange={(platform, caption) =>
+                  handleCaptionChange(
+                    platform,
+                    caption,
+                    setGlobalCaption,
+                    setPlatformCaptions,
+                    platformCaptions
+                  )
+                }
               />
 
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("accounts")}
+                  onClick={() => setActiveTab("accounts")}
                 >
                   Back to Accounts
                 </Button>
                 <Button
-                  onClick={() => setActiveStep("media")}
+                  onClick={() => setActiveTab("media")}
                   disabled={!canProceedToMedia}
                 >
                   Continue to Media
@@ -301,16 +290,21 @@ export default function PostFlow() {
             </TabsContent>
 
             <TabsContent value="media" className="space-y-6">
-              <MediaUpload media={media} onChange={handleMediaChange} />
+              <MediaUpload
+                media={media}
+                onChange={(mediaItems) =>
+                  handleMediaChange(mediaItems, setMedia)
+                }
+              />
 
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("caption")}
+                  onClick={() => setActiveTab("caption")}
                 >
                   Back to Caption
                 </Button>
-                <Button onClick={() => setActiveStep("schedule")}>
+                <Button onClick={() => setActiveTab("schedule")}>
                   Continue to Schedule
                 </Button>
               </div>
@@ -320,7 +314,14 @@ export default function PostFlow() {
               <SchedulingOptions
                 isScheduled={isScheduled}
                 scheduledDate={scheduledDate}
-                onSchedulingChange={handleSchedulingChange}
+                onSchedulingChange={(scheduled, date) =>
+                  handleSchedulingChange(
+                    scheduled,
+                    date,
+                    setIsScheduled,
+                    setScheduledDate
+                  )
+                }
               />
 
               {/* Post preview */}
@@ -417,7 +418,7 @@ export default function PostFlow() {
               <div className="flex justify-between">
                 <Button
                   variant="outline"
-                  onClick={() => setActiveStep("media")}
+                  onClick={() => setActiveTab("media")}
                   disabled={isSubmitting}
                 >
                   Back to Media
