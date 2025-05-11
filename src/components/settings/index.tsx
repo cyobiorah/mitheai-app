@@ -8,11 +8,20 @@ import { useToast } from "../../hooks/use-toast";
 import { useAuth } from "../../store/hooks";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProfileInformation from "./ProfileInformation";
 import PasswordChange from "./PasswordChange";
 import NotificationSettings from "./NotificationSettings";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
 const profileSchema = z.object({
   firstName: z.string().optional(),
@@ -35,14 +44,40 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export default function UserSettings() {
-  const { user, fetchUserData } = useAuth();
+  const { user, fetchUserData, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
-  // Update profile mutation
+  // Delete account mutation
+  const { mutate: deleteAccount, isPending: isDeletingAccount } = useMutation({
+    mutationFn: async () => {
+      if (deleteConfirmation !== "DELETE MY ACCOUNT") {
+        throw new Error("Invalid confirmation");
+      }
+      return await apiRequest("DELETE", `/auth/me`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/auth/me"] });
+      toast({
+        title: "Account deleted",
+        description: "Your account has been deleted successfully",
+      });
+      logout();
+    },
+    onError: () => {
+      toast({
+        title: "Deletion failed",
+        description: "Failed to delete your account. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const { mutate: updateProfile, isPending: isUpdatingProfile } = useMutation({
     mutationFn: async (data: ProfileFormData) => {
       return await apiRequest("PATCH", `/users/me`, data);
@@ -173,10 +208,55 @@ export default function UserSettings() {
             undone.
           </p>
           <div className="flex justify-end">
-            <Button variant="destructive">Delete Account</Button>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              Delete Account
+            </Button>
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Account</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this account? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <p>Type the word "DELETE MY ACCOUNT" to confirm.</p>
+            <Input
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteAccount()}
+              disabled={
+                isDeletingAccount || deleteConfirmation !== "DELETE MY ACCOUNT"
+              }
+            >
+              {isDeletingAccount && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -277,7 +277,7 @@ export default function SchedulingOptions({
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0" align="start">
-                    <div className="h-[300px] overflow-y-auto p-2">
+                    <div className="h-[300px] overflow-y-auto p-2 w-[240px]">
                       {timeOptions.map((option) => (
                         <Button
                           key={option.value}
