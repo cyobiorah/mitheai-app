@@ -66,7 +66,9 @@ export default function SocialAccounts() {
       return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+      queryClient.invalidateQueries({
+        queryKey: [`/social-accounts/${user?._id}`],
+      });
       toast({
         title: "Account removed",
         description: "The social account has been disconnected",
@@ -97,8 +99,8 @@ export default function SocialAccounts() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "Twitter connected",
-          description: "Your Twitter account has been connected successfully",
+          title: "Twitter connected in progress",
+          description: "Your Twitter account is being connected",
         });
         setIsAddingAccount(false);
         form.reset();
@@ -123,8 +125,8 @@ export default function SocialAccounts() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "Threads connected",
-          description: "Your Threads account has been connected successfully",
+          title: "Threads connected in progress",
+          description: "Your Threads account is being connected",
         });
         setIsAddingAccount(false);
         form.reset();
@@ -149,8 +151,8 @@ export default function SocialAccounts() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "LinkedIn connected",
-          description: "Your LinkedIn account has been connected successfully",
+          title: "LinkedIn connected in progress",
+          description: "Your LinkedIn account is being connected",
         });
         setIsAddingAccount(false);
         form.reset();
@@ -175,8 +177,8 @@ export default function SocialAccounts() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "Instagram connected",
-          description: "Your Instagram account has been connected successfully",
+          title: "Instagram connected in progress",
+          description: "Your Instagram account is being connected",
         });
         setIsAddingAccount(false);
         form.reset();
@@ -267,11 +269,11 @@ export default function SocialAccounts() {
       // Instagram Graph-style: ?status=failed&message=...
       if (searchParams.get("status") === "failed") {
         const decodedMessage = decodeURIComponent(
-          searchParams.get("message") || ""
+          searchParams.get("message") ?? ""
         );
         toast({
           title: "Social account connection failed",
-          description: decodedMessage || "Something went wrong",
+          description: decodedMessage ?? "Something went wrong",
           variant: "destructive",
         });
         window.history.replaceState({}, "", "/dashboard/accounts");
