@@ -179,9 +179,7 @@ export default function PostCreate() {
               description: "Posted successfully to Twitter!",
             });
             break;
-          case "instagram":
-            console.log({ postData });
-            console.log({ uploadedMedia });
+          case "instagram": {
             const igPostData = {
               caption: postData.content,
               media: uploadedMedia,
@@ -192,6 +190,7 @@ export default function PostCreate() {
               description: "Posted successfully to Instagram!",
             });
             break;
+          }
           default:
             toast({
               title: "Error",
