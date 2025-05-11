@@ -25,6 +25,8 @@ import {
   handleSchedulingChange,
 } from "./methods";
 import { MediaItem } from "./mediaUploadComponents";
+import { formatDate } from "../../../lib/utils";
+import socialApi from "../../../api/socialApi";
 
 export default function PostFlow() {
   const navigate = useNavigate();
@@ -103,7 +105,11 @@ export default function PostFlow() {
     setIsSubmitting(true);
 
     // Generate platformData with selected accounts and platform-specific captions
-    const platformData: Record<string, any> = {};
+    const platformData: Array<{
+      platform: string;
+      accounts: string[];
+      caption: string;
+    }> = [];
 
     // Get unique platforms from selected accounts
     const selectedAccountsData = socialAccounts.filter((account) =>
@@ -119,10 +125,11 @@ export default function PostFlow() {
         .filter((account) => account.platform === platform)
         .map((account) => account._id);
 
-      platformData[platform] = {
+      platformData.push({
+        platform,
         accounts: platformAccountIds,
         caption: platformCaptions[platform] || globalCaption,
-      };
+      });
     });
 
     // Type of post
@@ -169,15 +176,84 @@ export default function PostFlow() {
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Mock service call
-      await mockService.createPost({
+      let scheduledPost;
+
+      if (isScheduled) {
+        scheduledPost = {
+          content: globalCaption,
+          platforms: platformData,
+          scheduledFor: new Date(scheduledDate as Date).toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          mediaType: postType,
+        };
+
+
+        return;
+      } else {
+        const postData = {
+          content: globalCaption,
+          platforms: platformData,
+          mediaType: postType,
+        };
+
+        // return;
+      }
+
+      const data = {
         caption: globalCaption,
         mediaUrls,
-        scheduledAt: isScheduled ? scheduledDate : null,
-        status: isScheduled ? "scheduled" : "draft",
+        scheduledAt: isScheduled
+          ? new Date(scheduledDate as Date).toISOString()
+          : null,
+        status: isScheduled ? "scheduled" : "social_post",
         type: postType,
-        platformData: JSON.stringify(platformData),
-      });
+        platformData,
+      };
+
+      // Mock service call
+      await mockService.createPost(data);
+
+      for (const { platform, accounts, caption } of platformData) {
+        const platformAccounts = selectedAccountsData.filter(
+          (acc) => acc.platform === platform && accounts.includes(acc._id)
+        );
+
+        for (const account of platformAccounts) {
+          const postData = {
+            content: caption,
+            accountId: account.accountId,
+            platformAccountId: account.platformAccountId,
+            media: mediaUrls,
+            accountName: account.accountName,
+            accountType: account.accountType,
+            platform: platform,
+            platformId: account.platformId,
+          };
+
+          switch (platform) {
+            case "threads":
+              await socialApi.postToThreads(account._id, postData);
+              break;
+            case "linkedin":
+              await socialApi.postToLinkedIn(account._id, caption);
+              break;
+            case "twitter":
+              await socialApi.postToTwitter(account._id, postData);
+              break;
+            case "instagram":
+              {
+                const igPostData = {
+                  caption,
+                  media: media.map(({ url, type }) => ({ url, type })),
+                };
+                await socialApi.postToInstagram(account._id, igPostData);
+              }
+              break;
+            default:
+              console.warn(`Unsupported platform: ${platform}`);
+          }
+        }
+      }
 
       toast({
         title: "Success",
@@ -187,7 +263,7 @@ export default function PostFlow() {
       });
 
       // Navigate to dashboard
-      navigate("/dashboard");
+      // navigate("/dashboard");
     } catch (error) {
       console.error("Failed to create post:", error);
       toast({

@@ -170,7 +170,6 @@ export default function SocialAccounts() {
     useMutation({
       mutationFn: async () => {
         const response = await socialApi.connectInstagram();
-        console.log({ response });
         window.location.href = response;
       },
       onSuccess: () => {
@@ -194,15 +193,6 @@ export default function SocialAccounts() {
     });
 
   function onSubmit(data: SocialAccountFormData) {
-    // if (data.platform === "twitter") {
-    //   connectTwitter({ skipWelcome: true });
-    // }
-    // if (data.platform === "threads") {
-    //   connectThreads();
-    // }
-    // if (data.platform === "linkedin") {
-    //   connectLinkedIn();
-    // }
     switch (data.platform) {
       case "twitter":
         connectTwitter({ skipWelcome: true });

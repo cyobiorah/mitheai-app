@@ -168,6 +168,17 @@ export default function AccountSelection({
                 </div>
               </TabsTrigger>
             )}
+            {platformCounts(accounts).threads && (
+              <TabsTrigger value="threads" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <FaThreads className="h-4 w-4" />
+                  <span className="hidden sm:inline">Threads</span>
+                  <Badge variant="secondary">
+                    {platformCounts(accounts).threads}
+                  </Badge>
+                </div>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Account List */}

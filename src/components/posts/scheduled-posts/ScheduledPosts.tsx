@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../../lib/queryClient";
 import { useToast } from "../../../hooks/use-toast";
@@ -34,6 +34,10 @@ export default function ScheduledPosts() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!selectedDate) setSelectedDate(new Date());
+  }, [selectedDate]);
 
   // Get posts
   const {
@@ -180,9 +184,9 @@ export default function ScheduledPosts() {
                   }}
                   modifiersStyles={{
                     hasPost: {
-                      backgroundColor: "var(--primary-50)",
                       fontWeight: "bold",
-                      borderBottom: "2px solid var(--primary-500)",
+                      borderBottom: "1px solid green",
+                      borderRadius: "0.375rem",
                     },
                   }}
                   className="rounded-md border"
