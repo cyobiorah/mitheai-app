@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import { Checkbox } from "../ui/checkbox";
 
 const registerSchema = z
   .object({
@@ -31,6 +32,9 @@ const registerSchema = z
     email: z.string().email("Please enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
+    terms: z.boolean().default(false).refine((value) => value, {
+      message: "You must agree to the terms and conditions",
+    }),
     userType: z.enum(["individual", "organization"], {
       required_error: "Please select a user type",
       invalid_type_error: "Invalid user type",
@@ -70,6 +74,7 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
       email: "",
       password: "",
       confirmPassword: "",
+      terms: false,
       userType: "individual",
       organizationName: "",
     },
@@ -240,17 +245,30 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
             </FormItem>
           )}
         />
-        <input type="checkbox" required />
-        <label className="text-sm text-gray-600 dark:text-gray-400 ml-2">
-          I agree to the{" "}
-          <span className="text-primary-600 dark:text-primary-400">
-            <Link to="/terms"> Terms of Service </Link>
-          </span>
-          and{" "}
-          <span className="text-primary-600 dark:text-primary-400">
-            <Link to="/privacy"> Privacy Policy</Link>
-          </span>
-        </label>
+        <FormField
+          control={form.control}
+          name="terms"
+          render={({ field }) => (
+            <FormItem className="flex items-center space-x-2">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel>
+                I agree to the{" "}
+                <span className="text-primary-600 dark:text-primary-400">
+                  <Link to="/terms"> Terms of Service </Link>
+                </span>
+                and{" "}
+                <span className="text-primary-600 dark:text-primary-400">
+                  <Link to="/privacy"> Privacy Policy</Link>
+                </span>
+              </FormLabel>
+            </FormItem>
+          )}
+        />
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating account..." : "Create Account"}
         </Button>

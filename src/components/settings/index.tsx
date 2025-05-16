@@ -228,7 +228,7 @@ export default function UserSettings() {
               be undone.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 mb-4">
             <p>Type the word "DELETE MY ACCOUNT" to confirm.</p>
             <Input
               value={deleteConfirmation}

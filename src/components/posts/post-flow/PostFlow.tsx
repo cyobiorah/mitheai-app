@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
   Card,
@@ -25,11 +24,10 @@ import {
   handleSchedulingChange,
 } from "./methods";
 import { MediaItem } from "./mediaUploadComponents";
-import { formatDate } from "../../../lib/utils";
 import socialApi from "../../../api/socialApi";
+import { getImageDimensions } from "../../posting/methods";
 
 export default function PostFlow() {
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState("accounts");
@@ -133,11 +131,26 @@ export default function PostFlow() {
     });
 
     // Type of post
-    let postType;
-    if (media.length > 0) {
-      postType = media[0].type === "image" ? "image" : "video";
-    } else {
+    const mediaTypes = Array.from(new Set(media.map((item) => item.type)));
+
+    let postType: "image" | "video" | "text" | "mixed";
+
+    if (media.length === 0) {
       postType = "text";
+    } else if (mediaTypes.length === 1) {
+      postType = mediaTypes[0]; // 'image' or 'video'
+    } else {
+      postType = "mixed"; // handle this case if needed
+    }
+
+    if (postType === "mixed") {
+      toast({
+        title: "Unsupported media combination",
+        description: "Please upload only images or only videos, not both.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
     }
 
     // Prepare media URLs (In a real app, these would be uploaded to a server)
@@ -187,7 +200,6 @@ export default function PostFlow() {
           mediaType: postType,
         };
 
-
         return;
       } else {
         const postData = {
@@ -211,7 +223,7 @@ export default function PostFlow() {
       };
 
       // Mock service call
-      await mockService.createPost(data);
+      // await mockService.createPost(data);
 
       for (const { platform, accounts, caption } of platformData) {
         const platformAccounts = selectedAccountsData.filter(
@@ -220,7 +232,7 @@ export default function PostFlow() {
 
         for (const account of platformAccounts) {
           const postData = {
-            content: caption,
+            caption,
             accountId: account.accountId,
             platformAccountId: account.platformAccountId,
             media: mediaUrls,
@@ -228,30 +240,57 @@ export default function PostFlow() {
             accountType: account.accountType,
             platform: platform,
             platformId: account.platformId,
+            mediaType: postType,
           };
 
-          switch (platform) {
-            case "threads":
-              await socialApi.postToThreads(account._id, postData);
-              break;
-            case "linkedin":
-              await socialApi.postToLinkedIn(account._id, caption);
-              break;
-            case "twitter":
-              await socialApi.postToTwitter(account._id, postData);
-              break;
-            case "instagram":
-              {
-                const igPostData = {
-                  caption,
-                  media: media.map(({ url, type }) => ({ url, type })),
-                };
-                await socialApi.postToInstagram(account._id, igPostData);
-              }
-              break;
-            default:
-              console.warn(`Unsupported platform: ${platform}`);
+          console.log({ media });
+
+          const formData = new FormData();
+          formData.append("postData", JSON.stringify(postData));
+          // media.forEach(async (item) => {
+          //   // const dimensions = await getImageDimensions(item.file);
+          //   // item.dimensions = dimensions;
+          //   formData.append("media", item.file);
+          // });
+
+          for (const item of media) {
+            const dimensions = await getImageDimensions(item.file);
+            item.dimensions = dimensions;
+            formData.append("media", item.file, item.id);
+            formData.append(
+              "dimensions[]",
+              JSON.stringify({
+                id: item.id,
+                width: dimensions.width,
+                height: dimensions.height,
+              })
+            );
           }
+
+          await socialApi.postToMultiPlatform(formData);
+
+          // switch (platform) {
+          //   case "threads":
+          //     await socialApi.postToThreads(account._id, postData);
+          //     break;
+          //   case "linkedin":
+          //     await socialApi.postToLinkedIn(account._id, caption);
+          //     break;
+          //   case "twitter":
+          //     await socialApi.postToTwitter(account._id, postData);
+          //     break;
+          //   case "instagram":
+          //     {
+          //       const igPostData = {
+          //         caption,
+          //         media: media.map(({ url, type }) => ({ url, type })),
+          //       };
+          //       await socialApi.postToInstagram(account._id, igPostData);
+          //     }
+          //     break;
+          //   default:
+          //     console.warn(`Unsupported platform: ${platform}`);
+          // }
         }
       }
 
@@ -368,9 +407,11 @@ export default function PostFlow() {
             <TabsContent value="media" className="space-y-6">
               <MediaUpload
                 media={media}
-                onChange={(mediaItems) =>
+                onChange={(mediaItems: any) =>
                   handleMediaChange(mediaItems, setMedia)
                 }
+                accounts={socialAccounts}
+                selectedAccounts={selectedAccounts}
               />
 
               <div className="flex justify-between">

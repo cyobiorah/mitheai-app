@@ -15,7 +15,8 @@ export interface MediaItem {
   type: "image" | "video";
   url: string;
   thumbnailUrl?: string;
-  thumbnailTime?: number; // For videos, the time position for thumbnail
+  thumbnailTime?: number;
+  dimensions?: { width: number; height: number };
 }
 
 export interface MediaUploadProps {

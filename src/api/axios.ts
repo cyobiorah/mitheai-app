@@ -1,20 +1,52 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
+import { toast } from "../hooks/use-toast";
 
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Optional: Add interceptors for auth, logging, etc.
+let hasShownTokenExpiredToast = false;
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log({ error });
+    const status = error.response?.status;
+
+    if (status === 401 && !hasShownTokenExpiredToast) {
+      hasShownTokenExpiredToast = true; // block subsequent toasts
+
+      console.warn("[DEBUG] Token expired or unauthorized for critical route");
+
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("mitheai-storage");
+      localStorage.removeItem("mitheai-team-storage");
+      localStorage.removeItem("skedlii-theme");
+
+      toast({
+        title: "Session expired",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
+      });
+
+      setTimeout(() => {
+        window.location.href = "/login";
+        hasShownTokenExpiredToast = false; // reset on redirect
+      }, 2000);
+
+      return;
+    }
+
+    if (status === 403) {
+      console.warn("[DEBUG] Access forbidden — user may lack permissions");
+      // window.location.href = "/unauthorized";
+    }
+
     return Promise.reject(error as Error);
   }
 );
