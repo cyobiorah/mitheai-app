@@ -59,6 +59,7 @@ export default function LoginForm({
         description: `Welcome back, ${
           response.user?.firstName ?? response.user?.email
         }!`,
+        variant: "success",
       });
     } finally {
       setIsLoading(false);

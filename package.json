@@ -51,6 +51,7 @@
     "@tanstack/eslint-plugin-query": "^4.38.0",
     "@tanstack/react-query": "^5.11.1",
     "axios": "^1.7.8",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

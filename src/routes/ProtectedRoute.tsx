@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, authLoading } = useAuth();
+  const token = localStorage.getItem("auth_token");
 
   if (authLoading) {
     // You can replace this with a loading spinner component
@@ -18,7 +19,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!user || !token) {
     return <Navigate to="/login" />;
   }
 
