@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../ui/card";
-import { Image, Upload, X, AlertTriangle } from "lucide-react"; // Added AlertTriangle
+import { Image, Upload, X } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Label } from "../../ui/label";
 import { Slider } from "../../ui/slider";
@@ -28,9 +28,9 @@ import {
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import {
   DraggableOverlayItem,
-  // MediaUploadProps, // Assuming this will be updated or defined elsewhere to include selectedPlatforms
+  MediaUploadProps,
   SortableMediaItem,
-} from "./mediaUploadComponents"; // Assuming MediaUploadProps is in here
+} from "./mediaUploadComponents";
 import {
   handleDragCancel,
   handleDragEnd,
@@ -45,51 +45,20 @@ import {
   removeMediaItem,
   updateVideoThumbnailTime,
 } from "../../posting/methods";
-import {
-  getPlatformConstraints,
-  PlatformMediaConstraints,
-} from "../../posting/platformConstraints"; // Import constraints
-
-// Define MediaItem if not already available from props (adjust as per actual type)
-export interface MediaItem {
-  id: string;
-  url: string; // This might be a local URL (blob) initially, then Cloudinary URL
-  file: File; // The actual file object
-  type: "image" | "video";
-  thumbnailTime?: number;
-  thumbnailUrl?: string;
-  // Add other relevant properties like uploadProgress, error, etc.
-  uploadProgress?: number;
-  error?: string;
-  processedUrl?: string; // URL after backend processing
-}
-
-// Define or extend MediaUploadProps here for clarity, assuming it's not strictly from mediaUploadComponents.tsx for now
-export interface MediaUploadProps {
-  media: MediaItem[];
-  onChange: (media: MediaItem[]) => void;
-  accounts: any[];
-  selectedAccounts: string[];
-}
 
 export default function MediaUpload({
   media,
   onChange,
-  accounts,
-  selectedAccounts,
 }: Readonly<MediaUploadProps>) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mediaActiveTab, setMediaActiveTab] = useState<string>("upload");
-  const [isUploading, setIsUploading] = useState<boolean>(false); // This might represent uploading to our backend now
-  const [uploadProgress, setUploadProgress] = useState<number>(0); // For individual file or overall batch
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [dragOver, setDragOver] = useState<boolean>(false);
   const [videoPreviewElement, setVideoPreviewElement] =
     useState<HTMLVideoElement | null>(null);
+
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
-  const [validationMessage, setValidationMessage] = useState<string | null>(
-    null
-  ); // For validation messages
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
 
   useEffect(() => {
     if (media.length > 0) {
@@ -98,30 +67,6 @@ export default function MediaUpload({
       setMediaActiveTab("upload");
     }
   }, [media]);
-
-  // Effect to display platform constraints or warnings based on selectedPlatforms
-  useEffect(() => {
-    if (selectedAccounts?.length > 0) {
-      // Simple message for now, can be more sophisticated
-      // This is a placeholder for where you might display combined constraints or warnings
-      // The actual logic for combining/displaying constraints will be more complex
-      // and might involve calling a utility function with selectedPlatforms.
-      // For now, just acknowledge the selected platforms.
-      const platforms = Array.from(
-        new Set(
-          accounts
-            .filter((account) => selectedAccounts.includes(account._id))
-            .map((account) => account.platform.toLowerCase())
-        )
-      );
-      setSelectedPlatforms(platforms);
-      // setValidationMessage(`Validating for: ${platformNames}. Specific rules will apply.`);
-      // Clear message if no platforms or if it's handled elsewhere
-    } else {
-      setSelectedPlatforms([]);
-      setValidationMessage(null);
-    }
-  }, [selectedAccounts]);
 
   const activeDraggedItem = activeDragId
     ? media.find((item) => item.id === activeDragId)
@@ -132,6 +77,8 @@ export default function MediaUpload({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
+      // Require the mouse to move by 10 pixels before starting a drag
+      // Helps prevent accidental drags when clicking buttons inside items
       activationConstraint: {
         distance: 10,
       },
@@ -139,28 +86,23 @@ export default function MediaUpload({
   );
 
   return (
-    <Card className="dark:bg-gray-800 bg-white text-gray-900 dark:text-white">
-      {" "}
-      {/* Basic theme support */}
+    <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>Media</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Add photos or videos to your post
-            </CardDescription>
+            <CardDescription>Add photos or videos to your post</CardDescription>
           </div>
           <Tabs
             defaultValue={mediaActiveTab}
             value={mediaActiveTab}
             onValueChange={setMediaActiveTab}
           >
-            <TabsList className="dark:bg-gray-700 bg-gray-200">
+            <TabsList>
               <TabsTrigger
                 value="upload"
                 onClick={() => setMediaActiveTab("upload")}
                 disabled={isUploading}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload
@@ -169,7 +111,6 @@ export default function MediaUpload({
                 value="preview"
                 onClick={() => setMediaActiveTab("preview")}
                 disabled={media.length === 0 || isUploading}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Image className="h-4 w-4 mr-2" />
                 Preview ({media.length})
@@ -179,66 +120,53 @@ export default function MediaUpload({
         </div>
       </CardHeader>
       <CardContent>
-        {validationMessage && (
-          <div className="mb-4 p-3 rounded-md bg-yellow-100 dark:bg-yellow-700 border border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-200 flex items-center">
-            <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600 dark:text-yellow-400" />
-            <p className="text-sm">{validationMessage}</p>
-          </div>
-        )}
         {mediaActiveTab === "upload" && (
           <button
             type="button"
             aria-label="Upload media by dragging and dropping files here"
             className={`w-full border-2 border-dashed rounded-lg p-8 text-center ${
               dragOver
-                ? "border-primary bg-primary/5 dark:bg-primary/10"
-                : "border-border hover:border-primary/50 dark:border-gray-600 dark:hover:border-primary/60"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50"
             } transition-colors`}
             onDragOver={(e) => handleDragOverEvent(e, setDragOver)}
             onDragLeave={(e) => handleDragLeaveEvent(e, setDragOver)}
-            onDrop={(e) =>
-              handleDropEvent(
-                e,
-                setDragOver,
-                media,
-                onChange,
-                setIsUploading,
-                setUploadProgress,
-                selectedPlatforms, // Pass selectedPlatforms
-                setValidationMessage, // Pass setter for validation messages
-                validationMessage
-              )
-            }
+            // onDrop={(e) =>
+            //   handleDropEvent(
+            //     e,
+            //     setDragOver,
+            //     media,
+            //     onChange,
+            //     setIsUploading,
+            //     setUploadProgress,
+            //   )
+            // }
             onClick={() => handleUploadClick(fileInputRef)}
           >
             <input
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm" // This might be dynamically adjusted later based on constraints
+              accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/webm"
               multiple
-              onChange={(e) =>
-                handleFileInputChange(
-                  e,
-                  fileInputRef,
-                  media,
-                  onChange,
-                  setIsUploading,
-                  setUploadProgress,
-                  selectedPlatforms, // Pass selectedPlatforms
-                  setValidationMessage, // Pass setter for validation messages
-                  validationMessage
-                )
-              }
+              // onChange={(e) =>
+              //   handleFileInputChange(
+              //     e,
+              //     fileInputRef,
+              //     media,
+              //     onChange,
+              //     setIsUploading,
+              //     setUploadProgress
+              //   )
+              // }
               disabled={isUploading || media.length >= 10}
             />
             {isUploading ? (
               <div className="space-y-4">
                 <div className="w-16 h-16 rounded-full border-4 border-primary border-t-transparent animate-spin mx-auto"></div>
                 <div className="text-center">
-                  <p className="text-lg font-medium">Processing...</p>{" "}
-                  {/* Changed from Uploading to Processing */}
-                  <p className="text-sm text-muted-foreground dark:text-gray-400">
+                  <p className="text-lg font-medium">Uploading...</p>
+                  <p className="text-sm text-muted-foreground">
                     {uploadProgress}%
                   </p>
                 </div>
@@ -246,7 +174,7 @@ export default function MediaUpload({
             ) : (
               <div className="space-y-4">
                 <div className="w-16 h-16 flex items-center justify-center mx-auto">
-                  <Upload className="h-10 w-10 text-muted-foreground dark:text-gray-500" />
+                  <Upload className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium">
@@ -255,8 +183,9 @@ export default function MediaUpload({
                   <span className="text-primary cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 rounded-md m-2 inline-block">
                     Select Files
                   </span>
-                  <p className="text-sm text-muted-foreground dark:text-gray-400">
-                    Maximum 10 files. Platform specific rules will apply.
+                  <p className="text-sm text-muted-foreground">
+                    Support JPG, PNG, GIF, WebP, MP4, WebM and QuickTime up to
+                    50MB. Maximum 10 files.
                   </p>
                 </div>
               </div>
@@ -276,10 +205,10 @@ export default function MediaUpload({
           >
             <div className="space-y-6">
               {/* Main Preview Area */}
-              <div className="relative w-full flex items-center justify-center bg-muted/10 dark:bg-gray-700/30 rounded-md min-h-[300px] max-h-[400px]">
+              <div className="relative w-full flex items-center justify-center bg-muted/10 rounded-md min-h-[300px] max-h-[400px]">
                 {media[0].type === "image" ? (
                   <img
-                    src={media[0].url} // This should be local blob URL for preview before final upload
+                    src={media[0].url}
                     alt="Media preview"
                     className="max-h-[400px] object-contain rounded-md"
                   />
@@ -294,13 +223,13 @@ export default function MediaUpload({
                           setVideoPreviewElement
                         )
                       }
-                      src={media[0].url} // This should be local blob URL
+                      src={media[0].url}
                       controls
-                      className="w-full max-h-[400px] object-contain rounded-t-md bg-black"
+                      className="w-full max-h-[400px] object-contain rounded-t-md"
                     >
                       <track kind="captions" srcLang="en" />
                     </video>
-                    <div className="p-3 bg-muted/20 dark:bg-gray-700/50 rounded-b-md">
+                    <div className="p-3 bg-muted/20 rounded-b-md">
                       <div className="flex items-center gap-3">
                         <Label
                           htmlFor={`thumbnail-time-${media[0].id}`}
@@ -315,7 +244,7 @@ export default function MediaUpload({
                             max={
                               videoPreviewElement
                                 ? Math.floor(videoPreviewElement.duration)
-                                : 100
+                                : 100 // Fallback max if duration not available
                             }
                             step={1}
                             onValueChange={(value) =>
@@ -368,14 +297,13 @@ export default function MediaUpload({
                 items={media.map((item) => item.id)}
                 strategy={rectSortingStrategy}
               >
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 pt-4 border-t border-border dark:border-gray-700">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 pt-4 border-t border-border">
                   {media.map((item, index) => (
                     <SortableMediaItem
                       key={item.id}
                       item={item}
                       index={index}
                       onRemove={() => removeMediaItem(item.id, media, onChange)}
-                      // Ensure SortableMediaItem is also theme-aware if it has specific styles
                     />
                   ))}
                 </div>
@@ -386,7 +314,6 @@ export default function MediaUpload({
                   <DraggableOverlayItem
                     item={activeDraggedItem}
                     index={activeDraggedItemIndex}
-                    // Ensure DraggableOverlayItem is also theme-aware
                   />
                 ) : null}
               </DragOverlay>
@@ -397,16 +324,15 @@ export default function MediaUpload({
                     variant="outline"
                     onClick={() => handleUploadClick(fileInputRef)}
                     disabled={isUploading}
-                    className="dark:border-gray-600 dark:hover:bg-gray-700"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Add More Media ({media.length}/10)
                   </Button>
                 </div>
               )}
-              <div className="text-center text-sm text-muted-foreground dark:text-gray-400">
+              <div className="text-center text-sm text-muted-foreground">
                 <p>Drag to reorder. The first item is the cover.</p>
-                {/* Removed generic optimal dimensions, will be handled by platform specific warnings */}
+                <p>Optimal dimensions: 1080 x 1080px (1:1 ratio recommended)</p>
                 <p>Maximum files: 10 (You've uploaded {media.length})</p>
               </div>
             </div>

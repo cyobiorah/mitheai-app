@@ -340,6 +340,29 @@ export const socialApi = {
       );
     }
   },
+
+  // Post to multi platforms
+  postToMultiPlatform: async (formData: FormData) => {
+    try {
+      const response = await axiosInstance.post(
+        "/social-posts/post-to-platforms",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to post to multi platforms:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to post to multi platforms"
+      );
+    }
+  },
 };
 
 export default socialApi;
