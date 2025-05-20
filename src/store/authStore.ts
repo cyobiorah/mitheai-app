@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ error: null }),
     }),
     {
-      name: "mitheai-storage",
+      name: "skedlii-storage",
       partialize: (state) => ({
         token: state.token,
         user: state.user,
