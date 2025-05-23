@@ -41,5 +41,8 @@ export const authApi = {
     // Just clear the token on the client side
     // No need for API call since we're using JWT
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("skedlii-storage");
+    localStorage.removeItem("skedlii-team-storage");
+    localStorage.removeItem("skedlii-theme");
   },
 };

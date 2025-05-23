@@ -5,12 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
 import {
   CalendarClock,
@@ -25,8 +20,6 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
-import DashboardHeader from "../../layouts/DashboardHeader";
-import DashboardSidebar from "../../layouts/DashboardSidebar";
 import { Badge } from "../ui/badge";
 
 export default function DashboardPage() {
@@ -103,14 +96,6 @@ export default function DashboardPage() {
   }
 
   return (
-    // <div className="min-h-screen flex flex-col">
-    //   <DashboardHeader />
-
-    //   <div className="flex-1 flex">
-    //     <div className="hidden md:block">
-    //       <DashboardSidebar />
-    //     </div>
-
     <main className="flex-1 p-4 overflow-auto">
       <div className="max-w-6xl mx-auto">
         <div className="space-y-6">
@@ -121,7 +106,7 @@ export default function DashboardPage() {
                 Welcome back, {user?.firstName ?? ""}!
               </p>
             </div>
-            <Button onClick={() => navigate("/dashboard/create-post")}>
+            <Button onClick={() => navigate("/dashboard/post-flow")}>
               <Plus size={16} className="mr-2" />
               Create Post
             </Button>
@@ -243,7 +228,7 @@ export default function DashboardPage() {
                       <p className="text-muted-foreground">No posts yet</p>
                       <Button
                         variant="link"
-                        onClick={() => navigate("/dashboard/create-post")}
+                        onClick={() => navigate("/dashboard/post-flow")}
                         className="mt-2"
                       >
                         Create your first post
@@ -315,7 +300,7 @@ export default function DashboardPage() {
                       </p>
                       <Button
                         variant="link"
-                        onClick={() => navigate("/dashboard/create-post")}
+                        onClick={() => navigate("/dashboard/post-flow")}
                         className="mt-2"
                       >
                         Schedule a post
@@ -359,7 +344,7 @@ export default function DashboardPage() {
               <CardContent className="grid grid-cols-2 gap-4">
                 <button
                   className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/create-post")}
+                  onClick={() => navigate("/dashboard/post-flow")}
                   style={{
                     border: "1px solid #E5E7EB",
                   }}
@@ -464,7 +449,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </main>
-    //   </div>
-    // </div>
   );
 }

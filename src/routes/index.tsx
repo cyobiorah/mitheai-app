@@ -28,6 +28,8 @@ import HelpSupport from "../components/help-support";
 import PostCreate from "../components/posts/post-create/PostCreate";
 import UserSettings from "../components/settings";
 import ResetPasswordPage from "../pages/reset-password";
+import Collection from "../components/collections/Collection";
+import HelpArticlePage from "../components/help-support/platform/HelpArticlePage";
 
 const AppRoutes = () => {
   return (
@@ -112,6 +114,10 @@ const AppRoutes = () => {
               <Route path="create-post" element={<PostCreate />} />
               <Route path="accounts" element={<SocialAccounts />} />
               <Route path="collections" element={<Collections />} />
+              <Route
+                path="collections/:collectionId"
+                element={<Collection />}
+              />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="post-flow" element={<PostFlow />} />
               <Route path="posts" element={<Posts />} />
@@ -120,6 +126,7 @@ const AppRoutes = () => {
               <Route path="settings" element={<UserSettings />} />
               <Route path="billing" element={<Billing />} />
               <Route path="help" element={<HelpSupport />} />
+              <Route path="help/:articleId" element={<HelpArticlePage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

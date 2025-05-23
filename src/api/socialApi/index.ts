@@ -218,7 +218,7 @@ export const socialApi = {
   schedulePost: async (data: {
     content: string;
     mediaUrls?: string[];
-    platforms: { platformId: string; accountId: string }[];
+    platforms: { accountId: string }[];
     scheduledFor: Date;
     teamId?: string;
     organizationId?: string;

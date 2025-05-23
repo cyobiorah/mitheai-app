@@ -21,8 +21,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
-export function getCollectionView({
+export function getCollectionsView({
   isLoading,
   collections,
   setIsCreating,
@@ -89,17 +90,21 @@ export function getCollectionView({
                 </DropdownMenu>
               </div>
               <CardDescription>
-                {collection.description ?? "No description"}
+                {collection.description?.trim()
+                  ? collection.description
+                  : "No description"}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
-              <p className="text-sm">{collection.contentIds.length} posts</p>
+              <p className="text-sm">
+                {collection?.contentRefs?.length ?? "0"} posts
+              </p>
             </CardContent>
             <CardFooter className="bg-muted/40 py-2">
               <Button variant="ghost" size="sm" className="w-full" asChild>
-                <a href={`/dashboard/collections/${collection._id}`}>
+                <Link to={`/dashboard/collections/${collection._id}`}>
                   View Content
-                </a>
+                </Link>
               </Button>
             </CardFooter>
           </Card>

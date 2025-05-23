@@ -47,7 +47,7 @@ export function getScheduledPostListView(
           You haven't created any posts yet
         </p>
         <Button variant="link" asChild className="mt-2">
-          <Link to="/dashboard/create-post">Create your first post</Link>
+          <Link to="/dashboard/post-flow">Create your first post</Link>
         </Button>
       </div>
     );
@@ -151,16 +151,16 @@ export const getStatusBadge = (status: string) => {
           <FileText size={12} /> Draft
         </Badge>
       );
-    case "scheduled":
-      return (
-        <Badge variant="secondary" className="flex items-center gap-1">
-          <Clock size={12} /> Scheduled
-        </Badge>
-      );
     case "published":
       return (
+        <Badge variant="secondary" className="flex items-center gap-1">
+          <Clock size={12} /> Published
+        </Badge>
+      );
+    case "scheduled":
+      return (
         <Badge variant="default" className="flex items-center gap-1">
-          <CheckCircle size={12} /> Published
+          <CheckCircle size={12} /> Scheduled
         </Badge>
       );
     case "failed":

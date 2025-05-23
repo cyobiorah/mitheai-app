@@ -45,7 +45,7 @@ export function getScheduledPostCalendarView({
           No posts scheduled for this date
         </p>
         <Button variant="link" asChild className="mt-2">
-          <Link to="/dashboard/create-post">Create a post</Link>
+          <Link to="/dashboard/post-flow">Create a post</Link>
         </Button>
       </div>
     );
@@ -59,7 +59,7 @@ export function getScheduledPostCalendarView({
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div>
-                  {getStatusBadge(post.status)}
+                  {getStatusBadge(post.platforms[0].status)}
                   <CardTitle className="mt-2 text-base">
                     {post.content.length > 60
                       ? post.content.substring(0, 60) + "..."

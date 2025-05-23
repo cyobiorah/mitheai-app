@@ -309,7 +309,7 @@ const Billing = () => {
     const targetIndex = tiers.indexOf(planId);
 
     if (targetIndex > currentIndex) return "Upgrade";
-    if (targetIndex < currentIndex) return "Downgrade";
+    if (targetIndex < currentIndex) return "Change Plan";
 
     return "Current Plan";
   };

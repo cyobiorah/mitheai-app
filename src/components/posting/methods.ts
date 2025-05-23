@@ -189,6 +189,10 @@ const getFileMetadata = async (
 ): Promise<{ width?: number; height?: number; duration?: number }> => {
   return new Promise((resolve) => {
     if (file.type.startsWith("image/")) {
+      if (!["image/jpeg", "image/png", "image/gif"].includes(file.type)) {
+        resolve({});
+        return;
+      }
       const img = new Image();
       img.onload = () => {
         resolve({ width: img.width, height: img.height });
@@ -197,6 +201,10 @@ const getFileMetadata = async (
       img.onerror = () => resolve({});
       img.src = URL.createObjectURL(file);
     } else if (file.type.startsWith("video/")) {
+      if (!["video/mp4", "video/webm", "video/ogg"].includes(file.type)) {
+        resolve({});
+        return;
+      }
       const video = document.createElement("video");
       video.onloadedmetadata = () => {
         resolve({
