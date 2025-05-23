@@ -22,6 +22,26 @@ interface AuthState {
   clearError: () => void;
 }
 
+export const logoutUser = async () => {
+  try {
+    await authApi.logout();
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    localStorage.removeItem("auth_token");
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      organization: null,
+      teams: [],
+    });
+    useTeamStore.setState({ activeTeam: null, teams: [] });
+    localStorage.removeItem("skedlii-storage");
+    localStorage.removeItem("skedlii-team-storage");
+    localStorage.removeItem("skedlii-theme");
+  }
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -73,22 +93,27 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      logout: async () => {
-        try {
-          await authApi.logout();
-        } catch (error) {
-          console.error("Logout error:", error);
-        } finally {
-          localStorage.removeItem("auth_token");
-          set({
-            user: null,
-            token: null,
-            organization: null,
-            teams: [],
-          });
-          useTeamStore.setState({ activeTeam: null, teams: [] });
-        }
-      },
+      // logout: async () => {
+      //   try {
+      //     await authApi.logout();
+      //   } catch (error) {
+      //     console.error("Logout error:", error);
+      //   } finally {
+      //     localStorage.removeItem("auth_token");
+      //     set({
+      //       user: null,
+      //       token: null,
+      //       organization: null,
+      //       teams: [],
+      //     });
+      //     useTeamStore.setState({ activeTeam: null, teams: [] });
+      //     localStorage.removeItem("skedlii-storage");
+      //     localStorage.removeItem("skedlii-team-storage");
+      //     localStorage.removeItem("skedlii-theme");
+      //   }
+      // },
+
+      logout: logoutUser,
 
       register: async (data) => {
         set({ isLoading: true, error: null });
