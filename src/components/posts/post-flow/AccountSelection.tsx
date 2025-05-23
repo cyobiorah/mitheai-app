@@ -193,6 +193,7 @@ export default function AccountSelection({
                       : "border-border hover:border-primary/50"
                   }`}
                   onClick={() => toggleAccount(account._id)}
+                  // disabled={account.status === "expired"}
                 >
                   <div className="flex items-center gap-3">
                     <div

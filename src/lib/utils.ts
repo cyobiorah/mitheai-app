@@ -29,7 +29,7 @@ export function getSocialIcon(platform: string) {
     case "facebook":
       return "ri-facebook-circle-fill";
     case "threads":
-      return "ri-stack-fill";
+      return "ri-threads-line";
     default:
       return "ri-global-line";
   }
