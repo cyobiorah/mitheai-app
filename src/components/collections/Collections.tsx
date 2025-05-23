@@ -26,7 +26,8 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Loader2, Plus } from "lucide-react";
-import { getCollectionView } from "./methods";
+import { getCollectionsView } from "./methods";
+import { useNavigate } from "react-router-dom";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -36,16 +37,21 @@ const collectionSchema = z.object({
 type CollectionFormData = z.infer<typeof collectionSchema>;
 
 export default function Collections() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCollection, setCurrentCollection] = useState<any>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Get collections
-  const { data: collections = [], isLoading } = useQuery({
+  const {
+    data: collections = [],
+    isLoading,
+    refetch: refetchCollections,
+  } = useQuery({
     queryKey: ["/collections"],
-  }) as { data: any; isLoading: boolean };
+  }) as { data: any; isLoading: boolean; refetch: any };
 
   // Create collection mutation
   const { mutate: createCollection, isPending: isCreatingPending } =
@@ -54,11 +60,11 @@ export default function Collections() {
         return await apiRequest("POST", "/collections", data);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/collections"] });
         toast({
           title: "Collection created",
           description: "Your collection has been created successfully",
         });
+        refetchCollections();
         setIsCreating(false);
         createForm.reset();
       },
@@ -84,11 +90,11 @@ export default function Collections() {
         return await apiRequest("PATCH", `collections/${id}`, data);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/collections"] });
         toast({
           title: "Collection updated",
           description: "Your collection has been updated successfully",
         });
+        refetchCollections();
         setIsEditing(false);
         setCurrentCollection(null);
       },
@@ -107,7 +113,7 @@ export default function Collections() {
       return await apiRequest("DELETE", `/collections/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/collections"] });
+      refetchCollections();
       toast({
         title: "Collection deleted",
         description: "The collection has been deleted",
@@ -172,7 +178,7 @@ export default function Collections() {
         </Button>
       </div>
 
-      {getCollectionView({
+      {getCollectionsView({
         isLoading,
         collections,
         setIsCreating,

@@ -403,7 +403,7 @@ export default function Header() {
                       </div>
                     </Link>
                     <Link
-                      to="/dashboard/create-post"
+                      to="/dashboard/post-flow"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">

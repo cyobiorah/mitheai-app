@@ -16,7 +16,6 @@ import MediaUpload from "./MediaUpload";
 import SchedulingOptions from "./SchedulingOptions";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
-import { mockService } from "../../../lib/mockData";
 import {
   handleAccountSelection,
   handleCaptionChange,
@@ -187,110 +186,79 @@ export default function PostFlow() {
         });
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      let scheduledPost;
-
       if (isScheduled) {
-        scheduledPost = {
-          content: globalCaption,
-          platforms: platformData,
-          scheduledFor: new Date(scheduledDate as Date).toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          mediaType: postType,
-        };
+        for (const { platform, accounts, caption } of platformData) {
+          const platformAccounts = selectedAccountsData.filter(
+            (acc) => acc.platform === platform && accounts.includes(acc._id)
+          );
+
+          for (const account of platformAccounts) {
+            const postData = {
+              content: caption,
+              platforms: [
+                {
+                  platform,
+                  accountId: account.accountId,
+                  accountName: account.accountName,
+                  accountType: account.accountType,
+                },
+              ],
+              media: mediaUrls,
+              scheduledFor: new Date(scheduledDate as Date),
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              mediaType: postType,
+            };
+
+            console.log({ postData });
+
+            try {
+              const scheduledPost = await socialApi.schedulePost(postData);
+              console.log("Scheduled post:", scheduledPost);
+            } catch (error) {
+              console.error("Failed to schedule post:", error);
+            }
+          }
+        }
 
         return;
       } else {
-        const postData = {
-          content: globalCaption,
-          platforms: platformData,
-          mediaType: postType,
-        };
+        for (const { platform, accounts, caption } of platformData) {
+          const platformAccounts = selectedAccountsData.filter(
+            (acc) => acc.platform === platform && accounts.includes(acc._id)
+          );
 
-        // return;
-      }
+          for (const account of platformAccounts) {
+            const postData = {
+              caption,
+              accountId: account.accountId,
+              platformAccountId: account.platformAccountId,
+              media: mediaUrls,
+              accountName: account.accountName,
+              accountType: account.accountType,
+              platform: platform,
+              platformId: account.platformId,
+              mediaType: postType,
+            };
 
-      const data = {
-        caption: globalCaption,
-        mediaUrls,
-        scheduledAt: isScheduled
-          ? new Date(scheduledDate as Date).toISOString()
-          : null,
-        status: isScheduled ? "scheduled" : "social_post",
-        type: postType,
-        platformData,
-      };
+            const formData = new FormData();
+            formData.append("postData", JSON.stringify(postData));
 
-      // Mock service call
-      // await mockService.createPost(data);
+            for (const item of media) {
+              const dimensions = await getImageDimensions(item.file);
+              item.dimensions = dimensions;
+              formData.append("media", item.file, item.id);
+              formData.append(
+                "dimensions[]",
+                JSON.stringify({
+                  id: item.id,
+                  width: dimensions.width,
+                  height: dimensions.height,
+                })
+              );
+            }
 
-      for (const { platform, accounts, caption } of platformData) {
-        const platformAccounts = selectedAccountsData.filter(
-          (acc) => acc.platform === platform && accounts.includes(acc._id)
-        );
-
-        for (const account of platformAccounts) {
-          const postData = {
-            caption,
-            accountId: account.accountId,
-            platformAccountId: account.platformAccountId,
-            media: mediaUrls,
-            accountName: account.accountName,
-            accountType: account.accountType,
-            platform: platform,
-            platformId: account.platformId,
-            mediaType: postType,
-          };
-
-          console.log({ media });
-
-          const formData = new FormData();
-          formData.append("postData", JSON.stringify(postData));
-          // media.forEach(async (item) => {
-          //   // const dimensions = await getImageDimensions(item.file);
-          //   // item.dimensions = dimensions;
-          //   formData.append("media", item.file);
-          // });
-
-          for (const item of media) {
-            const dimensions = await getImageDimensions(item.file);
-            item.dimensions = dimensions;
-            formData.append("media", item.file, item.id);
-            formData.append(
-              "dimensions[]",
-              JSON.stringify({
-                id: item.id,
-                width: dimensions.width,
-                height: dimensions.height,
-              })
-            );
+            await socialApi.postToMultiPlatform(formData);
           }
-
-          await socialApi.postToMultiPlatform(formData);
-
-          // switch (platform) {
-          //   case "threads":
-          //     await socialApi.postToThreads(account._id, postData);
-          //     break;
-          //   case "linkedin":
-          //     await socialApi.postToLinkedIn(account._id, caption);
-          //     break;
-          //   case "twitter":
-          //     await socialApi.postToTwitter(account._id, postData);
-          //     break;
-          //   case "instagram":
-          //     {
-          //       const igPostData = {
-          //         caption,
-          //         media: media.map(({ url, type }) => ({ url, type })),
-          //       };
-          //       await socialApi.postToInstagram(account._id, igPostData);
-          //     }
-          //     break;
-          //   default:
-          //     console.warn(`Unsupported platform: ${platform}`);
-          // }
         }
       }
 

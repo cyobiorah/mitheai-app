@@ -149,7 +149,7 @@ export default function ScheduledPosts() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/dashboard/create-post">
+          <Link to="/dashboard/post-flow">
             <Plus size={16} className="mr-2" />
             Create Post
           </Link>
