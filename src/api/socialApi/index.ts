@@ -215,28 +215,6 @@ export const socialApi = {
     }
   },
 
-  schedulePost: async (data: {
-    content: string;
-    mediaUrls?: string[];
-    platforms: { accountId: string }[];
-    scheduledFor: Date;
-    teamId?: string;
-    organizationId?: string;
-    timezone: string;
-  }) => {
-    try {
-      const response = await axiosInstance.post("/scheduled-posts", data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to schedule post:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to schedule post"
-      );
-    }
-  },
-
   // Get Scheduled Posts By Id
   getScheduledPostById: async (postId: string) => {
     try {
@@ -360,6 +338,24 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to post to multi platforms"
+      );
+    }
+  },
+
+  schedulePost: async (formData: FormData) => {
+    try {
+      const response = await axiosInstance.post("/scheduled-posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to schedule post:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to schedule post"
       );
     }
   },

@@ -9,16 +9,11 @@ const HelpArticlePage = () => {
   const { articleId } = useParams();
   const [markdown, setMarkdown] = useState<string>("");
 
-  console.log({ articleId });
-
   useEffect(() => {
     const articles = import.meta.glob("./**/*.md");
 
-    console.log({ articles });
-
     const loadArticle = async () => {
       const path = `./${articleId}.md`;
-      console.log({ path });
       const loader = articles[path];
 
       if (!loader) {
