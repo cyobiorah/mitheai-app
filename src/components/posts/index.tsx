@@ -527,13 +527,22 @@ const Posts = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Select a collection" />
                 </SelectTrigger>
-                <SelectContent>
-                  {collections.data.map((collection: any) => (
-                    <SelectItem key={collection._id} value={collection._id}>
-                      {collection.name}
+                {collections?.data?.length === 0 && (
+                  <SelectContent>
+                    <SelectItem value="null" disabled>
+                      No collections found
                     </SelectItem>
-                  ))}
-                </SelectContent>
+                  </SelectContent>
+                )}
+                {collections?.data?.length > 0 && (
+                  <SelectContent>
+                    {collections.data.map((collection: any) => (
+                      <SelectItem key={collection._id} value={collection._id}>
+                        {collection.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                )}
               </Select>
             </DialogDescription>
           </DialogHeader>
@@ -553,6 +562,7 @@ const Posts = () => {
                   postId: collectionConfig.postId,
                 })
               }
+              disabled={!collectionConfig.collectionId}
             >
               Add
             </Button>

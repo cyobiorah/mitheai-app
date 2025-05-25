@@ -42,7 +42,7 @@ export default function LoginPage() {
 
         <LoginForm />
 
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        {/* <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
             Or continue with
           </p>
@@ -90,17 +90,8 @@ export default function LoginPage() {
               Microsoft
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
-
-      <p className="mt-6 text-center text-sm">
-        Don't have an account?{" "}
-        <Link to="/register">
-          <span className="text-primary-600 dark:text-primary-400 hover:underline">
-            Create an account
-          </span>
-        </Link>
-      </p>
     </div>
   );
 }

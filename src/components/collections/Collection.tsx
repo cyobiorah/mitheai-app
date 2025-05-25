@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { Button } from "../ui/button";
-import { ArrowLeft, Edit, Plus, Share2 } from "lucide-react";
+import { ArrowLeft, Edit, Share2 } from "lucide-react";
 import { formatDate } from "../../lib/utils";
 import { Skeleton } from "../ui/skeleton";
 
@@ -23,8 +23,6 @@ export default function Collection() {
     queryFn: () => apiRequest("GET", `/collections/collection/${collectionId}`),
   }) as { data: any; isLoading: boolean; refetch: any };
 
-  console.log({ collection });
-
   useEffect(() => {
     if (!collectionId) {
       navigate("/collections");
@@ -36,10 +34,6 @@ export default function Collection() {
       setCollectionPosts(collection.items);
     }
   }, [collection]);
-
-  useEffect(() => {
-    console.log({ collectionPosts });
-  }, [collectionPosts]);
 
   const isLoading = isLoadingCollection;
 
