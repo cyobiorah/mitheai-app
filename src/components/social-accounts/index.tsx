@@ -218,12 +218,12 @@ export default function SocialAccounts() {
         window.location.href = response;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        // queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "Instagram connected in progress",
+          title: "Instagram connection in progress",
           description: "Your Instagram account is being connected",
         });
-        setIsAddingAccount(false);
+        // setIsAddingAccount(false);
         form.reset();
       },
       onError: (error) => {
@@ -234,6 +234,9 @@ export default function SocialAccounts() {
             "Failed to connect Instagram. It may already be connected or token is invalid.",
           variant: "destructive",
         });
+      },
+      onSettled: () => {
+        setIsAddingAccount(false);
       },
     });
 
@@ -618,8 +621,8 @@ export default function SocialAccounts() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isConnectingTwitterPending}>
-                  {isConnectingTwitterPending && (
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Connect Account

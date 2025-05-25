@@ -42,7 +42,7 @@ export default function RegisterPage() {
 
         <RegisterForm />
 
-        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        {/* <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
             Or continue with
           </p>
@@ -90,27 +90,18 @@ export default function RegisterPage() {
               Microsoft
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
-
-      <p className="mt-6 text-center text-sm">
-        Already have an account?{" "}
-        <Link to="/login">
-          <span className="text-primary-600 dark:text-primary-400 hover:underline">
-            Log in
-          </span>
-        </Link>
-      </p>
 
       <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
         By creating an account, you agree to our{" "}
-        <a href="#" className="underline">
+        <Link to="/terms" className="underline">
           Terms of Service
-        </a>{" "}
+        </Link>{" "}
         and{" "}
-        <a href="#" className="underline">
+        <Link to="/privacy" className="underline">
           Privacy Policy
-        </a>
+        </Link>
       </p>
     </div>
   );

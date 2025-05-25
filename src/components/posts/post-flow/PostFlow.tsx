@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
   Card,
@@ -28,6 +29,7 @@ import { getImageDimensions } from "../../posting/methods";
 
 export default function PostFlow() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -209,18 +211,15 @@ export default function PostFlow() {
               mediaType: postType,
             };
 
-            console.log({ postData });
+            const formData = await handleFormData(postData, media);
 
             try {
-              const scheduledPost = await socialApi.schedulePost(postData);
-              console.log("Scheduled post:", scheduledPost);
+              await socialApi.schedulePost(formData);
             } catch (error) {
               console.error("Failed to schedule post:", error);
             }
           }
         }
-
-        return;
       } else {
         for (const { platform, accounts, caption } of platformData) {
           const platformAccounts = selectedAccountsData.filter(
@@ -240,22 +239,7 @@ export default function PostFlow() {
               mediaType: postType,
             };
 
-            const formData = new FormData();
-            formData.append("postData", JSON.stringify(postData));
-
-            for (const item of media) {
-              const dimensions = await getImageDimensions(item.file);
-              item.dimensions = dimensions;
-              formData.append("media", item.file, item.id);
-              formData.append(
-                "dimensions[]",
-                JSON.stringify({
-                  id: item.id,
-                  width: dimensions.width,
-                  height: dimensions.height,
-                })
-              );
-            }
+            const formData = await handleFormData(postData, media);
 
             await socialApi.postToMultiPlatform(formData);
           }
@@ -270,7 +254,7 @@ export default function PostFlow() {
       });
 
       // Navigate to dashboard
-      // navigate("/dashboard");
+      navigate(`/dashboard/${isScheduled ? "schedule" : "posts"}`);
     } catch (error) {
       console.error("Failed to create post:", error);
       toast({
@@ -281,6 +265,26 @@ export default function PostFlow() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFormData = async (postData: any, media: any) => {
+    const formData = new FormData();
+    formData.append("postData", JSON.stringify(postData));
+
+    for (const item of media) {
+      const dimensions = await getImageDimensions(item.file);
+      formData.append("media", item.file, item.id);
+      formData.append(
+        "dimensions[]",
+        JSON.stringify({
+          id: item.id,
+          width: dimensions.width,
+          height: dimensions.height,
+        })
+      );
+    }
+
+    return formData;
   };
 
   return (
