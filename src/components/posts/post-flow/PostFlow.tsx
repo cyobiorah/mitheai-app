@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
   Card,
@@ -16,7 +17,6 @@ import MediaUpload from "./MediaUpload";
 import SchedulingOptions from "./SchedulingOptions";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
-import { mockService } from "../../../lib/mockData";
 import {
   handleAccountSelection,
   handleCaptionChange,
@@ -29,6 +29,7 @@ import { getImageDimensions } from "../../posting/methods";
 
 export default function PostFlow() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -187,110 +188,61 @@ export default function PostFlow() {
         });
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      let scheduledPost;
-
       if (isScheduled) {
-        scheduledPost = {
-          content: globalCaption,
-          platforms: platformData,
-          scheduledFor: new Date(scheduledDate as Date).toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          mediaType: postType,
-        };
+        for (const { platform, accounts, caption } of platformData) {
+          const platformAccounts = selectedAccountsData.filter(
+            (acc) => acc.platform === platform && accounts.includes(acc._id)
+          );
 
-        return;
-      } else {
-        const postData = {
-          content: globalCaption,
-          platforms: platformData,
-          mediaType: postType,
-        };
+          for (const account of platformAccounts) {
+            const postData = {
+              content: caption,
+              platforms: [
+                {
+                  platform,
+                  accountId: account.accountId,
+                  accountName: account.accountName,
+                  accountType: account.accountType,
+                },
+              ],
+              media: mediaUrls,
+              scheduledFor: new Date(scheduledDate as Date),
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              mediaType: postType,
+            };
 
-        // return;
-      }
+            const formData = await handleFormData(postData, media);
 
-      const data = {
-        caption: globalCaption,
-        mediaUrls,
-        scheduledAt: isScheduled
-          ? new Date(scheduledDate as Date).toISOString()
-          : null,
-        status: isScheduled ? "scheduled" : "social_post",
-        type: postType,
-        platformData,
-      };
-
-      // Mock service call
-      // await mockService.createPost(data);
-
-      for (const { platform, accounts, caption } of platformData) {
-        const platformAccounts = selectedAccountsData.filter(
-          (acc) => acc.platform === platform && accounts.includes(acc._id)
-        );
-
-        for (const account of platformAccounts) {
-          const postData = {
-            caption,
-            accountId: account.accountId,
-            platformAccountId: account.platformAccountId,
-            media: mediaUrls,
-            accountName: account.accountName,
-            accountType: account.accountType,
-            platform: platform,
-            platformId: account.platformId,
-            mediaType: postType,
-          };
-
-          console.log({ media });
-
-          const formData = new FormData();
-          formData.append("postData", JSON.stringify(postData));
-          // media.forEach(async (item) => {
-          //   // const dimensions = await getImageDimensions(item.file);
-          //   // item.dimensions = dimensions;
-          //   formData.append("media", item.file);
-          // });
-
-          for (const item of media) {
-            const dimensions = await getImageDimensions(item.file);
-            item.dimensions = dimensions;
-            formData.append("media", item.file, item.id);
-            formData.append(
-              "dimensions[]",
-              JSON.stringify({
-                id: item.id,
-                width: dimensions.width,
-                height: dimensions.height,
-              })
-            );
+            try {
+              await socialApi.schedulePost(formData);
+            } catch (error) {
+              console.error("Failed to schedule post:", error);
+            }
           }
+        }
+      } else {
+        for (const { platform, accounts, caption } of platformData) {
+          const platformAccounts = selectedAccountsData.filter(
+            (acc) => acc.platform === platform && accounts.includes(acc._id)
+          );
 
-          await socialApi.postToMultiPlatform(formData);
+          for (const account of platformAccounts) {
+            const postData = {
+              caption,
+              accountId: account.accountId,
+              platformAccountId: account.platformAccountId,
+              media: mediaUrls,
+              accountName: account.accountName,
+              accountType: account.accountType,
+              platform: platform,
+              platformId: account.platformId,
+              mediaType: postType,
+            };
 
-          // switch (platform) {
-          //   case "threads":
-          //     await socialApi.postToThreads(account._id, postData);
-          //     break;
-          //   case "linkedin":
-          //     await socialApi.postToLinkedIn(account._id, caption);
-          //     break;
-          //   case "twitter":
-          //     await socialApi.postToTwitter(account._id, postData);
-          //     break;
-          //   case "instagram":
-          //     {
-          //       const igPostData = {
-          //         caption,
-          //         media: media.map(({ url, type }) => ({ url, type })),
-          //       };
-          //       await socialApi.postToInstagram(account._id, igPostData);
-          //     }
-          //     break;
-          //   default:
-          //     console.warn(`Unsupported platform: ${platform}`);
-          // }
+            const formData = await handleFormData(postData, media);
+
+            await socialApi.postToMultiPlatform(formData);
+          }
         }
       }
 
@@ -302,7 +254,7 @@ export default function PostFlow() {
       });
 
       // Navigate to dashboard
-      // navigate("/dashboard");
+      navigate(`/dashboard/${isScheduled ? "schedule" : "posts"}`);
     } catch (error) {
       console.error("Failed to create post:", error);
       toast({
@@ -313,6 +265,26 @@ export default function PostFlow() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleFormData = async (postData: any, media: any) => {
+    const formData = new FormData();
+    formData.append("postData", JSON.stringify(postData));
+
+    for (const item of media) {
+      const dimensions = await getImageDimensions(item.file);
+      formData.append("media", item.file, item.id);
+      formData.append(
+        "dimensions[]",
+        JSON.stringify({
+          id: item.id,
+          width: dimensions.width,
+          height: dimensions.height,
+        })
+      );
+    }
+
+    return formData;
   };
 
   return (

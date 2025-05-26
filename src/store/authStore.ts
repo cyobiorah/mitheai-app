@@ -22,6 +22,26 @@ interface AuthState {
   clearError: () => void;
 }
 
+export const logoutUser = async () => {
+  try {
+    await authApi.logout();
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    localStorage.removeItem("auth_token");
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      organization: null,
+      teams: [],
+    });
+    useTeamStore.setState({ activeTeam: null, teams: [] });
+    localStorage.removeItem("skedlii-storage");
+    localStorage.removeItem("skedlii-team-storage");
+    localStorage.removeItem("skedlii-theme");
+  }
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -38,7 +58,9 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const data = await authApi.loginUser({ email, password });
+
           localStorage.setItem("auth_token", data.token);
+
           set({
             token: data.token,
             user: data.user,
@@ -51,36 +73,47 @@ export const useAuthStore = create<AuthState>()(
               data.user?.role === "org_owner",
           });
 
-          // Initialize team store with teams from login
+          const teamStore = useTeamStore.getState();
           if (data.teams && data.teams.length > 0) {
-            const teamStore = useTeamStore.getState();
             teamStore.setTeams(data.teams);
-
-            // Set active team to the first team
             teamStore.setActiveTeam(data.teams[0]);
           }
-          return data;
+
+          return { success: true, data };
         } catch (error: any) {
-          set({ error: error.message, isLoading: false });
+          const fallbackMessage = "Something went wrong. Please try again.";
+          const response = error?.response;
+          const status = response?.status;
+          const message =
+            response?.data?.message ?? response?.data?.error ?? fallbackMessage;
+
+          set({ error: message, isLoading: false });
+
+          return { success: false, status, message };
         }
       },
 
-      logout: async () => {
-        try {
-          await authApi.logout();
-        } catch (error) {
-          console.error("Logout error:", error);
-        } finally {
-          localStorage.removeItem("auth_token");
-          set({
-            user: null,
-            token: null,
-            organization: null,
-            teams: [],
-          });
-          useTeamStore.setState({ activeTeam: null, teams: [] });
-        }
-      },
+      // logout: async () => {
+      //   try {
+      //     await authApi.logout();
+      //   } catch (error) {
+      //     console.error("Logout error:", error);
+      //   } finally {
+      //     localStorage.removeItem("auth_token");
+      //     set({
+      //       user: null,
+      //       token: null,
+      //       organization: null,
+      //       teams: [],
+      //     });
+      //     useTeamStore.setState({ activeTeam: null, teams: [] });
+      //     localStorage.removeItem("skedlii-storage");
+      //     localStorage.removeItem("skedlii-team-storage");
+      //     localStorage.removeItem("skedlii-theme");
+      //   }
+      // },
+
+      logout: logoutUser,
 
       register: async (data) => {
         set({ isLoading: true, error: null });
@@ -128,7 +161,7 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => set({ error: null }),
     }),
     {
-      name: "mitheai-storage",
+      name: "skedlii-storage",
       partialize: (state) => ({
         token: state.token,
         user: state.user,

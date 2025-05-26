@@ -102,14 +102,14 @@ export default function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "h-full min-w-[220px] border-r bg-background px-3 py-4",
-        isMobile ? "flex-col" : "w-64"
+        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40 mt-16",
+        isMobile && "relative w-full"
       )}
     >
       <ScrollArea className="flex-1">
         <div className="flex flex-col gap-2 p-4">
           <Button asChild className="mb-4">
-            <Link to="/dashboard/create-post" onClick={handleNavigation}>
+            <Link to="/dashboard/post-flow" onClick={handleNavigation}>
               <Plus className="mr-2 h-4 w-4" />
               Create Post
             </Link>

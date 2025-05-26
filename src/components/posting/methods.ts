@@ -1,19 +1,10 @@
 import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-// Assuming MediaItem is defined in MediaUpload.tsx or a shared types file
-// For clarity, let's re-iterate a possible structure if not passed directly
-// import { MediaItem } from "../components/posts/post-flow/MediaUpload";
-// For now, let's use the MediaItem definition from MediaUpload.tsx context
-// import { MediaItem } from "../components/posts/post-flow/MediaUpload";
 import { arrayMove } from "@dnd-kit/sortable";
-// import { toast } from "../hooks/use-toast"; // Adjusted path based on typical structure
-// import { uploadToCloudinary } from "../../lib/utils"; // This will be replaced by a simulated API call
 import {
   getPlatformConstraints,
   PlatformMediaConstraints,
-  AllPlatformConstraints,
   platformConstraints,
 } from "./platformConstraints";
-import imageCompression from "browser-image-compression"; // User will need to npm/yarn install browser-image-compression
 import { MediaItem } from "../posts/post-flow/MediaUpload";
 import { toast } from "../../hooks/use-toast";
 
@@ -122,7 +113,7 @@ export const updateVideoThumbnailTime = async (
       }
       newMedia[itemIndex] = {
         ...newMedia[itemIndex],
-        thumbnailUrl, // This might be handled differently with server processing
+        thumbnailUrl,
         thumbnailTime: time,
       };
       onChange(newMedia);
@@ -189,6 +180,10 @@ const getFileMetadata = async (
 ): Promise<{ width?: number; height?: number; duration?: number }> => {
   return new Promise((resolve) => {
     if (file.type.startsWith("image/")) {
+      if (!["image/jpeg", "image/png", "image/gif"].includes(file.type)) {
+        resolve({});
+        return;
+      }
       const img = new Image();
       img.onload = () => {
         resolve({ width: img.width, height: img.height });
@@ -197,6 +192,10 @@ const getFileMetadata = async (
       img.onerror = () => resolve({});
       img.src = URL.createObjectURL(file);
     } else if (file.type.startsWith("video/")) {
+      if (!["video/mp4", "video/webm", "video/ogg"].includes(file.type)) {
+        resolve({});
+        return;
+      }
       const video = document.createElement("video");
       video.onloadedmetadata = () => {
         resolve({
@@ -298,112 +297,6 @@ const combineConstraints = (platforms: string[]): PlatformMediaConstraints => {
   if (combined.maxFileSizeMB === Infinity) combined.maxFileSizeMB = undefined;
   return combined;
 };
-
-// export const validateFileWithPlatforms = async (
-//   file: File,
-//   selectedPlatforms: string[]
-// ): Promise<{
-//   valid: boolean;
-//   message?: string;
-//   combinedRules?: PlatformMediaConstraints;
-// }> => {
-//   console.log({ file });
-//   const effectiveConstraints = combineConstraints(
-//     selectedPlatforms.length > 0 ? selectedPlatforms : ["general"]
-//   );
-//   const metadata = await getFileMetadata(file);
-
-//   console.log({ metadata });
-//   let messages: string[] = [];
-
-//   // File Type
-//   if (
-//     effectiveConstraints.allowedMediaTypes &&
-//     !effectiveConstraints.allowedMediaTypes.includes(file.type)
-//   ) {
-//     messages.push(
-//       `Unsupported file type (${
-//         file.type
-//       }). Allowed: ${effectiveConstraints.allowedMediaTypes.join(", ")}.`
-//     );
-//   }
-
-//   // File Size
-//   if (
-//     effectiveConstraints.maxFileSizeMB &&
-//     file.size > effectiveConstraints.maxFileSizeMB * 1024 * 1024
-//   ) {
-//     messages.push(
-//       `File is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Max: ${
-//         effectiveConstraints.maxFileSizeMB
-//       }MB.`
-//     );
-//   }
-
-//   if (file.type.startsWith("image/") && effectiveConstraints.image) {
-//     const imgConstraints = effectiveConstraints.image;
-//     if (
-//       imgConstraints.maxDimensions &&
-//       ((metadata.width &&
-//         metadata.width > imgConstraints.maxDimensions.width) ||
-//         (metadata.height &&
-//           metadata.height > imgConstraints.maxDimensions.height))
-//     ) {
-//       messages.push(
-//         `Image dimensions too large (max ${imgConstraints.maxDimensions.width}x${imgConstraints.maxDimensions.height}px).`
-//       );
-//     }
-//     if (
-//       imgConstraints.minDimensions &&
-//       ((metadata.width &&
-//         metadata.width < imgConstraints.minDimensions.width) ||
-//         (metadata.height &&
-//           metadata.height < imgConstraints.minDimensions.height))
-//     ) {
-//       messages.push(
-//         `Image dimensions too small (min ${imgConstraints.minDimensions.width}x${imgConstraints.minDimensions.height}px).`
-//       );
-//     }
-//     // Aspect ratio validation would go here - simplified for now
-//   } else if (file.type.startsWith("video/") && effectiveConstraints.video) {
-//     const vidConstraints = effectiveConstraints.video;
-//     if (
-//       vidConstraints.maxDurationSeconds &&
-//       metadata.duration &&
-//       metadata.duration > vidConstraints.maxDurationSeconds
-//     ) {
-//       messages.push(
-//         `Video too long (max ${vidConstraints.maxDurationSeconds}s).`
-//       );
-//     }
-//     if (
-//       vidConstraints.minDurationSeconds &&
-//       metadata.duration &&
-//       metadata.duration < vidConstraints.minDurationSeconds
-//     ) {
-//       messages.push(
-//         `Video too short (min ${vidConstraints.minDurationSeconds}s).`
-//       );
-//     }
-//     // Dimension and aspect ratio validation for video would go here
-//   }
-
-//   if (messages.length > 0) {
-//     let fullMessage = `File "${file.name}" has issues: ${messages.join(" ")}`;
-//     if (selectedPlatforms.length > 1) {
-//       fullMessage += ` These are the combined strictest rules for the selected platforms (${selectedPlatforms.join(
-//         ", "
-//       )}). You might need to adjust the file or selected platforms.`;
-//     }
-//     return {
-//       valid: false,
-//       message: fullMessage,
-//       combinedRules: effectiveConstraints,
-//     };
-//   }
-
-//   return { valid: true, combinedRules: effectiveConstraints };
-// };
 
 export const validateFileWithPlatforms = async (
   file: File,
@@ -632,10 +525,8 @@ export const processFiles = async (
   setValidationMessage: React.Dispatch<React.SetStateAction<string | null>>,
   validationMessage: string | null
 ) => {
-  //   console.log({ files });
   setValidationMessage(null); // Clear previous messages
   const newMediaItems: MediaItem[] = [];
-  let allFilesValid = true;
   let combinedRulesMessageShown = false;
 
   const filesToProcess = Array.from(files).slice(0, 10 - currentMedia.length);
@@ -651,9 +542,8 @@ export const processFiles = async (
       selectedPlatforms
     );
     if (!validationResult.valid) {
-      allFilesValid = false;
       setValidationMessage(
-        validationResult.message || "File validation failed."
+        validationResult.message ?? "File validation failed."
       );
       // As per user: stop and warn. The message is set, user can decide.
       // If we need to show combined rules for *all* selected platforms even if one file is fine:
@@ -694,31 +584,6 @@ export const processFiles = async (
     }
 
     let processedFile = file;
-    // if (file.type.startsWith("image/")) {
-    //   try {
-    //     const compressionOptions = {
-    //       maxSizeMB: 1,
-    //       maxWidthOrHeight: 1920,
-    //       useWebWorker: true,
-    //     };
-    //     console.log(`Compressing ${file.name}...`);
-    //     // Note: User needs to install 'browser-image-compression'
-    //     processedFile = await imageCompression(file, compressionOptions);
-    //     console.log(
-    //       `Compressed ${file.name} from ${(file.size / 1024).toFixed(
-    //         2
-    //       )}KB to ${(processedFile.size / 1024).toFixed(2)}KB`
-    //     );
-    //   } catch (error) {
-    //     console.error("Error during image compression:", error);
-    //     toast({
-    //       title: "Compression Error",
-    //       description: `Could not compress image ${file.name}. Proceeding with original.`,
-    //       variant: "destructive",
-    //     });
-    //     // Proceed with original file if compression fails
-    //   }
-    // }
 
     const mediaItem: MediaItem = {
       id: crypto.randomUUID(),
@@ -853,6 +718,7 @@ export const generateVideoThumbnail = (
     };
 
     video.onerror = (e) => {
+      console.error("Error loading video:", e);
       URL.revokeObjectURL(url);
       reject(new Error("Failed to load video for thumbnail generation"));
     };

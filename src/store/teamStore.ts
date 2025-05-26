@@ -77,7 +77,7 @@ export const useTeamStore = create<TeamState>()(
       },
     }),
     {
-      name: "mitheai-team-storage",
+      name: "skedlii-team-storage",
       partialize: (state) => ({
         teams: state.teams,
         activeTeam: state.activeTeam,

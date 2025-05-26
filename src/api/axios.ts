@@ -1,5 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 import { toast } from "../hooks/use-toast";
+import { logoutUser } from "../store/authStore";
 
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL;
 
@@ -15,7 +16,7 @@ let hasShownTokenExpiredToast = false;
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
 
     if (status === 401 && !hasShownTokenExpiredToast) {
@@ -23,10 +24,7 @@ axiosInstance.interceptors.response.use(
 
       console.warn("[DEBUG] Token expired or unauthorized for critical route");
 
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("mitheai-storage");
-      localStorage.removeItem("mitheai-team-storage");
-      localStorage.removeItem("skedlii-theme");
+      await logoutUser();
 
       toast({
         title: "Session expired",
@@ -34,10 +32,10 @@ axiosInstance.interceptors.response.use(
         variant: "destructive",
       });
 
-      setTimeout(() => {
-        window.location.href = "/login";
-        hasShownTokenExpiredToast = false; // reset on redirect
-      }, 2000);
+      // setTimeout(() => {
+      //   window.location.href = "/login";
+      //   hasShownTokenExpiredToast = false; // reset on redirect
+      // }, 2000);
 
       return;
     }

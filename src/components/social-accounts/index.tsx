@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
-import { getSocialIcon } from "../../lib/utils";
+import { formatDate, getSocialIcon } from "../../lib/utils";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -36,12 +36,28 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Badge } from "../ui/badge";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import socialApi from "../../api/socialApi";
 import { useAuth } from "../../store/hooks";
+import { Skeleton } from "../ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import DeleteDialog from "../dialog/DeleteDialog";
 
 const socialAccountSchema = z.object({
   platform: z.string().min(1, "Platform is required"),
@@ -52,6 +68,10 @@ type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 export default function SocialAccounts() {
   const { user } = useAuth();
   const [isAddingAccount, setIsAddingAccount] = useState(false);
+  const [deleteConfig, setDeleteConfig] = useState({
+    id: "",
+    isOpen: false,
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -62,13 +82,14 @@ export default function SocialAccounts() {
 
   // Delete social account mutation
   const { mutate: deleteAccount, isPending: isDeletingPending } = useMutation({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [`/social-accounts/${user?._id}`],
       });
+      setDeleteConfig({ id: "", isOpen: false });
       toast({
         title: "Account removed",
         description: "The social account has been disconnected",
@@ -89,6 +110,28 @@ export default function SocialAccounts() {
       platform: "",
     },
   });
+
+  const { mutate: refreshAccessToken, isPending: isRefreshingPending } =
+    useMutation({
+      mutationFn: async (accountId: string) => {
+        return await apiRequest(
+          "GET",
+          `/social-accounts/twitter/refresh/${accountId}`
+        );
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [`/social-accounts/${user?._id}`],
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Refresh failed",
+          description: "Failed to refresh the access token. Please try again.",
+          variant: "destructive",
+        });
+      },
+    });
 
   const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
     useMutation({
@@ -175,12 +218,12 @@ export default function SocialAccounts() {
         window.location.href = response;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        // queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
-          title: "Instagram connected in progress",
+          title: "Instagram connection in progress",
           description: "Your Instagram account is being connected",
         });
-        setIsAddingAccount(false);
+        // setIsAddingAccount(false);
         form.reset();
       },
       onError: (error) => {
@@ -191,6 +234,9 @@ export default function SocialAccounts() {
             "Failed to connect Instagram. It may already be connected or token is invalid.",
           variant: "destructive",
         });
+      },
+      onSettled: () => {
+        setIsAddingAccount(false);
       },
     });
 
@@ -218,16 +264,29 @@ export default function SocialAccounts() {
     }
   }
 
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "active":
-        return "bg-green-500";
-      case "expired":
-        return "bg-amber-500";
-      case "needs_reauth":
-        return "bg-red-500";
+  function getClassName(platform: string) {
+    switch (platform) {
+      case "twitter":
+        return "bg-blue-50 dark:bg-blue-900/20";
+      case "instagram":
+        return "bg-pink-50 dark:bg-pink-900/20";
+      case "linkedin":
+        return "bg-blue-50 dark:bg-blue-900/20";
       default:
-        return "bg-gray-500";
+        return "bg-gray-50 dark:bg-gray-800";
+    }
+  }
+
+  function getTextColor(platform: string) {
+    switch (platform) {
+      case "twitter":
+        return "text-blue-500";
+      case "instagram":
+        return "text-pink-500";
+      case "linkedin":
+        return "text-blue-600";
+      default:
+        return "text-gray-500";
     }
   }
 
@@ -236,7 +295,8 @@ export default function SocialAccounts() {
     isAccountsLoading ||
     isConnectingThreadsPending ||
     isConnectingLinkedInPending ||
-    isConnectingInstagramPending;
+    isConnectingInstagramPending ||
+    isRefreshingPending;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -286,104 +346,229 @@ export default function SocialAccounts() {
   const handleAccountsView = () => {
     if (isLoading) {
       return (
-        <div className="flex justify-center p-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-    if (accounts.length > 0) {
-      return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {accounts.map((account: any) => (
-            <Card key={account._id}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <i
-                      className={`${getSocialIcon(account.platform)} text-2xl`}
-                    ></i>
-                    <div>
-                      <CardTitle className="text-base">
-                        {account.accountName}
-                      </CardTitle>
-                      <CardDescription>{account.platform}</CardDescription>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(account.status)}>
-                    <span className="capitalize">{account.status}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground truncate">
-                  ID: {account.accountId}
-                </p>
-                {account.expiresAt && (
-                  <p className="text-sm text-muted-foreground">
-                    Expires: {new Date(account.expiresAt).toLocaleDateString()}
-                  </p>
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-between pt-2">
-                {account.status === "needs_reauth" ||
-                account.status === "expired" ? (
-                  <Button variant="outline" size="sm">
-                    Reauthorize
-                  </Button>
-                ) : (
-                  <span />
-                )}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => deleteAccount(account._id)}
-                  disabled={isDeletingPending}
-                >
-                  {isDeletingPending && (
-                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                  )}
-                  <Trash2 size={14} className="mr-1" />
-                  Remove
-                </Button>
-              </CardFooter>
-            </Card>
+          {[1, 2, 3].map((i) => (
+            <SocialAccountSkeleton key={i} />
           ))}
         </div>
       );
-    } else {
+    }
+
+    if (accounts.length > 0) {
       return (
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle>No accounts connected</CardTitle>
-            <CardDescription>
-              Connect your social media accounts to start posting content
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center pb-6">
-            <Button onClick={() => setIsAddingAccount(true)}>
-              <Plus size={16} className="mr-2" />
-              Connect Account
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {accounts.length} connected account
+              {accounts.length !== 1 ? "s" : ""}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                queryClient.invalidateQueries({
+                  queryKey: [`/social-accounts/${user?._id}`],
+                })
+              }
+              disabled={isLoading}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {accounts.map((account: any) => (
+              <Card
+                key={account._id}
+                className="hover:shadow-md transition-shadow"
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      {account.metadata?.profileImageUrl ||
+                      account.metadata?.picture ? (
+                        <img
+                          src={
+                            account.metadata.profileImageUrl ??
+                            account.metadata.picture
+                          }
+                          alt={`${account.accountName} profile`}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`p-2 rounded-lg ${getClassName(
+                            account.platform
+                          )}`}
+                        >
+                          <i
+                            className={`${getSocialIcon(
+                              account.platform
+                            )} text-xl ${getTextColor(account.platform)}`}
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <CardTitle className="text-base font-medium">
+                          {account.accountName ?? "Unknown Account"}
+                        </CardTitle>
+                        <CardDescription className="capitalize">
+                          {account.platform}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={
+                        account.status === "active" ? "default" : "destructive"
+                      }
+                      className="flex items-center gap-1"
+                    >
+                      {account.status === "active" ? (
+                        <CheckCircle2 className="h-3 w-3" />
+                      ) : (
+                        <AlertCircle className="h-3 w-3" />
+                      )}
+                      <span className="capitalize">
+                        {account.status.replace("_", " ")}
+                      </span>
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
+                      ID: {account.accountId.substring(0, 8)}...
+                    </span>
+                  </div>
+                  {account.expiresAt && (
+                    <div className="flex items-center text-xs text-muted-foreground mt-2">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>
+                        Expires:{" "}
+                        {new Date(account.expiresAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                  {(account.connectedAt || account.createdAt) && (
+                    <div className="flex items-center text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>
+                        Connected:{" "}
+                        {formatDate(
+                          account.connectedAt ?? account.createdAt ?? ""
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2 pt-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        {account.status === "expired" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isLoading}
+                            onClick={() => {
+                              // Handle reauthorization
+                              if (account.platform === "twitter") {
+                                refreshAccessToken(account._id);
+                              } else if (account.platform === "threads") {
+                                connectThreads();
+                              } else if (account.platform === "linkedin") {
+                                connectLinkedIn();
+                              } else if (account.platform === "instagram") {
+                                connectInstagram();
+                              }
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Link again
+                          </Button>
+                        )}
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {account.status !== "active" &&
+                          "This account needs reauthorization"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() =>
+                            setDeleteConfig({
+                              id: account._id,
+                              isOpen: true,
+                            })
+                          }
+                          disabled={isDeletingPending}
+                        >
+                          {isDeletingPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Disconnect account</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
       );
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Social Accounts</h2>
-          <p className="text-muted-foreground">
-            Manage your connected social media accounts
+      {accounts.length === 0 && !isLoading ? (
+        <div className="flex flex-col items-center justify-center space-y-4 h-[60vh]">
+          <div className="rounded-full bg-primary/10 p-4">
+            <Plus className="h-8 w-8 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold">No accounts connected</h3>
+          <p className="text-muted-foreground text-center max-w-md">
+            You haven't created any accounts yet. Connect your first account to
+            get started.
           </p>
+          <Button onClick={() => setIsAddingAccount(true)}>
+            <Plus size={16} className="mr-2" />
+            Connect Account
+          </Button>
         </div>
-        <Button onClick={() => setIsAddingAccount(true)}>
-          <Plus size={16} className="mr-2" />
-          Connect Account
-        </Button>
-      </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Social Accounts
+            </h2>
+            <p className="text-muted-foreground">
+              Manage your connected social media accounts and their permissions
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsAddingAccount(true)}
+            className="w-full sm:w-auto"
+          >
+            <Plus size={16} className="mr-2" />
+            Connect Account
+          </Button>
+        </div>
+      )}
 
       {handleAccountsView()}
 
@@ -436,8 +621,8 @@ export default function SocialAccounts() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isConnectingTwitterPending}>
-                  {isConnectingTwitterPending && (
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Connect Account
@@ -447,6 +632,39 @@ export default function SocialAccounts() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      <DeleteDialog
+        config={deleteConfig}
+        setConfig={setDeleteConfig}
+        handleDelete={() => deleteAccount(deleteConfig.id)}
+        message="Are you sure you want to delete this account?"
+        title="Delete Account"
+      />
     </div>
   );
 }
+
+const SocialAccountSkeleton = () => (
+  <Card>
+    <CardHeader className="pb-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+        <Skeleton className="h-5 w-16" />
+      </div>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
+    </CardContent>
+    <CardFooter className="flex justify-end gap-2 pt-2">
+      <Skeleton className="h-8 w-24" />
+      <Skeleton className="h-8 w-20" />
+    </CardFooter>
+  </Card>
+);
