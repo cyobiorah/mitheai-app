@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 
-export default function CTA() {
+export default function CallToAction() {
   return (
     <section className="py-16 bg-primary-50 dark:bg-primary-900/20">
       <div className="container mx-auto px-4 text-center">

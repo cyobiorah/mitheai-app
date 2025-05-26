@@ -7,23 +7,29 @@ import { Toaster } from "../components/ui/toaster";
 import HomePage from "../pages";
 import WaitlistPage from "../pages/waitlist";
 import ForgotPasswordPage from "../pages/forgot-password";
-import DashboardPage from "../pages/dashboard";
-import CreatePostPage from "../pages/dashboard/create-post";
-import AccountsPage from "../pages/dashboard/accounts";
-import CollectionsPage from "../pages/dashboard/collections";
-import TeamsPage from "../pages/dashboard/teams";
-import SchedulePage from "../pages/dashboard/schedule";
+import DashboardPage from "../components/dashboard";
 import NotFound from "../pages/not-found";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 import LoginPage from "../pages/Login";
 import RegisterPage from "../pages/Register";
-import SettingsPage from "../pages/Settings";
-import PostsPage from "../pages/dashboard/posts";
-import AnalyticsPage from "../pages/dashboard/analytics";
-import PostFlowPage from "../pages/dashboard/post-flow";
 import TermsOfService from "../pages/TermsOfService";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
+import DashboardLayout from "../layouts/DashboardLayout";
+import SocialAccounts from "../components/social-accounts";
+import AnalyticsDashboard from "../components/analytics";
+import TeamManagement from "../components/team-management";
+import Collections from "../components/collections/Collections";
+import Posts from "../components/posts";
+import ScheduledPosts from "../components/posts/scheduled-posts/ScheduledPosts";
+import PostFlow from "../components/posts/post-flow/PostFlow";
+import Billing from "../components/billing";
+import HelpSupport from "../components/help-support";
+import PostCreate from "../components/posts/post-create/PostCreate";
+import UserSettings from "../components/settings";
+import ResetPasswordPage from "../pages/reset-password";
+import Collection from "../components/collections/Collection";
+import HelpArticlePage from "../components/help-support/platform/HelpArticlePage";
 
 const AppRoutes = () => {
   return (
@@ -89,85 +95,39 @@ const AppRoutes = () => {
               }
             />
             <Route
+              path="/reset-password"
+              element={
+                <PublicRoute>
+                  <ResetPasswordPage />
+                </PublicRoute>
+              }
+            />
+            <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <DashboardPage />
+                  <DashboardLayout />
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path="/dashboard/create-post"
-              element={
-                <ProtectedRoute>
-                  <CreatePostPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/accounts"
-              element={
-                <ProtectedRoute>
-                  <AccountsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/collections"
-              element={
-                <ProtectedRoute>
-                  <CollectionsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/analytics"
-              element={
-                <ProtectedRoute>
-                  <AnalyticsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/post-flow"
-              element={
-                <ProtectedRoute>
-                  <PostFlowPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/posts"
-              element={
-                <ProtectedRoute>
-                  <PostsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/teams"
-              element={
-                <ProtectedRoute>
-                  <TeamsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/schedule"
-              element={
-                <ProtectedRoute>
-                  <SchedulePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <SettingsPage />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route index element={<DashboardPage />} />
+              <Route path="create-post" element={<PostCreate />} />
+              <Route path="accounts" element={<SocialAccounts />} />
+              <Route path="collections" element={<Collections />} />
+              <Route
+                path="collections/:collectionId"
+                element={<Collection />}
+              />
+              <Route path="analytics" element={<AnalyticsDashboard />} />
+              <Route path="post-flow" element={<PostFlow />} />
+              <Route path="posts" element={<Posts />} />
+              <Route path="teams" element={<TeamManagement />} />
+              <Route path="schedule" element={<ScheduledPosts />} />
+              <Route path="settings" element={<UserSettings />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="help" element={<HelpSupport />} />
+              <Route path="help/:articleId" element={<HelpArticlePage />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TooltipProvider>

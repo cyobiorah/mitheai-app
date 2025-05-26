@@ -10,7 +10,7 @@ interface FAQItem {
   answer: string;
 }
 
-export default function FAQ() {
+export default function FrequentlyAskedQuestions() {
   const faqs: FAQItem[] = [
     {
       question: "When will Skedlii be available?",

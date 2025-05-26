@@ -54,11 +54,29 @@ export default function LoginForm({
     setIsLoading(true);
     try {
       const response = await login(data.email, data.password);
+
+      if (!response.success) {
+        toast({
+          title: "Login failed",
+          description: response.message ?? "Unknown error occurred",
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
         title: "Login successful",
         description: `Welcome back, ${
-          response.user?.firstName ?? response.user?.email
+          response.data.user?.firstName ?? response.data.user?.email
         }!`,
+        variant: "success",
+      });
+    } catch (error: any) {
+      console.error("[Unhandled Login Exception]", error);
+      toast({
+        title: "Unexpected error",
+        description: error?.message ?? "Something went wrong.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

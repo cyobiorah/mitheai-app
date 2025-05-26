@@ -78,6 +78,14 @@ export const socialApi = {
     return response;
   },
 
+  connectInstagram: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/instagram/direct-auth`
+    );
+    return response;
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach
@@ -158,6 +166,25 @@ export const socialApi = {
     }
   },
 
+  postToInstagram: async (accountId: string, data: any) => {
+    try {
+      const response = await axiosInstance.post(
+        `/social-accounts/instagram/${accountId}/post`,
+        {
+          data,
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error posting to Instagram:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to post to Instagram"
+      );
+    }
+  },
+
   getPosts: async (filters: any) => {
     try {
       const response = await axiosInstance.get(`/social-posts`, {
@@ -184,28 +211,6 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to delete social post"
-      );
-    }
-  },
-
-  schedulePost: async (data: {
-    content: string;
-    mediaUrls?: string[];
-    platforms: { platformId: string; accountId: string }[];
-    scheduledFor: Date;
-    teamId?: string;
-    organizationId?: string;
-    timezone: string;
-  }) => {
-    try {
-      const response = await axiosInstance.post("/scheduled-posts", data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Failed to schedule post:", error);
-      throw new Error(
-        error.response?.data?.message ??
-          error.message ??
-          "Failed to schedule post"
       );
     }
   },
@@ -310,6 +315,47 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to fetch posts by team"
+      );
+    }
+  },
+
+  // Post to multi platforms
+  postToMultiPlatform: async (formData: FormData) => {
+    try {
+      const response = await axiosInstance.post(
+        "/social-posts/post-to-platforms",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to post to multi platforms:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to post to multi platforms"
+      );
+    }
+  },
+
+  schedulePost: async (formData: FormData) => {
+    try {
+      const response = await axiosInstance.post("/scheduled-posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to schedule post:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to schedule post"
       );
     }
   },

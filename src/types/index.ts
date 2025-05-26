@@ -49,6 +49,14 @@ export interface User {
   timezone?: string;
   avatar?: string;
   username?: string;
+  stripeCustomerId?: string;
+  subscriptionStatus?: "paid" | "trialing" | "cancelled" | "inactive";
+  subscriptionTier?: "free" | "basic" | "pro" | "business";
+  subscriptionRenewalDate?: string;
+  invoices?: any[];
+  renewalDate?: string;
+  paymentDescription?: string;
+  productId?: string;
 }
 
 export interface AuthState {

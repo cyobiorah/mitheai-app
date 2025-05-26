@@ -29,13 +29,13 @@ import {
   ChevronDown,
 } from "lucide-react";
 import AuthModal from "../../components/auth/AuthModal";
+import { useMobileMenuStore } from "../../store/layout";
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
 
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState<
     "login" | "register" | null
   >(null);
@@ -43,6 +43,13 @@ export default function Header() {
 
   const handleLogin = () => setShowAuthModal("login");
   const handleCloseModal = () => setShowAuthModal(null);
+
+  const mobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.mobileMenuOpen
+  );
+  const setMobileMenuOpen = useMobileMenuStore(
+    (state: any) => state.setMobileMenuOpen
+  );
 
   const isDashboard = location.pathname.startsWith("/dashboard");
 
@@ -73,8 +80,7 @@ export default function Header() {
       <div className="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
         <Link
           to="/"
-          onClick={(e) => {
-            // e.preventDefault();
+          onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="flex items-center space-x-2 relative z-10"
@@ -179,7 +185,7 @@ export default function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem className="cursor-pointer flex items-center py-2">
                         <Settings className="mr-2 h-4 w-4" />
-                        <Link to="/settings">Settings</Link>
+                        <Link to="/dashboard/settings">Settings</Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -253,7 +259,7 @@ export default function Header() {
                 </div>
                 <DropdownMenuItem className="cursor-pointer flex items-center py-2">
                   <Settings className="mr-2 h-4 w-4" />
-                  <Link to="/settings">Settings</Link>
+                  <Link to="/dashboard/settings">Settings</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -341,7 +347,7 @@ export default function Header() {
                           </div>
                         </Link>
                         <Link
-                          to="/settings"
+                          to="/dashboard/settings"
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -397,7 +403,7 @@ export default function Header() {
                       </div>
                     </Link>
                     <Link
-                      to="/dashboard/create-post"
+                      to="/dashboard/post-flow"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -445,7 +451,7 @@ export default function Header() {
                     <div className="border-t border-gray-200 dark:border-gray-700 my-4"></div>
 
                     <Link
-                      to="/settings"
+                      to="/dashboard/settings"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">

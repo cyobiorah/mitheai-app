@@ -51,7 +51,7 @@ export const useThemeStore = create<ThemeState>()(
       };
     },
     {
-      name: "mitheai-theme",
+      name: "skedlii-theme",
     }
   )
 );

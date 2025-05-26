@@ -6,8 +6,8 @@ import Integrations from "../components/home/Integrations";
 import Features from "../components/home/Features";
 import Solutions from "../components/home/Solutions";
 import Testimonials from "../components/home/Testimonials";
-import FAQ from "../components/home/FAQ";
-import CTA from "../components/home/CTA";
+import FrequentlyAskedQuestions from "../components/home/FAQ";
+import CallToAction from "../components/home/CTA";
 import { Button } from "../components/ui/button";
 
 export default function HomePage() {
@@ -46,8 +46,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        <FAQ />
-        <CTA />
+        <FrequentlyAskedQuestions />
+        <CallToAction />
       </main>
 
       <Footer />
