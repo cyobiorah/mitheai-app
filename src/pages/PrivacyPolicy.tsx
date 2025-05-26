@@ -62,6 +62,38 @@ const PrivacyPolicy = () => {
       </ul>
       <p className="mb-4">We never sell your data.</p>
 
+      <h2 className="text-xl font-semibold mt-8 mb-2">
+        3.1 Third-Party Data Processors
+      </h2>
+      <p className="mb-4">
+        We engage the following third-party processors who may have access to
+        personal or platform data solely to support our service infrastructure:
+      </p>
+      <ul className="list-disc list-inside mb-4 space-y-1">
+        <li>
+          <strong>Vercel Inc.</strong> – Frontend hosting, edge routing, and
+          serverless function execution. May process user session and token data
+          temporarily.
+        </li>
+        <li>
+          <strong>Railway Inc.</strong> – Backend hosting of our API
+          infrastructure and scheduling engine. Processes connected account
+          tokens and scheduled content data.
+        </li>
+        <li>
+          <strong>MongoDB, Inc. (MongoDB Atlas)</strong> – Cloud database
+          provider storing user data, content, tokens, and scheduling metadata.
+        </li>
+        <li>
+          <strong>Cloudinary Ltd.</strong> – Media asset storage, optimization,
+          and delivery for posts created on Skedlii.
+        </li>
+      </ul>
+      <p className="mb-4">
+        All providers are bound by strict data processing agreements to ensure
+        compliance with applicable data protection regulations (such as GDPR).
+      </p>
+
       <h2 className="text-xl font-semibold mt-8 mb-2">4. Cookies & Tracking</h2>
       <p className="mb-4">
         We may use cookies and similar tracking tools for analytics and

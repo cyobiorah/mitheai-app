@@ -61,7 +61,7 @@ export function getScheduledPostListView(
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div>
-                  {getStatusBadge(post.status)}
+                  {getStatusBadge(post.platforms[0].status)}
                   <CardTitle className="mt-2 text-base">
                     {post.content.length > 60
                       ? post.content.substring(0, 60) + "..."
@@ -147,25 +147,25 @@ export const getStatusBadge = (status: string) => {
   switch (status) {
     case "draft":
       return (
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 w-24">
           <FileText size={12} /> Draft
         </Badge>
       );
     case "published":
       return (
-        <Badge variant="secondary" className="flex items-center gap-1">
+        <Badge variant="secondary" className="flex items-center gap-1 w-24">
           <Clock size={12} /> Published
         </Badge>
       );
     case "scheduled":
       return (
-        <Badge variant="default" className="flex items-center gap-1">
+        <Badge variant="default" className="flex items-center gap-1 w-24">
           <CheckCircle size={12} /> Scheduled
         </Badge>
       );
     case "failed":
       return (
-        <Badge variant="destructive" className="flex items-center gap-1">
+        <Badge variant="destructive" className="flex items-center gap-1 w-24">
           <AlertCircle size={12} /> Failed
         </Badge>
       );
