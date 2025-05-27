@@ -218,7 +218,7 @@ export default function SocialAccounts() {
         window.location.href = response;
       },
       onSuccess: () => {
-        // queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
           title: "Instagram connection in progress",
           description: "Your Instagram account is being connected",
@@ -232,6 +232,35 @@ export default function SocialAccounts() {
           title: "Connection failed",
           description:
             "Failed to connect Instagram. It may already be connected or token is invalid.",
+          variant: "destructive",
+        });
+      },
+      onSettled: () => {
+        setIsAddingAccount(false);
+      },
+    });
+
+  const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
+    useMutation({
+      mutationFn: async () => {
+        const response = await socialApi.connectFacebook();
+        window.location.href = response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        toast({
+          title: "Facebook connection in progress",
+          description: "Your Facebook account is being connected",
+        });
+        // setIsAddingAccount(false);
+        form.reset();
+      },
+      onError: (error) => {
+        console.error({ error });
+        toast({
+          title: "Connection failed",
+          description:
+            "Failed to connect Facebook. It may already be connected or token is invalid.",
           variant: "destructive",
         });
       },
@@ -254,6 +283,9 @@ export default function SocialAccounts() {
       case "instagram":
         connectInstagram();
         break;
+      case "facebook":
+        connectFacebook();
+        break;
       default:
         toast({
           title: "Connection failed",
@@ -272,6 +304,10 @@ export default function SocialAccounts() {
         return "bg-pink-50 dark:bg-pink-900/20";
       case "linkedin":
         return "bg-blue-50 dark:bg-blue-900/20";
+      case "facebook":
+        return "bg-blue-50 dark:bg-blue-900/20";
+      case "threads":
+        return "bg-black dark:bg-white dark:text-black";
       default:
         return "bg-gray-50 dark:bg-gray-800";
     }
@@ -285,6 +321,8 @@ export default function SocialAccounts() {
         return "text-pink-500";
       case "linkedin":
         return "text-blue-600";
+      case "threads":
+        return "text-white";
       default:
         return "text-gray-500";
     }
@@ -296,6 +334,7 @@ export default function SocialAccounts() {
     isConnectingThreadsPending ||
     isConnectingLinkedInPending ||
     isConnectingInstagramPending ||
+    isConnectingFacebookPending ||
     isRefreshingPending;
 
   useEffect(() => {
@@ -603,9 +642,7 @@ export default function SocialAccounts() {
                         <SelectItem value="threads">Threads</SelectItem>
                         <SelectItem value="linkedin">LinkedIn</SelectItem>
                         <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="facebook" disabled>
-                          Facebook (coming soon)
-                        </SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
