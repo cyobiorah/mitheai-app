@@ -218,7 +218,7 @@ export default function SocialAccounts() {
         window.location.href = response;
       },
       onSuccess: () => {
-        // queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
         toast({
           title: "Instagram connection in progress",
           description: "Your Instagram account is being connected",
@@ -602,9 +602,8 @@ export default function SocialAccounts() {
                         <SelectItem value="twitter">Twitter</SelectItem>
                         <SelectItem value="threads">Threads</SelectItem>
                         <SelectItem value="linkedin">LinkedIn</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="facebook" disabled>
-                          Facebook (coming soon)
+                        <SelectItem value="instagram">
+                          Instagram/Facebook
                         </SelectItem>
                       </SelectContent>
                     </Select>
