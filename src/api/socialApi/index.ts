@@ -81,7 +81,7 @@ export const socialApi = {
   connectInstagram: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/instagram/direct-auth`
+      `/social-accounts/meta/direct-auth`
     );
     return response;
   },
