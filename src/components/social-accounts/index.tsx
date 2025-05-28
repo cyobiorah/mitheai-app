@@ -428,11 +428,13 @@ export default function SocialAccounts() {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       {account.metadata?.profileImageUrl ||
-                      account.metadata?.picture ? (
+                      account.metadata?.picture ||
+                      account.metadata?.profile?.threads_profile_picture_url ? (
                         <img
                           src={
                             account.metadata.profileImageUrl ??
-                            account.metadata.picture
+                            account.metadata.picture ??
+                            account.metadata.profile.threads_profile_picture_url
                           }
                           alt={`${account.accountName} profile`}
                           className="h-10 w-10 rounded-full object-cover"
