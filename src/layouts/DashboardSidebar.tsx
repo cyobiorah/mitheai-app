@@ -36,14 +36,14 @@ export default function DashboardSidebar({
         href: "/dashboard",
       },
       {
-        icon: <CalendarCheck size={18} />,
-        label: "Schedule",
-        href: "/dashboard/schedule",
-      },
-      {
         icon: <Link2 size={18} />,
         label: "Social Accounts",
         href: "/dashboard/accounts",
+      },
+      {
+        icon: <CalendarCheck size={18} />,
+        label: "Scheduled",
+        href: "/dashboard/scheduled",
       },
       {
         icon: <CalendarSync size={18} />,
