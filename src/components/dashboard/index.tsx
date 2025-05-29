@@ -356,7 +356,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/schedule")}
+                  onClick={() => navigate("/dashboard/scheduled")}
                   style={{
                     border: "1px solid #E5E7EB",
                   }}
