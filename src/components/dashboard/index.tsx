@@ -15,12 +15,19 @@ import {
   Plus,
   Activity,
 } from "lucide-react";
-import { formatDate } from "../../lib/utils";
-import { useNavigate } from "react-router-dom";
+import { formatDate, getSocialIcon } from "../../lib/utils";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "../ui/badge";
+import { getClassName, getTextColor } from "../social-accounts";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -53,6 +60,7 @@ export default function DashboardPage() {
   }) as { data: { data: any[] } };
 
   const recentPosts = posts?.data?.slice(0, 3);
+  const recentScheduledPosts = scheduledPosts?.data?.slice(0, 3);
 
   if (authLoading) {
     return (
@@ -85,6 +93,8 @@ export default function DashboardPage() {
   function getStatusColor(status: string) {
     switch (status) {
       case "completed":
+      case "published":
+      case "posted":
         return "bg-green-500";
       case "scheduled":
         return "bg-amber-500";
@@ -95,83 +105,112 @@ export default function DashboardPage() {
     }
   }
 
+  const renderSocialAccountIconArea = (account: any) => {
+    return (
+      <div className="flex items-center gap-3" key={account._id}>
+        {account.metadata?.profileImageUrl ||
+        account.metadata?.picture ||
+        account.metadata?.profile?.threads_profile_picture_url ? (
+          <img
+            src={
+              account.metadata.profileImageUrl ??
+              account.metadata.picture ??
+              account.metadata.profile.threads_profile_picture_url
+            }
+            alt={`${account.accountName} profile`}
+            className="h-10 w-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className={`p-2 rounded-lg ${getClassName(account.platform)}`}>
+            <i
+              className={`${getSocialIcon(
+                account.platform
+              )} text-xl ${getTextColor(account.platform)}`}
+            />
+          </div>
+        )}
+        <div className="flex flex-col">
+          <CardTitle className="text-base font-medium">
+            {account.accountName ?? "Unknown Account"}
+          </CardTitle>
+          <CardDescription className="capitalize">
+            {account.platform}
+          </CardDescription>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <main className="flex-1 p-4 overflow-auto">
+    <main className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto">
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <p className="text-muted-foreground">
-                Welcome back, {user?.firstName ?? ""}!
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground text-sm">
+                Welcome back{user?.firstName ? `, ${user.firstName}` : ""} 👋
               </p>
             </div>
-            <Button onClick={() => navigate("/dashboard/post-flow")}>
+            <Button
+              onClick={() => navigate("/dashboard/post-flow")}
+              className="w-full sm:w-auto"
+            >
               <Plus size={16} className="mr-2" />
               Create Post
             </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Posts</CardDescription>
-                <CardTitle className="text-3xl">
-                  {posts?.data?.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground flex items-center">
-                  <Activity size={12} className="mr-1" />
-                  {posts?.data?.length > 0 ? "Active" : "No posts yet"}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Scheduled Posts</CardDescription>
-                <CardTitle className="text-3xl">
-                  {scheduledPosts?.data?.length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground flex items-center">
-                  <CalendarClock size={12} className="mr-1" />
-                  Upcoming posts
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Connected Accounts</CardDescription>
-                <CardTitle className="text-3xl">
-                  {socialAccounts?.length ?? 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground flex items-center">
-                  <Users size={12} className="mr-1" />
-                  Social profiles
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Collections</CardDescription>
-                <CardTitle className="text-3xl">
-                  {collections?.count ?? 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground flex items-center">
-                  <FolderPlus size={12} className="mr-1" />
-                  Content organization
-                </div>
-              </CardContent>
-            </Card>
+            {[
+              {
+                label: "Total Posts",
+                value: posts?.data?.length ?? 0,
+                icon: <Activity size={20} className="text-primary" />,
+                footer: posts?.data?.length > 0 ? "Active" : "No posts yet",
+                to: "/dashboard/posts",
+              },
+              {
+                label: "Scheduled Posts",
+                value: scheduledPosts?.data?.length ?? 0,
+                icon: <CalendarClock size={20} className="text-primary" />,
+                footer: "Upcoming posts",
+                to: "/dashboard/scheduled",
+              },
+              {
+                label: "Connected Accounts",
+                value: socialAccounts?.length ?? 0,
+                icon: <Users size={20} className="text-primary" />,
+                footer: "Social profiles",
+                to: "/dashboard/accounts",
+              },
+              {
+                label: "Collections",
+                value: collections?.count ?? 0,
+                icon: <FolderPlus size={20} className="text-primary" />,
+                footer: "Content organization",
+                to: "/dashboard/collections",
+              },
+            ].map(({ label, value, icon, footer, to }) => (
+              <Link to={to} key={label}>
+                <Card className="hover:shadow-md cursor-pointer transition-shadow duration-200 rounded-xl">
+                  <CardHeader className="pb-1 flex flex-row items-center justify-between space-y-0">
+                    <CardDescription className="text-sm font-medium">
+                      {label}
+                    </CardDescription>
+                    {icon}
+                  </CardHeader>
+                  <CardContent className="pt-1">
+                    <div className="text-4xl font-bold text-foreground">
+                      {value}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {footer}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
 
           <Tabs defaultValue="recent">
@@ -190,51 +229,46 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {recentPosts?.length > 0 ? (
-                    <div className="space-y-4">
-                      {recentPosts?.map((post: any) => (
-                        <div
-                          key={post._id}
-                          className="border-b pb-4 last:border-none"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {post.content.length > 100
-                                  ? post.content.substring(0, 100) + "..."
-                                  : post.content}
-                              </p>
-                              <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                                <span className="mr-2">
-                                  {getPostStatus(post)}
-                                </span>
-                              </div>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                navigate(`/dashboard/posts/${post._id}/edit`)
-                              }
-                            >
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">No posts yet</p>
-                      <Button
-                        variant="link"
-                        onClick={() => navigate("/dashboard/post-flow")}
-                        className="mt-2"
+                  {recentPosts?.map((post: any) => {
+                    const status = post.status ?? "published";
+                    const content =
+                      post.content.length > 100
+                        ? post.content.substring(0, 100) + "..."
+                        : post.content;
+
+                    return (
+                      <div
+                        key={post._id}
+                        className="border-b pb-4 last:border-none flex flex-col gap-2 mb-4"
                       >
-                        Create your first post
-                      </Button>
-                    </div>
-                  )}
+                        <div className="flex items-start justify-between">
+                          <div className="flex flex-col gap-1">
+                            <p className="font-medium text-base text-foreground">
+                              {content}
+                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{getPostStatus(post)}</span>
+                              <Badge
+                                className={`text-xs rounded-md px-2 py-0.5 capitalize text-white ${getStatusColor(
+                                  status
+                                )}`}
+                              >
+                                {post.platform}
+                              </Badge>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="self-start"
+                            onClick={() => navigate(`/dashboard/posts`)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -246,67 +280,56 @@ export default function DashboardPage() {
                   <CardDescription>Your scheduled content</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {scheduledPosts?.data?.length > 0 ? (
-                    <div className="space-y-4">
-                      {scheduledPosts?.data?.map((post: any) => (
-                        <div
-                          key={post._id}
-                          className="border-b pb-4 last:border-none"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {post.content.length > 100
-                                  ? post.content.substring(0, 100) + "..."
-                                  : post.content}
-                              </p>
-                              <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                                <CalendarClock size={14} className="mr-1" />
-                                <span>
-                                  Scheduled for{" "}
-                                  {post.scheduledFor
-                                    ? formatDate(
-                                        post.scheduledFor,
-                                        "PPP 'at' p"
-                                      )
-                                    : "—"}
-                                </span>
-                                <Badge
-                                  className={`${getStatusColor(
-                                    post.status
-                                  )} capitalize ml-2`}
-                                >
-                                  {post.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                navigate(`/dashboard/posts/${post._id}/edit`)
-                              }
-                            >
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">
-                        No scheduled posts
-                      </p>
-                      <Button
-                        variant="link"
-                        onClick={() => navigate("/dashboard/post-flow")}
-                        className="mt-2"
+                  {recentScheduledPosts?.map((post: any) => {
+                    const scheduledDate = post.scheduledFor
+                      ? formatDate(post.scheduledFor, "PPP 'at' p")
+                      : "—";
+                    const status = post.platforms?.[0]?.status ?? "pending";
+
+                    return (
+                      <div
+                        key={post._id}
+                        className="flex flex-col gap-2 border-b pb-4 mb-4 last:border-none"
                       >
-                        Schedule a post
-                      </Button>
-                    </div>
-                  )}
+                        <div className="flex items-start justify-between">
+                          <div className="flex flex-col">
+                            <p className="text-base font-medium text-foreground">
+                              {post.content.length > 100
+                                ? post.content.substring(0, 100) + "..."
+                                : post.content}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                              <CalendarClock size={14} className="mr-1" />
+                              <span>Scheduled for {scheduledDate}</span>
+                              <Badge
+                                className={`${getStatusColor(
+                                  status
+                                )} capitalize`}
+                              >
+                                {status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="self-start"
+                            onClick={() =>
+                              navigate(
+                                `/dashboard/scheduled?date=${
+                                  new Date(post.scheduledFor)
+                                    .toISOString()
+                                    .split("T")[0]
+                                }`
+                              )
+                            }
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -319,17 +342,21 @@ export default function DashboardPage() {
                     Performance metrics for your social media content
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
-                  <div className="text-center">
-                    <BarChart2
-                      size={48}
-                      className="mx-auto text-muted-foreground mb-4"
-                    />
-                    <p>Analytics available soon</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      We're working on comprehensive analytics for your content
-                    </p>
+
+                <CardContent className="flex flex-col items-center justify-center py-10">
+                  <div className="animate-pulse mb-6">
+                    <BarChart2 size={48} className="text-muted-foreground" />
                   </div>
+                  <h4 className="text-lg font-semibold">
+                    Skedlii Insights Engine
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your analytics are almost ready — just fine-tuning the
+                    magic.
+                  </p>
+                  <span className="text-xs text-muted-foreground mt-4 px-3 py-1 bg-muted rounded-full">
+                    Launching soon · v1
+                  </span>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -341,55 +368,46 @@ export default function DashboardPage() {
                 <CardTitle>Quick Links</CardTitle>
                 <CardDescription>Frequently used tools</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <button
-                  className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/post-flow")}
-                  style={{
-                    border: "1px solid #E5E7EB",
-                  }}
-                >
-                  <div className="flex flex-col items-center">
-                    <Plus className="h-6 w-6 mb-1" />
-                    <span>Create Post</span>
-                  </div>
-                </button>
-                <button
-                  className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/schedule")}
-                  style={{
-                    border: "1px solid #E5E7EB",
-                  }}
-                >
-                  <div className="flex flex-col items-center">
-                    <CalendarClock className="h-6 w-6 mb-1" />
-                    <span>View Schedule</span>
-                  </div>
-                </button>
-                <button
-                  className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/accounts")}
-                  style={{
-                    border: "1px solid #E5E7EB",
-                  }}
-                >
-                  <div className="flex flex-col items-center">
-                    <Users className="h-6 w-6 mb-1" />
-                    <span>Manage Accounts</span>
-                  </div>
-                </button>
-                <button
-                  className="h-auto py-4 justify-start border-muted-foreground rounded-md bg-background hover:bg-muted transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={() => navigate("/dashboard/collections")}
-                  style={{
-                    border: "1px solid #E5E7EB",
-                  }}
-                >
-                  <div className="flex flex-col items-center">
-                    <FolderPlus className="h-6 w-6 mb-1" />
-                    <span>Collections</span>
-                  </div>
-                </button>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    {
+                      label: "Create Post",
+                      icon: <Plus className="h-5 w-5 mb-1 text-primary" />,
+                      onClick: () => navigate("/dashboard/post-flow"),
+                    },
+                    {
+                      label: "View Schedule",
+                      icon: (
+                        <CalendarClock className="h-5 w-5 mb-1 text-primary" />
+                      ),
+                      onClick: () => navigate("/dashboard/scheduled"),
+                    },
+                    {
+                      label: "Manage Accounts",
+                      icon: <Users className="h-5 w-5 mb-1 text-primary" />,
+                      onClick: () => navigate("/dashboard/accounts"),
+                    },
+                    {
+                      label: "Collections",
+                      icon: (
+                        <FolderPlus className="h-5 w-5 mb-1 text-primary" />
+                      ),
+                      onClick: () => navigate("/dashboard/collections"),
+                    },
+                  ].map(({ label, icon, onClick }) => (
+                    <button
+                      key={label}
+                      onClick={onClick}
+                      className="rounded-2xl bg-muted/60 hover:bg-muted shadow-sm transition-all py-5 px-4 flex flex-col items-center text-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      {icon}
+                      <span className="text-sm font-medium text-foreground">
+                        {label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -401,33 +419,57 @@ export default function DashboardPage() {
               <CardContent>
                 {socialAccounts.length > 0 ? (
                   <div className="space-y-3">
-                    {socialAccounts.slice(0, 5).map((account: any) => (
-                      <div
-                        key={account._id}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center mr-2">
-                            <i
-                              className={`ri-${account.platform.toLowerCase()}-fill text-lg`}
-                            ></i>
-                          </div>
-                          <div>
-                            <p className="font-medium">{account.accountName}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {account.platform}
-                            </p>
-                          </div>
+                    {socialAccounts
+                      .slice(0, 3)
+                      .map((account: any) =>
+                        renderSocialAccountIconArea(account)
+                      )}
+
+                    {socialAccounts.length > 3 && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center -space-x-2 pl-1">
+                          {socialAccounts.slice(3, 6).map((account: any) => (
+                            <TooltipProvider key={account._id}>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <div
+                                    className="w-8 h-8 cursor-pointer rounded-full bg-muted flex items-center justify-center border-2 border-background"
+                                    title={account.accountName}
+                                  >
+                                    <i
+                                      className={`${getSocialIcon(
+                                        account.platform
+                                      )} text-xl ${getTextColor(
+                                        account.platform
+                                      )}`}
+                                    />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{account.accountName}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                          {socialAccounts.length > 6 && (
+                            <Link
+                              to="/dashboard/accounts"
+                              className="w-8 h-8 rounded-full bg-primary text-primary-foreground text-xs font-medium flex items-center justify-center border-2 border-background"
+                            >
+                              +{socialAccounts.length - 6}
+                            </Link>
+                          )}
                         </div>
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            account.status === "active"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        ></div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate("/dashboard/accounts")}
+                          className="text-xs text-muted-foreground"
+                        >
+                          Manage
+                        </Button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-4">

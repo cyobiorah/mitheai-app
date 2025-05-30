@@ -64,6 +64,8 @@ export default function AnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("7d");
 
+  const comingSoon = true;
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -120,6 +122,38 @@ export default function AnalyticsDashboard() {
     ((analyticsData.reach.total - analyticsData.reach.previousPeriod) /
       analyticsData.reach.previousPeriod) *
     100;
+
+  if (comingSoon) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[75vh] text-center px-6">
+        <div className="relative">
+          <div className="text-4xl sm:text-5xl font-bold text-primary mb-4">
+            Analytics Coming Soon
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base max-w-md">
+            We're cooking up something insightful! Soon you'll be able to track
+            your performance, audience growth, and engagement across platforms —
+            all in one place.
+          </p>
+        </div>
+
+        <div className="mt-10 w-full max-w-sm">
+          <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+            <div className="h-full w-2/3 bg-primary animate-pulse" />
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Stay tuned. Your content metrics are almost ready.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <span className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
+            Skedlii Labs ⚡ Insight Engine v1
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
