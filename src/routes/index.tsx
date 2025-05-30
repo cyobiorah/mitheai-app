@@ -122,7 +122,7 @@ const AppRoutes = () => {
               <Route path="post-flow" element={<PostFlow />} />
               <Route path="posts" element={<Posts />} />
               <Route path="teams" element={<TeamManagement />} />
-              <Route path="schedule" element={<ScheduledPosts />} />
+              <Route path="scheduled" element={<ScheduledPosts />} />
               <Route path="settings" element={<UserSettings />} />
               <Route path="billing" element={<Billing />} />
               <Route path="help" element={<HelpSupport />} />

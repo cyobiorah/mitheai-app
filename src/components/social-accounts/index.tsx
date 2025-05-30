@@ -296,38 +296,6 @@ export default function SocialAccounts() {
     }
   }
 
-  function getClassName(platform: string) {
-    switch (platform) {
-      case "twitter":
-        return "bg-blue-50 dark:bg-blue-900/20";
-      case "instagram":
-        return "bg-pink-50 dark:bg-pink-900/20";
-      case "linkedin":
-        return "bg-blue-50 dark:bg-blue-900/20";
-      case "facebook":
-        return "bg-blue-50 dark:bg-blue-900/20";
-      case "threads":
-        return "bg-black dark:bg-white dark:text-black";
-      default:
-        return "bg-gray-50 dark:bg-gray-800";
-    }
-  }
-
-  function getTextColor(platform: string) {
-    switch (platform) {
-      case "twitter":
-        return "text-blue-500";
-      case "instagram":
-        return "text-pink-500";
-      case "linkedin":
-        return "text-blue-600";
-      case "threads":
-        return "text-white";
-      default:
-        return "text-gray-500";
-    }
-  }
-
   const isLoading =
     isConnectingTwitterPending ||
     isAccountsLoading ||
@@ -594,7 +562,7 @@ export default function SocialAccounts() {
       ) : (
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-3xl font-bold tracking-tight">
               Social Accounts
             </h2>
             <p className="text-muted-foreground">
@@ -707,3 +675,35 @@ const SocialAccountSkeleton = () => (
     </CardFooter>
   </Card>
 );
+
+export function getClassName(platform: string) {
+  switch (platform) {
+    case "twitter":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "instagram":
+      return "bg-pink-50 dark:bg-pink-900/20";
+    case "linkedin":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "facebook":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "threads":
+      return "bg-black dark:bg-white dark:text-black";
+    default:
+      return "bg-gray-50 dark:bg-gray-800";
+  }
+}
+
+export function getTextColor(platform: string) {
+  switch (platform) {
+    case "twitter":
+      return "text-blue-500";
+    case "instagram":
+      return "text-pink-500";
+    case "linkedin":
+      return "text-blue-600";
+    case "threads":
+      return "text-black dark:text-white";
+    default:
+      return "text-gray-500";
+  }
+}
