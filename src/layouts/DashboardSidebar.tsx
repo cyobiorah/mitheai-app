@@ -13,6 +13,7 @@ import {
   Plus,
   HelpCircle,
   CreditCard,
+  X,
 } from "lucide-react";
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
@@ -102,11 +103,21 @@ export default function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40 mt-16",
+        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40 overflow-y-scroll",
         isMobile && "relative w-full"
       )}
     >
       <ScrollArea className="flex-1">
+        <div className="flex justify-end">
+          <Button
+            variant="ghost"
+            onClick={() => closeMenu?.()}
+            className="relative"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </div>
         <div className="flex flex-col gap-2 p-4">
           <Button asChild className="mb-4">
             <Link to="/dashboard/post-flow" onClick={handleNavigation}>
