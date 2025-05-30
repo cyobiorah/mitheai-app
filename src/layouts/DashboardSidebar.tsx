@@ -103,7 +103,7 @@ export default function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40",
+        "fixed left-0 top-0 h-full w-64 border-r bg-background px-3 py-4 z-40 overflow-y-scroll",
         isMobile && "relative w-full"
       )}
     >
