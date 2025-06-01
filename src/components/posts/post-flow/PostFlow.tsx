@@ -254,7 +254,7 @@ export default function PostFlow() {
       });
 
       // Navigate to dashboard
-      navigate(`/dashboard/${isScheduled ? "schedule" : "posts"}`);
+      navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
     } catch (error) {
       console.error("Failed to create post:", error);
       toast({
