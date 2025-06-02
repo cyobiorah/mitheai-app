@@ -163,7 +163,10 @@ export default function UserSettings() {
           </p>
         </div>
         <Link to="/dashboard/billing">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 bg-accent text-accent-foreground"
+          >
             <CreditCard className="h-4 w-4" />
             Billing & Subscription
           </Button>
