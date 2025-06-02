@@ -132,9 +132,7 @@ export default function DashboardSidebar({
             {menuItems.map((item) => (
               <Button
                 key={item.href}
-                variant={
-                  location.pathname === item.href ? "secondary" : "ghost"
-                }
+                variant="ghost"
                 className={cn(
                   "w-full justify-start font-normal",
                   location.pathname === item.href &&

@@ -164,7 +164,7 @@ export default function ScheduledPosts() {
 
         <TabsContent value="calendar" className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            <Card className="md:w-[300px]">
+            <Card className="md:w-[300px] h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CalendarIcon size={18} />
