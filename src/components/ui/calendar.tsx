@@ -42,8 +42,7 @@ function Calendar({
         day_range_end: "day-range-end",
         day_selected:
           "rounded-md text-secondary-foreground outline-none ring-0 shadow-none",
-        day_today:
-          "rounded-md text-accent-foreground outline-none ring-0 shadow-none",
+        day_today: "rounded-md outline-none ring-0 shadow-none",
         day_outside:
           "day-outside text-muted-foreground aria-selected:text-muted-foreground",
         day_disabled: "text-muted-foreground opacity-50",
