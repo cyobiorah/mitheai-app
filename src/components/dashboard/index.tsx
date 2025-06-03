@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { getStatusBadge } from "../posts/scheduled-posts/listView";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -232,7 +233,7 @@ export default function DashboardPage() {
                   {recentPosts?.map((post: any) => {
                     const status = post.status ?? "published";
                     const content =
-                      post.content.length > 100
+                      post.content?.length > 100
                         ? post.content.substring(0, 100) + "..."
                         : post.content;
 
@@ -301,13 +302,7 @@ export default function DashboardPage() {
                             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                               <CalendarClock size={14} className="mr-1" />
                               <span>Scheduled for {scheduledDate}</span>
-                              <Badge
-                                className={`${getStatusColor(
-                                  status
-                                )} capitalize`}
-                              >
-                                {status}
-                              </Badge>
+                              {getStatusBadge(status)}
                             </div>
                           </div>
                           <Button

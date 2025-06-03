@@ -121,7 +121,14 @@ export function getScheduledPostCalendarView({
                     className={`${getSocialIcon(platform.platform ?? "")} mr-1`}
                   ></i>
                   <span>
-                    {platform.platform} at {formatDate(post.scheduledFor, "p")}
+                    {post.account ? (
+                      <>
+                        {post.account.accountName} at{" "}
+                        {formatDate(post.scheduledFor, "p")}
+                      </>
+                    ) : (
+                      <>{platform.platform} at {formatDate(post.scheduledFor, "p")}</>
+                    )}
                   </span>
                 </div>
               ))}
