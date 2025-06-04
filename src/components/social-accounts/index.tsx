@@ -482,7 +482,7 @@ export default function SocialAccounts() {
                 <CardContent className="space-y-1">
                   <div className="flex items-center text-sm text-muted-foreground">
                     <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">
-                      ID: {account.accountId.substring(0, 8)}...
+                      ID: {account.accountId?.substring(0, 8)}...
                     </span>
                   </div>
                   {account.expiresAt && (

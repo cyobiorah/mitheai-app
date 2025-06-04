@@ -179,6 +179,17 @@ export default function AccountSelection({
                 </div>
               </TabsTrigger>
             )}
+            {platformCounts(accounts).tiktok && (
+              <TabsTrigger value="tiktok" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <FaTiktok className="h-4 w-4" />
+                  <span className="hidden sm:inline">TikTok</span>
+                  <Badge variant="secondary">
+                    {platformCounts(accounts).threads}
+                  </Badge>
+                </div>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Account List */}
