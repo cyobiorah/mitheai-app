@@ -25,7 +25,7 @@ import {
 } from "./methods";
 import { MediaItem } from "./mediaUploadComponents";
 import socialApi from "../../../api/socialApi";
-import { getImageDimensions } from "../../posting/methods";
+import { getImageDimensions, getMediaDimensions } from "../../posting/methods";
 
 export default function PostFlow() {
   const { user } = useAuth();
@@ -272,7 +272,11 @@ export default function PostFlow() {
     formData.append("postData", JSON.stringify(postData));
 
     for (const item of media) {
-      const dimensions = await getImageDimensions(item.file);
+      console.log({ item });
+      const dimensions =
+        item.type === "image"
+          ? await getImageDimensions(item.file)
+          : await getMediaDimensions(item.file);
       formData.append("media", item.file, item.id);
       formData.append(
         "dimensions[]",
