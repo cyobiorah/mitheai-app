@@ -269,6 +269,35 @@ export default function SocialAccounts() {
       },
     });
 
+  const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
+    useMutation({
+      mutationFn: async () => {
+        const response = await socialApi.connectTikTok();
+        window.location.href = response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        toast({
+          title: "TikTok connection in progress",
+          description: "Your TikTok account is being connected",
+        });
+        // setIsAddingAccount(false);
+        form.reset();
+      },
+      onError: (error) => {
+        console.error({ error });
+        toast({
+          title: "Connection failed",
+          description:
+            "Failed to connect TikTok. It may already be connected or token is invalid.",
+          variant: "destructive",
+        });
+      },
+      onSettled: () => {
+        setIsAddingAccount(false);
+      },
+    });
+
   function onSubmit(data: SocialAccountFormData) {
     switch (data.platform) {
       case "twitter":
@@ -285,6 +314,9 @@ export default function SocialAccounts() {
         break;
       case "facebook":
         connectFacebook();
+        break;
+      case "tiktok":
+        connectTikTok();
         break;
       default:
         toast({
@@ -303,6 +335,7 @@ export default function SocialAccounts() {
     isConnectingLinkedInPending ||
     isConnectingInstagramPending ||
     isConnectingFacebookPending ||
+    isConnectingTikTokPending ||
     isRefreshingPending;
 
   useEffect(() => {
@@ -613,6 +646,7 @@ export default function SocialAccounts() {
                         <SelectItem value="linkedin">LinkedIn</SelectItem>
                         <SelectItem value="instagram">Instagram</SelectItem>
                         <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="tiktok">TikTok</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
