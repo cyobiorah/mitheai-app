@@ -86,6 +86,14 @@ export const socialApi = {
     return response;
   },
 
+  connectTikTok: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/tiktok/direct-auth`
+    );
+    return response;
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach

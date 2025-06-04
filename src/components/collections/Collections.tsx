@@ -165,9 +165,9 @@ export default function Collections() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Collections</h2>
+          <h2 className="text-3xl font-bold">Collections</h2>
           <p className="text-muted-foreground">
             Organize your content into thematic collections
           </p>

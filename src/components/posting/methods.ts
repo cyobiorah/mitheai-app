@@ -728,6 +728,7 @@ export const generateVideoThumbnail = (
 export function getImageDimensions(
   file: File
 ): Promise<{ width: number; height: number }> {
+  console.log({ file });
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -744,5 +745,45 @@ export function getImageDimensions(
     };
 
     img.src = url;
+  });
+}
+
+export function getMediaDimensions(
+  file: File
+): Promise<{ width: number; height: number; type: "image" | "video" }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+      const img = new Image();
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height, type: "image" });
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = (err) => {
+        reject(new Error("Could not load image to determine dimensions"));
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    } else if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        resolve({
+          width: video.videoWidth,
+          height: video.videoHeight,
+          type: "video",
+        });
+        URL.revokeObjectURL(url);
+      };
+      video.onerror = (err) => {
+        reject(new Error("Could not load video to determine dimensions"));
+        URL.revokeObjectURL(url);
+      };
+      video.src = url;
+    } else {
+      URL.revokeObjectURL(url);
+      reject(new Error("Unsupported media type"));
+    }
   });
 }
