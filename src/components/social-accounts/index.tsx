@@ -71,6 +71,7 @@ export default function SocialAccounts() {
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
     isOpen: false,
+    platform: "",
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -82,14 +83,23 @@ export default function SocialAccounts() {
 
   // Delete social account mutation
   const { mutate: deleteAccount, isPending: isDeletingPending } = useMutation({
-    mutationFn: async (id: string) => {
-      return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
+    mutationFn: async () => {
+      const { id, platform } = deleteConfig;
+
+      if (platform === "tiktok") {
+        return await apiRequest(
+          "DELETE",
+          `/social-accounts/tiktok/revoke/${id}`
+        );
+      } else {
+        return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [`/social-accounts/${user?._id}`],
       });
-      setDeleteConfig({ id: "", isOpen: false });
+      setDeleteConfig({ id: "", isOpen: false, platform: "" });
       toast({
         title: "Account removed",
         description: "The social account has been disconnected",
@@ -111,27 +121,53 @@ export default function SocialAccounts() {
     },
   });
 
-  const { mutate: refreshAccessToken, isPending: isRefreshingPending } =
-    useMutation({
-      mutationFn: async (accountId: string) => {
-        return await apiRequest(
-          "GET",
-          `/social-accounts/twitter/refresh/${accountId}`
-        );
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: [`/social-accounts/${user?._id}`],
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Refresh failed",
-          description: "Failed to refresh the access token. Please try again.",
-          variant: "destructive",
-        });
-      },
-    });
+  const {
+    mutate: refreshTiktokAccessToken,
+    isPending: isRefreshingTiktokPending,
+  } = useMutation({
+    mutationFn: async (accountId: string) => {
+      return await apiRequest(
+        "GET",
+        `/social-accounts/tiktok/refresh/${accountId}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/social-accounts/${user?._id}`],
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Refresh failed",
+        description: "Failed to refresh the access token. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const {
+    mutate: refreshTwitterAccessToken,
+    isPending: isRefreshingTwitterPending,
+  } = useMutation({
+    mutationFn: async (accountId: string) => {
+      return await apiRequest(
+        "GET",
+        `/social-accounts/twitter/refresh/${accountId}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/social-accounts/${user?._id}`],
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Refresh failed",
+        description: "Failed to refresh the access token. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
     useMutation({
@@ -336,7 +372,8 @@ export default function SocialAccounts() {
     isConnectingInstagramPending ||
     isConnectingFacebookPending ||
     isConnectingTikTokPending ||
-    isRefreshingPending;
+    isRefreshingTwitterPending ||
+    isRefreshingTiktokPending;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -518,18 +555,20 @@ export default function SocialAccounts() {
                             onClick={() => {
                               // Handle reauthorization
                               if (account.platform === "twitter") {
-                                refreshAccessToken(account._id);
+                                refreshTwitterAccessToken(account._id);
                               } else if (account.platform === "threads") {
                                 connectThreads();
                               } else if (account.platform === "linkedin") {
                                 connectLinkedIn();
                               } else if (account.platform === "instagram") {
                                 connectInstagram();
+                              } else if (account.platform === "tiktok") {
+                                refreshTiktokAccessToken(account.accountId);
                               }
                             }}
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
-                            Link again
+                            Reauthorize
                           </Button>
                         )}
                       </TooltipTrigger>
@@ -550,6 +589,7 @@ export default function SocialAccounts() {
                             setDeleteConfig({
                               id: account._id,
                               isOpen: true,
+                              platform: account.platform,
                             })
                           }
                           disabled={isDeletingPending}
@@ -677,9 +717,10 @@ export default function SocialAccounts() {
       <DeleteDialog
         config={deleteConfig}
         setConfig={setDeleteConfig}
-        handleDelete={() => deleteAccount(deleteConfig.id)}
+        handleDelete={() => deleteAccount()}
         message="Are you sure you want to delete this account?"
         title="Delete Account"
+        loading={isDeletingPending}
       />
     </div>
   );
