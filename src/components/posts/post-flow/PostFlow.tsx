@@ -272,7 +272,6 @@ export default function PostFlow() {
     formData.append("postData", JSON.stringify(postData));
 
     for (const item of media) {
-      console.log({ item });
       const dimensions =
         item.type === "image"
           ? await getImageDimensions(item.file)

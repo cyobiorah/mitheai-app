@@ -728,7 +728,6 @@ export const generateVideoThumbnail = (
 export function getImageDimensions(
   file: File
 ): Promise<{ width: number; height: number }> {
-  console.log({ file });
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
