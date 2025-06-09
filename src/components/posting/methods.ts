@@ -728,7 +728,6 @@ export const generateVideoThumbnail = (
 export function getImageDimensions(
   file: File
 ): Promise<{ width: number; height: number }> {
-  console.log({ file });
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -760,7 +759,8 @@ export function getMediaDimensions(
         resolve({ width: img.width, height: img.height, type: "image" });
         URL.revokeObjectURL(url);
       };
-      img.onerror = (err) => {
+      img.onerror = (err: any) => {
+        console.log({ err });
         reject(new Error("Could not load image to determine dimensions"));
         URL.revokeObjectURL(url);
       };
@@ -776,7 +776,8 @@ export function getMediaDimensions(
         });
         URL.revokeObjectURL(url);
       };
-      video.onerror = (err) => {
+      video.onerror = (err: any) => {
+        console.log({ err });
         reject(new Error("Could not load video to determine dimensions"));
         URL.revokeObjectURL(url);
       };
