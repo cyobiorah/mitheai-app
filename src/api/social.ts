@@ -158,13 +158,6 @@ export const updateContentPostStatus = async (
   return response.data;
 };
 
-// Create a Twitter intent URL for manual posting
-export const createTwitterIntentUrl = (message: string): string => {
-  // Encode the message for URL
-  const encodedMessage = encodeURIComponent(message);
-  return `https://twitter.com/intent/tweet?text=${encodedMessage}`;
-};
-
 // Track manual posting attempt
 export const trackManualPostAttempt = async (
   contentId: string,
