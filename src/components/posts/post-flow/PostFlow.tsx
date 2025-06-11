@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
@@ -26,6 +26,11 @@ import {
 import { MediaItem } from "./mediaUploadComponents";
 import socialApi from "../../../api/socialApi";
 import { getImageDimensions, getMediaDimensions } from "../../posting/methods";
+import TikTokSettingsDrawer, {
+  isValidTikTokOptions,
+  TikTokOptions,
+} from "./TikTokSettingsDrawer";
+import { getTikTokAccountsInfo } from "../../../api/query";
 
 export default function PostFlow() {
   const { user } = useAuth();
@@ -43,6 +48,17 @@ export default function PostFlow() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
+  const [tiktokSelected, setTiktokSelected] = useState<boolean>(false);
+  const [filledTikTokAccounts, setFilledTikTokAccounts] = useState<string[]>(
+    []
+  );
+  const [openTikTokDrawer, setOpenTikTokDrawer] = useState<boolean>(false);
+  const [tiktokAccountOptions, setTiktokAccountOptions] = useState<
+    Record<string, TikTokOptions>
+  >({});
+  const [tiktokCreatorInfoMap, setTiktokCreatorInfoMap] = useState<
+    Record<string, any>
+  >({});
 
   // Get social accounts
   const { data: socialAccounts = [], isLoading: isFetchingAccounts } = useQuery(
@@ -101,8 +117,6 @@ export default function PostFlow() {
       return;
     }
 
-    setIsSubmitting(true);
-
     // Generate platformData with selected accounts and platform-specific captions
     const platformData: Array<{
       platform: string;
@@ -117,6 +131,22 @@ export default function PostFlow() {
     const platforms = Array.from(
       new Set(selectedAccountsData.map((account) => account.platform))
     );
+
+    const allValid = Object.entries(tiktokAccountOptions).every(
+      ([id, opts]) =>
+        filledTikTokAccounts.includes(id) && isValidTikTokOptions(opts)
+    );
+    if (platforms.includes("tiktok") && !allValid) {
+      toast({
+        title: "TikTok settings incomplete",
+        description:
+          "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
 
     // For each platform, add the selected accounts and captions
     platforms.forEach((platform) => {
@@ -195,7 +225,7 @@ export default function PostFlow() {
           );
 
           for (const account of platformAccounts) {
-            const postData = {
+            const postData: any = {
               content: caption,
               platforms: [
                 {
@@ -227,7 +257,7 @@ export default function PostFlow() {
           );
 
           for (const account of platformAccounts) {
-            const postData = {
+            const postData: any = {
               caption,
               accountId: account.accountId,
               platformAccountId: account.platformAccountId,
@@ -238,6 +268,24 @@ export default function PostFlow() {
               platformId: account.platformId,
               mediaType: postType,
             };
+
+            if (platform === "tiktok") {
+              const tiktokOpts = tiktokAccountOptions[account._id];
+              if (tiktokOpts) {
+                postData.tiktokAccountOptions = {
+                  title: tiktokOpts.title,
+                  privacy: tiktokOpts.privacy,
+                  allowComments: tiktokOpts.allowComments,
+                  allowDuet: tiktokOpts.allowDuet,
+                  allowStitch: tiktokOpts.allowStitch,
+                  isCommercial: tiktokOpts.isCommercial,
+                  brandType: tiktokOpts.brandType,
+                  agreedToPolicy: tiktokOpts.agreedToPolicy,
+                };
+              }
+            }
+
+            console.log({ postData });
 
             const formData = await handleFormData(postData, media);
 
@@ -253,7 +301,6 @@ export default function PostFlow() {
           : "Your post has been published!",
       });
 
-      // Navigate to dashboard
       navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
     } catch (error) {
       console.error("Failed to create post:", error);
@@ -272,7 +319,6 @@ export default function PostFlow() {
     formData.append("postData", JSON.stringify(postData));
 
     for (const item of media) {
-      console.log({ item });
       const dimensions =
         item.type === "image"
           ? await getImageDimensions(item.file)
@@ -290,6 +336,79 @@ export default function PostFlow() {
 
     return formData;
   };
+
+  useEffect(() => {
+    const tiktokAccounts = socialAccounts.filter(
+      (account) =>
+        selectedAccounts.includes(account._id) && account.platform === "tiktok"
+    );
+
+    if (tiktokAccounts.length > 0 && media.length > 0) {
+      setTiktokSelected(true);
+
+      const newOptions = { ...tiktokAccountOptions };
+      let anyMissing = false;
+
+      const caption = platformCaptions["tiktok"] || globalCaption || "";
+
+      for (const account of tiktokAccounts) {
+        if (!newOptions[account._id]) {
+          newOptions[account._id] = {
+            title: caption,
+            privacy: "",
+            allowComments: false,
+            allowDuet: false,
+            allowStitch: false,
+            isCommercial: false,
+            agreedToPolicy: false,
+            accountName: account.accountName,
+          };
+          anyMissing = true;
+        }
+      }
+
+      setTiktokAccountOptions(newOptions);
+
+      if (anyMissing) {
+        setOpenTikTokDrawer(true);
+      }
+    } else {
+      setTiktokSelected(false);
+    }
+  }, [selectedAccounts, media]);
+
+  const tiktokAccountIdsToFetch = useMemo(() => {
+    return openTikTokDrawer && tiktokSelected
+      ? selectedAccounts
+          .filter(
+            (id) =>
+              socialAccounts.find((acc) => acc._id === id)?.platform ===
+              "tiktok"
+          )
+          .filter((id) => !tiktokCreatorInfoMap[id])
+      : [];
+  }, [
+    openTikTokDrawer,
+    tiktokSelected,
+    selectedAccounts,
+    socialAccounts,
+    tiktokCreatorInfoMap,
+  ]);
+
+  const { data: accountsData, isLoading: tiktokAccountsLoading } =
+    getTikTokAccountsInfo(tiktokAccountIdsToFetch);
+
+  useEffect(() => {
+    if (accountsData) {
+      setTiktokCreatorInfoMap((prev) => {
+        const updated = { ...prev };
+        accountsData.forEach(({ accountId, creatorInfo }) => {
+          if (creatorInfo) updated[accountId] = creatorInfo;
+        });
+        return updated;
+      });
+    }
+  }, [accountsData]);
 
   return (
     <div className="space-y-6">
@@ -388,6 +507,8 @@ export default function PostFlow() {
                 }
                 accounts={socialAccounts}
                 selectedAccounts={selectedAccounts}
+                tiktokSelected={tiktokSelected}
+                handleTikTokSettingsClick={() => setOpenTikTokDrawer(true)}
               />
 
               <div className="flex justify-between">
@@ -508,22 +629,24 @@ export default function PostFlow() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-between">
+              <div className="flex flex-col md:flex-row md:justify-between gap-4">
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab("media")}
                   disabled={isSubmitting}
+                  className="w-full md:w-auto"
                 >
                   Back to Media
                 </Button>
-                <div className="space-x-3">
+
+                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                   <Button
                     variant={isScheduled ? "outline" : "default"}
                     onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="min-w-[120px]"
+                    disabled={isSubmitting || isScheduled}
+                    className="min-w-[120px] w-full md:w-auto"
                   >
-                    {isSubmitting ? (
+                    {isSubmitting && !isScheduled ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
@@ -537,9 +660,9 @@ export default function PostFlow() {
                     variant={isScheduled ? "default" : "outline"}
                     onClick={handleSubmit}
                     disabled={isSubmitting || !isScheduled || !scheduledDate}
-                    className="min-w-[120px]"
+                    className="min-w-[120px] w-full md:w-auto"
                   >
-                    {isSubmitting ? (
+                    {isSubmitting && isScheduled ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
@@ -554,6 +677,22 @@ export default function PostFlow() {
           </Tabs>
         </div>
       )}
+
+      <TikTokSettingsDrawer
+        open={openTikTokDrawer}
+        isLoading={tiktokAccountsLoading}
+        onClose={() => setOpenTikTokDrawer(false)}
+        accountOptions={tiktokAccountOptions}
+        creatorInfoMap={tiktokCreatorInfoMap}
+        onSave={(newOptions) => {
+          setTiktokAccountOptions(newOptions);
+          const valid = Object.entries(newOptions)
+            .filter(([_, opts]) => isValidTikTokOptions(opts))
+            .map(([id]) => id);
+          setFilledTikTokAccounts(valid);
+          setOpenTikTokDrawer(false);
+        }}
+      />
     </div>
   );
 }
