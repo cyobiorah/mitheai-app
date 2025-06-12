@@ -169,6 +169,30 @@ export default function SocialAccounts() {
     },
   });
 
+  const {
+    mutate: refreshYoutubeAccessToken,
+    isPending: isRefreshingYoutubePending,
+  } = useMutation({
+    mutationFn: async (accountId: string) => {
+      return await apiRequest(
+        "GET",
+        `/social-accounts/youtube/refresh/${accountId}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/social-accounts/${user?._id}`],
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Refresh failed",
+        description: "Failed to refresh the access token. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
     useMutation({
       mutationFn: async ({ skipWelcome }: { skipWelcome: boolean }) => {
@@ -406,6 +430,7 @@ export default function SocialAccounts() {
     isConnectingTikTokPending ||
     isConnectingYoutubePending ||
     isRefreshingTwitterPending ||
+    isRefreshingYoutubePending ||
     isRefreshingTiktokPending;
 
   useEffect(() => {
@@ -555,12 +580,11 @@ export default function SocialAccounts() {
                       ID: {account.accountId?.substring(0, 8)}...
                     </span>
                   </div>
-                  {account.expiresAt && (
+                  {account.tokenExpiry && (
                     <div className="flex items-center text-xs text-muted-foreground mt-2">
                       <Clock className="h-3 w-3 mr-1" />
                       <span>
-                        Expires:{" "}
-                        {new Date(account.expiresAt).toLocaleDateString()}
+                        Expires: {formatDate(account.tokenExpiry, "PPP pp")}
                       </span>
                     </div>
                   )}
@@ -598,7 +622,7 @@ export default function SocialAccounts() {
                               } else if (account.platform === "tiktok") {
                                 refreshTiktokAccessToken(account.accountId);
                               } else if (account.platform === "youtube") {
-                                connectYoutube();
+                                refreshYoutubeAccessToken(account._id);
                               }
                             }}
                           >
