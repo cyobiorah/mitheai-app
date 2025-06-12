@@ -241,6 +241,22 @@ export default function PostFlow() {
               mediaType: postType,
             };
 
+            if (platform === "tiktok") {
+              const tiktokOpts = tiktokAccountOptions[account._id];
+              if (tiktokOpts) {
+                postData.tiktokAccountOptions = {
+                  title: tiktokOpts.title,
+                  privacy: tiktokOpts.privacy,
+                  allowComments: tiktokOpts.allowComments,
+                  allowDuet: tiktokOpts.allowDuet,
+                  allowStitch: tiktokOpts.allowStitch,
+                  isCommercial: tiktokOpts.isCommercial,
+                  brandType: tiktokOpts.brandType,
+                  agreedToPolicy: tiktokOpts.agreedToPolicy,
+                };
+              }
+            }
+
             const formData = await handleFormData(postData, media);
 
             try {
