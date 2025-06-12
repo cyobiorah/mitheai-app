@@ -20,6 +20,12 @@ import { useState, useEffect } from "react";
 import { toast } from "../../../hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { cn } from "../../../lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../../ui/accordion";
 
 export default function TikTokSettingsDrawer({
   open,
@@ -103,333 +109,351 @@ export default function TikTokSettingsDrawer({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 max-h-[75vh] overflow-y-auto p-4">
+        <Accordion
+          type="multiple"
+          className="max-h-[75vh] overflow-y-auto p-4 space-y-2"
+        >
           {Object.entries(localOptions).map(([accountId, opts]) => (
-            <div key={accountId} className="border p-4 rounded-md space-y-3">
-              <div className="flex items-center space-x-3">
-                {creatorInfoMap[accountId]?.data?.creator_avatar_url && (
-                  <img
-                    src={creatorInfoMap[accountId].data.creator_avatar_url}
-                    alt="avatar"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <p className="font-medium">
-                    {creatorInfoMap[accountId]?.data?.creator_nickname ??
-                      opts.accountName}
-                  </p>
+            <AccordionItem key={accountId} value={accountId}>
+              <AccordionTrigger>
+                <div className="flex items-center space-x-3">
+                  {creatorInfoMap[accountId]?.data?.creator_avatar_url && (
+                    <img
+                      src={creatorInfoMap[accountId].data.creator_avatar_url}
+                      alt="avatar"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  )}
+                  <span className="text-sm font-medium flex items-center space-x-1">
+                    <span>
+                      {creatorInfoMap[accountId]?.data?.creator_nickname ??
+                        opts.accountName}
+                    </span>
+                    {validationErrors[accountId]?.length > 0 ? (
+                      <span className="ml-2 w-2 h-2 rounded-full bg-red-500 inline-block" />
+                    ) : (
+                      <span className="ml-2 w-2 h-2 rounded-full bg-green-500 inline-block" />
+                    )}
+                  </span>
                 </div>
-              </div>
+                <p className="text-sm text-muted-foreground">
+                  {creatorInfoMap[accountId]?.data?.monetizationEligibility
+                    ? "Eligible for branded content"
+                    : "Branded content not supported"}
+                </p>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="border p-4 rounded-md space-y-3">
+                  <Input
+                    placeholder="Video title"
+                    value={opts.title}
+                    disabled={!opts.hasCustomTitle}
+                    onChange={(e) => {
+                      const newTitle = e.target.value;
+                      setLocalOptions((prev) => ({
+                        ...prev,
+                        [accountId]: {
+                          ...prev[accountId],
+                          title: newTitle,
+                          hasCustomTitle: true,
+                        },
+                      }));
+                    }}
+                  />
 
-              <p className="text-sm text-muted-foreground">
-                {creatorInfoMap[accountId]?.data?.monetizationEligibility
-                  ? "Eligible for branded content"
-                  : "Branded content not supported"}
-              </p>
-
-              <Input
-                placeholder="Video title"
-                value={opts.title}
-                disabled={!opts.hasCustomTitle}
-                onChange={(e) => {
-                  const newTitle = e.target.value;
-                  setLocalOptions((prev) => ({
-                    ...prev,
-                    [accountId]: {
-                      ...prev[accountId],
-                      title: newTitle,
-                      hasCustomTitle: true,
-                    },
-                  }));
-                }}
-              />
-
-              <Select
-                value={opts.privacy}
-                onValueChange={(val) => {
-                  setLocalOptions((prev) => ({
-                    ...prev,
-                    [accountId]: { ...prev[accountId], privacy: val },
-                  }));
-                  setValidationErrors((prev) => {
-                    const updated = { ...prev };
-                    if (updated[accountId]) {
-                      updated[accountId] = updated[accountId].filter(
-                        (field) => field !== "privacy"
-                      );
-                      if (updated[accountId].length === 0) {
-                        delete updated[accountId];
-                      }
+                  <Select
+                    value={opts.privacy}
+                    onValueChange={(val) => {
+                      setLocalOptions((prev) => ({
+                        ...prev,
+                        [accountId]: { ...prev[accountId], privacy: val },
+                      }));
+                      setValidationErrors((prev) => {
+                        const updated = { ...prev };
+                        if (updated[accountId]) {
+                          updated[accountId] = updated[accountId].filter(
+                            (field) => field !== "privacy"
+                          );
+                          if (updated[accountId].length === 0) {
+                            delete updated[accountId];
+                          }
+                        }
+                        return updated;
+                      });
+                    }}
+                    disabled={
+                      !creatorInfoMap[accountId]?.data?.privacy_level_options
+                        ?.length
                     }
-                    return updated;
-                  });
-                }}
-                disabled={
-                  !creatorInfoMap[accountId]?.data?.privacy_level_options
-                    ?.length
-                }
-              >
-                <SelectTrigger
-                  className={cn(
-                    validationErrors[accountId]?.includes("privacy") &&
-                      "border-red-500"
-                  )}
-                >
-                  <SelectValue placeholder="Select Privacy" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(
-                    creatorInfoMap[accountId]?.data?.privacy_level_options ?? []
-                  ).map((level: string) => (
-                    <SelectItem key={level} value={level}>
-                      {getPrivacyLevelDisplay(level)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`allowComments-${accountId}`}
-                  checked={opts.allowComments}
-                  onCheckedChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        allowComments: Boolean(val),
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "allowComments"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                />
-                <label
-                  htmlFor={`allowComments-${accountId}`}
-                  className={cn(
-                    "cursor-pointer text-sm",
-                    validationErrors[accountId]?.includes("allowComments") &&
-                      "text-red-500"
-                  )}
-                >
-                  Allow Comments
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`allowDuet-${accountId}`}
-                  checked={opts.allowDuet}
-                  onCheckedChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        allowDuet: Boolean(val),
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "allowDuet"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                  disabled={!creatorInfoMap[accountId]?.data?.allow_duet}
-                />
-                <label
-                  htmlFor={`allowDuet-${accountId}`}
-                  className={cn(
-                    "cursor-pointer text-sm",
-                    validationErrors[accountId]?.includes("allowDuet") &&
-                      "text-red-500"
-                  )}
-                >
-                  Allow Duet
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`allowStitch-${accountId}`}
-                  checked={opts.allowStitch}
-                  onCheckedChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        allowStitch: Boolean(val),
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "allowStitch"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                  disabled={!creatorInfoMap[accountId]?.data?.allow_stitch}
-                />
-                <label
-                  htmlFor={`allowStitch-${accountId}`}
-                  className={cn(
-                    "cursor-pointer text-sm",
-                    validationErrors[accountId]?.includes("allowStitch") &&
-                      "text-red-500"
-                  )}
-                >
-                  Allow Stitch
-                </label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`isCommercial-${accountId}`}
-                  checked={opts.isCommercial}
-                  onCheckedChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        isCommercial: Boolean(val),
-                        brandType: val ? "your_brand" : undefined,
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "isCommercial"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                  disabled={
-                    !creatorInfoMap[accountId]?.data?.monetization_eligibility
-                  }
-                />
-                <label
-                  htmlFor={`isCommercial-${accountId}`}
-                  className={cn(
-                    "cursor-pointer text-sm",
-                    validationErrors[accountId]?.includes("isCommercial") &&
-                      "text-red-500"
-                  )}
-                >
-                  This is branded content
-                </label>
-              </div>
-
-              {opts.isCommercial && (
-                <Select
-                  value={opts.brandType}
-                  onValueChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        brandType: val as any,
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "brandType"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Brand Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="your_brand">Your Brand</SelectItem>
-                    <SelectItem value="branded_content">Sponsored</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`agreedToPolicy-${accountId}`}
-                  checked={opts.agreedToPolicy}
-                  onCheckedChange={(val) => {
-                    setLocalOptions((prev) => ({
-                      ...prev,
-                      [accountId]: {
-                        ...prev[accountId],
-                        agreedToPolicy: Boolean(val),
-                      },
-                    }));
-                    setValidationErrors((prev) => {
-                      const updated = { ...prev };
-                      if (updated[accountId]) {
-                        updated[accountId] = updated[accountId].filter(
-                          (field) => field !== "agreedToPolicy"
-                        );
-                        if (updated[accountId].length === 0) {
-                          delete updated[accountId];
-                        }
-                      }
-                      return updated;
-                    });
-                  }}
-                />
-                <label
-                  htmlFor={`agreedToPolicy-${accountId}`}
-                  className={cn(
-                    "cursor-pointer text-sm",
-                    validationErrors[accountId]?.includes("agreedToPolicy") &&
-                      "text-red-500"
-                  )}
-                >
-                  I agree to TikTok’s policy for{" "}
-                  <a
-                    href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en"
-                    target="_blank"
-                    className="underline text-blue-500"
                   >
-                    music and commercial content
-                  </a>{" "}
-                  .
-                </label>
-              </div>
-            </div>
+                    <SelectTrigger
+                      className={cn(
+                        validationErrors[accountId]?.includes("privacy") &&
+                          "border-red-500"
+                      )}
+                    >
+                      <SelectValue placeholder="Select Privacy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(
+                        creatorInfoMap[accountId]?.data
+                          ?.privacy_level_options ?? []
+                      ).map((level: string) => (
+                        <SelectItem key={level} value={level}>
+                          {getPrivacyLevelDisplay(level)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`allowComments-${accountId}`}
+                      checked={opts.allowComments}
+                      onCheckedChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            allowComments: Boolean(val),
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "allowComments"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`allowComments-${accountId}`}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        validationErrors[accountId]?.includes(
+                          "allowComments"
+                        ) && "text-red-500"
+                      )}
+                    >
+                      Allow Comments
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`allowDuet-${accountId}`}
+                      checked={opts.allowDuet}
+                      onCheckedChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            allowDuet: Boolean(val),
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "allowDuet"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                      disabled={!creatorInfoMap[accountId]?.data?.allow_duet}
+                    />
+                    <label
+                      htmlFor={`allowDuet-${accountId}`}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        validationErrors[accountId]?.includes("allowDuet") &&
+                          "text-red-500"
+                      )}
+                    >
+                      Allow Duet
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`allowStitch-${accountId}`}
+                      checked={opts.allowStitch}
+                      onCheckedChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            allowStitch: Boolean(val),
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "allowStitch"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                      disabled={!creatorInfoMap[accountId]?.data?.allow_stitch}
+                    />
+                    <label
+                      htmlFor={`allowStitch-${accountId}`}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        validationErrors[accountId]?.includes("allowStitch") &&
+                          "text-red-500"
+                      )}
+                    >
+                      Allow Stitch
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`isCommercial-${accountId}`}
+                      checked={opts.isCommercial}
+                      onCheckedChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            isCommercial: Boolean(val),
+                            brandType: val ? "your_brand" : undefined,
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "isCommercial"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                      disabled={
+                        !creatorInfoMap[accountId]?.data
+                          ?.monetization_eligibility
+                      }
+                    />
+                    <label
+                      htmlFor={`isCommercial-${accountId}`}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        validationErrors[accountId]?.includes("isCommercial") &&
+                          "text-red-500"
+                      )}
+                    >
+                      This is branded content
+                    </label>
+                  </div>
+
+                  {opts.isCommercial && (
+                    <Select
+                      value={opts.brandType}
+                      onValueChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            brandType: val as any,
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "brandType"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Brand Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="your_brand">Your Brand</SelectItem>
+                        <SelectItem value="branded_content">
+                          Sponsored
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`agreedToPolicy-${accountId}`}
+                      checked={opts.agreedToPolicy}
+                      onCheckedChange={(val) => {
+                        setLocalOptions((prev) => ({
+                          ...prev,
+                          [accountId]: {
+                            ...prev[accountId],
+                            agreedToPolicy: Boolean(val),
+                          },
+                        }));
+                        setValidationErrors((prev) => {
+                          const updated = { ...prev };
+                          if (updated[accountId]) {
+                            updated[accountId] = updated[accountId].filter(
+                              (field) => field !== "agreedToPolicy"
+                            );
+                            if (updated[accountId].length === 0) {
+                              delete updated[accountId];
+                            }
+                          }
+                          return updated;
+                        });
+                      }}
+                    />
+                    <label
+                      htmlFor={`agreedToPolicy-${accountId}`}
+                      className={cn(
+                        "cursor-pointer text-sm",
+                        validationErrors[accountId]?.includes(
+                          "agreedToPolicy"
+                        ) && "text-red-500"
+                      )}
+                    >
+                      I agree to TikTok’s policy for{" "}
+                      <a
+                        href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en"
+                        target="_blank"
+                        className="underline text-blue-500"
+                      >
+                        music and commercial content
+                      </a>{" "}
+                      .
+                    </label>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
 
         <DialogFooter className="flex justify-end mt-4">
           <Button
