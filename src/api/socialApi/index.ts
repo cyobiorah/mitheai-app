@@ -94,6 +94,14 @@ export const socialApi = {
     return response;
   },
 
+  connectYoutube: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/youtube/direct-auth`
+    );
+    return response;
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach
