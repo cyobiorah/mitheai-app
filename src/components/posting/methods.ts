@@ -158,7 +158,7 @@ const extractVideoThumbnail = async (
         reject(new Error("Could not get canvas context"));
       }
     };
-    video.onerror = (err) => {
+    video.onerror = (err: any) => {
       URL.revokeObjectURL(url);
       reject(new Error(`Error loading video: ${err?.toString()}`));
     };
@@ -245,7 +245,7 @@ const combineConstraints = (platforms: string[]): PlatformMediaConstraints => {
     }
 
     // Image constraints
-    if (!combined.image) combined.image = {};
+    combined.image ??= {};
     if (currentPlatformConstraints.image) {
       if (currentPlatformConstraints.image.maxDimensions) {
         combined.image.maxDimensions = {
@@ -277,7 +277,7 @@ const combineConstraints = (platforms: string[]): PlatformMediaConstraints => {
     }
 
     // Video constraints (similar logic)
-    if (!combined.video) combined.video = {};
+    combined.video ??= {};
     if (currentPlatformConstraints.video) {
       if (currentPlatformConstraints.video.maxDurationSeconds) {
         combined.video.maxDurationSeconds = Math.min(
@@ -728,7 +728,6 @@ export const generateVideoThumbnail = (
 export function getImageDimensions(
   file: File
 ): Promise<{ width: number; height: number }> {
-  console.log({ file });
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -760,7 +759,8 @@ export function getMediaDimensions(
         resolve({ width: img.width, height: img.height, type: "image" });
         URL.revokeObjectURL(url);
       };
-      img.onerror = (err) => {
+      img.onerror = (err: any) => {
+        console.log({ err });
         reject(new Error("Could not load image to determine dimensions"));
         URL.revokeObjectURL(url);
       };
@@ -776,7 +776,8 @@ export function getMediaDimensions(
         });
         URL.revokeObjectURL(url);
       };
-      video.onerror = (err) => {
+      video.onerror = (err: any) => {
+        console.log({ err });
         reject(new Error("Could not load video to determine dimensions"));
         URL.revokeObjectURL(url);
       };

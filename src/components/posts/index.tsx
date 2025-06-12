@@ -176,6 +176,7 @@ const Posts = () => {
       case "twitter":
         return "text-blue-500";
       case "instagram":
+      case "tiktok":
         return "text-pink-500";
       case "facebook":
         return "text-blue-600";

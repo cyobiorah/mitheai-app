@@ -45,10 +45,6 @@ import {
   removeMediaItem,
   updateVideoThumbnailTime,
 } from "../../posting/methods";
-import {
-  getPlatformConstraints,
-  PlatformMediaConstraints,
-} from "../../posting/platformConstraints"; // Import constraints
 
 // Define MediaItem if not already available from props (adjust as per actual type)
 export interface MediaItem {
@@ -70,6 +66,8 @@ export interface MediaUploadProps {
   onChange: (media: MediaItem[]) => void;
   accounts: any[];
   selectedAccounts: string[];
+  tiktokSelected: boolean;
+  handleTikTokSettingsClick: () => void;
 }
 
 export default function MediaUpload({
@@ -77,6 +75,8 @@ export default function MediaUpload({
   onChange,
   accounts,
   selectedAccounts,
+  tiktokSelected,
+  handleTikTokSettingsClick,
 }: Readonly<MediaUploadProps>) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mediaActiveTab, setMediaActiveTab] = useState<string>("upload");
@@ -143,7 +143,7 @@ export default function MediaUpload({
       {" "}
       {/* Basic theme support */}
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div>
             <CardTitle>Media</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -155,7 +155,16 @@ export default function MediaUpload({
             value={mediaActiveTab}
             onValueChange={setMediaActiveTab}
           >
-            <TabsList className="dark:bg-gray-700 bg-gray-200">
+            <TabsList className="dark:bg-gray-700 bg-gray-200 mb-2">
+              {tiktokSelected && (
+                <Button
+                  variant="destructive"
+                  onClick={() => handleTikTokSettingsClick()}
+                  className="text-sm mr-2"
+                >
+                  ⚙️ TikTok Settings
+                </Button>
+              )}
               <TabsTrigger
                 value="upload"
                 onClick={() => setMediaActiveTab("upload")}
@@ -177,8 +186,24 @@ export default function MediaUpload({
             </TabsList>
           </Tabs>
         </div>
+
+        {tiktokSelected && (
+          <div className="flex items-center justify-between bg-muted p-3 rounded-md flex-col sm:flex-row gap-2">
+            <p className="text-sm text-muted-foreground sm:text-left">
+              TikTok accounts selected. You can update post settings for TikTok
+              here.
+            </p>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => handleTikTokSettingsClick()}
+            >
+              ⚙️ Edit TikTok Settings
+            </Button>
+          </div>
+        )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="mt-4">
         {validationMessage && (
           <div className="mb-4 p-3 rounded-md bg-yellow-100 dark:bg-yellow-700 border border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-200 flex items-center">
             <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600 dark:text-yellow-400" />

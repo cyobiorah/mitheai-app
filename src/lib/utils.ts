@@ -30,6 +30,8 @@ export function getSocialIcon(platform: string) {
       return "ri-facebook-circle-fill";
     case "threads":
       return "ri-threads-line";
+    case "tiktok":
+      return "ri-tiktok-line";
     default:
       return "ri-global-line";
   }

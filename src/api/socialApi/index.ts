@@ -367,6 +367,22 @@ export const socialApi = {
       );
     }
   },
+
+  getTikTokAccountInfo: async (id: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/tiktok/account-info/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to get TikTok account info:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to get TikTok account info"
+      );
+    }
+  },
 };
 
 export default socialApi;
