@@ -158,7 +158,7 @@ const extractVideoThumbnail = async (
         reject(new Error("Could not get canvas context"));
       }
     };
-    video.onerror = (err) => {
+    video.onerror = (err: any) => {
       URL.revokeObjectURL(url);
       reject(new Error(`Error loading video: ${err?.toString()}`));
     };
@@ -245,7 +245,7 @@ const combineConstraints = (platforms: string[]): PlatformMediaConstraints => {
     }
 
     // Image constraints
-    if (!combined.image) combined.image = {};
+    combined.image ??= {};
     if (currentPlatformConstraints.image) {
       if (currentPlatformConstraints.image.maxDimensions) {
         combined.image.maxDimensions = {
@@ -277,7 +277,7 @@ const combineConstraints = (platforms: string[]): PlatformMediaConstraints => {
     }
 
     // Video constraints (similar logic)
-    if (!combined.video) combined.video = {};
+    combined.video ??= {};
     if (currentPlatformConstraints.video) {
       if (currentPlatformConstraints.video.maxDurationSeconds) {
         combined.video.maxDurationSeconds = Math.min(

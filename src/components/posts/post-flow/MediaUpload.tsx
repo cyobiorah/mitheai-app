@@ -45,10 +45,6 @@ import {
   removeMediaItem,
   updateVideoThumbnailTime,
 } from "../../posting/methods";
-import {
-  getPlatformConstraints,
-  PlatformMediaConstraints,
-} from "../../posting/platformConstraints"; // Import constraints
 
 // Define MediaItem if not already available from props (adjust as per actual type)
 export interface MediaItem {

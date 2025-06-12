@@ -20,8 +20,8 @@ export interface SocialAccount {
   accountId: string;
   organizationId?: string;
   teamId?: string;
-  ownershipLevel?: 'user' | 'team' | 'organization'; // Indicates who owns/controls this account
-  status?: 'active' | 'expired' | 'revoked' | 'error';
+  ownershipLevel?: "user" | "team" | "organization"; // Indicates who owns/controls this account
+  status?: "active" | "expired" | "revoked" | "error";
 }
 
 export interface PostRequest {
@@ -48,53 +48,58 @@ export const postToTwitter = async (
   message: string
 ): Promise<PostResponse> => {
   try {
-    const response = await axiosInstance.post("/social-accounts/twitter/tweet", {
-      accountId,
-      message,
-    });
+    const response = await axiosInstance.post(
+      "/social-accounts/twitter/tweet",
+      {
+        accountId,
+        message,
+      }
+    );
     return response.data;
   } catch (error: any) {
     console.error("Error posting to Twitter:", error);
-    
+
     // Get the error response or provide a fallback
-    const errorResponse = error.response?.data || {};
-    const errorType = errorResponse.errorType || '';
-    const errorMessage = errorResponse.message || error.message || "Unknown error posting to Twitter";
-    
+    const errorResponse = error.response?.data ?? {};
+    const errorType = errorResponse.errorType ?? "";
+    const errorMessage =
+      errorResponse.message ??
+      error.message ??
+      "Unknown error posting to Twitter";
+
     // Handle authentication errors
-    if (error.response?.status === 401 || errorType === 'auth_expired') {
+    if (error.response?.status === 401 || errorType === "auth_expired") {
       throw new Error(
         "Twitter authentication expired. Please reconnect your account."
       );
     }
-    
+
     // Handle permission errors
-    if (error.response?.status === 403 || errorType === 'permission_denied') {
+    if (error.response?.status === 403 || errorType === "permission_denied") {
       throw new Error(
-        errorMessage || "Your Twitter app doesn't have permission to post tweets. " +
-        "Please check your Twitter Developer Portal for proper permissions."
+        errorMessage ??
+          "Your Twitter app doesn't have permission to post tweets. " +
+            "Please check your Twitter Developer Portal for proper permissions."
       );
     }
-    
+
     // Handle rate limiting
-    if (error.response?.status === 429 || errorType === 'rate_limit') {
-      throw new Error(
-        "Twitter rate limit exceeded. Please try again later."
-      );
+    if (error.response?.status === 429 || errorType === "rate_limit") {
+      throw new Error("Twitter rate limit exceeded. Please try again later.");
     }
-    
+
     // Handle content rejection
-    if (errorType === 'content_rejected') {
+    if (errorType === "content_rejected") {
       throw new Error(
         "Tweet was rejected by Twitter. This could be due to duplicate content or Twitter content policies."
       );
     }
-    
+
     // API error with status
-    if (errorType === 'api_error') {
+    if (errorType === "api_error") {
       throw new Error(errorMessage);
     }
-    
+
     // Generic error with the best error message we can find
     throw new Error(errorMessage);
   }
@@ -108,6 +113,7 @@ export const postContentToTwitter = async (
   try {
     return await postToTwitter(accountId, content.content);
   } catch (error) {
+    console.log({ error });
     // Re-throw the error to be handled by the component
     throw error;
   }
@@ -119,17 +125,22 @@ export const scheduleTweet = async (
   message: string,
   scheduledTime: Date
 ): Promise<any> => {
-  const response = await axiosInstance.post("/social-accounts/twitter/schedule", {
-    accountId,
-    message,
-    scheduledTime: scheduledTime.toISOString(),
-  });
+  const response = await axiosInstance.post(
+    "/social-accounts/twitter/schedule",
+    {
+      accountId,
+      message,
+      scheduledTime: scheduledTime.toISOString(),
+    }
+  );
   return response.data;
 };
 
 // Start Twitter account connection flow
 export const connectTwitterAccount = async (): Promise<string> => {
-  const response = await axiosInstance.get("/social-accounts/twitter/direct-auth");
+  const response = await axiosInstance.get(
+    "/social-accounts/twitter/direct-auth"
+  );
   return response.data;
 };
 
@@ -137,7 +148,9 @@ export const connectTwitterAccount = async (): Promise<string> => {
 export const disconnectSocialAccount = async (
   platform: string
 ): Promise<{ success: boolean }> => {
-  const response = await axiosInstance.post(`/social-accounts/${platform}/disconnect`);
+  const response = await axiosInstance.post(
+    `/social-accounts/${platform}/disconnect`
+  );
   return response.data;
 };
 
@@ -149,12 +162,15 @@ export const updateContentPostStatus = async (
   status: "posted" | "scheduled" | "failed"
 ): Promise<ContentItem> => {
   // This would typically update the content item with posting metadata
-  const response = await axiosInstance.patch(`/content/${contentId}/post-status`, {
-    platform,
-    postId,
-    status,
-    postedAt: new Date().toISOString(),
-  });
+  const response = await axiosInstance.patch(
+    `/content/${contentId}/post-status`,
+    {
+      platform,
+      postId,
+      status,
+      postedAt: new Date().toISOString(),
+    }
+  );
   return response.data;
 };
 
@@ -164,11 +180,14 @@ export const trackManualPostAttempt = async (
   platform: string
 ): Promise<ContentItem> => {
   // This updates the content item with manual posting metadata
-  const response = await axiosInstance.patch(`/content/${contentId}/post-status`, {
-    platform,
-    postId: null, // No post ID since it's manual
-    status: "manual_attempt",
-    postedAt: new Date().toISOString(),
-  });
+  const response = await axiosInstance.patch(
+    `/content/${contentId}/post-status`,
+    {
+      platform,
+      postId: null, // No post ID since it's manual
+      status: "manual_attempt",
+      postedAt: new Date().toISOString(),
+    }
+  );
   return response.data;
 };
