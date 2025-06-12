@@ -285,8 +285,6 @@ export default function PostFlow() {
               }
             }
 
-            console.log({ postData });
-
             const formData = await handleFormData(postData, media);
 
             await socialApi.postToMultiPlatform(formData);

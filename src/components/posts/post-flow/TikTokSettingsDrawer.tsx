@@ -43,7 +43,6 @@ export default function TikTokSettingsDrawer({
   >({});
 
   useEffect(() => {
-    console.log({ accountOptions });
     setLocalOptions((prev) => {
       const updated: Record<string, LocalTikTokOptions> = {};
       for (const [id, option] of Object.entries(accountOptions)) {
@@ -56,10 +55,6 @@ export default function TikTokSettingsDrawer({
       return updated;
     });
   }, [accountOptions]);
-
-  useEffect(() => {
-    console.log({ creatorInfoMap });
-  }, [creatorInfoMap]);
 
   const getPrivacyLevelDisplay = (level: string) => {
     switch (level) {
