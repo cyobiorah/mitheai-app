@@ -153,15 +153,20 @@ export default function UserSettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Account Settings</h2>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Account Settings
+          </h2>
           <p className="text-muted-foreground">
             Manage your account preferences and security
           </p>
         </div>
         <Link to="/dashboard/billing">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 bg-accent text-accent-foreground"
+          >
             <CreditCard className="h-4 w-4" />
             Billing & Subscription
           </Button>

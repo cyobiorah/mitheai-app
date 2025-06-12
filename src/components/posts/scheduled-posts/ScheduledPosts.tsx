@@ -141,9 +141,9 @@ export default function ScheduledPosts() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Content Schedule</h2>
+          <h2 className="text-3xl font-bold">Content Schedule</h2>
           <p className="text-muted-foreground">
             Manage your scheduled social media posts
           </p>
@@ -164,7 +164,7 @@ export default function ScheduledPosts() {
 
         <TabsContent value="calendar" className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
-            <Card className="md:w-[300px]">
+            <Card className="md:w-[300px] h-full">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CalendarIcon size={18} />

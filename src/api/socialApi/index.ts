@@ -86,6 +86,14 @@ export const socialApi = {
     return response;
   },
 
+  connectTikTok: async () => {
+    const response = await apiRequest(
+      "GET",
+      `/social-accounts/tiktok/direct-auth`
+    );
+    return response;
+  },
+
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
       // Use DELETE method for a more RESTful approach
@@ -356,6 +364,22 @@ export const socialApi = {
         error.response?.data?.message ??
           error.message ??
           "Failed to schedule post"
+      );
+    }
+  },
+
+  getTikTokAccountInfo: async (id: string) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/tiktok/account-info/${id}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to get TikTok account info:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to get TikTok account info"
       );
     }
   },
