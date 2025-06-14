@@ -75,12 +75,14 @@ export function getScheduledPostListView(
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link to={`/dashboard/posts/${post.id}/edit`}>
-                        <Edit size={14} className="mr-2" />
-                        Edit Post
-                      </Link>
-                    </DropdownMenuItem>
+                    {post.platforms[0].status !== "published" && (
+                      <DropdownMenuItem asChild>
+                        <Link to={`/dashboard/posts/${post.id}/edit`}>
+                          <Edit size={14} className="mr-2" />
+                          Edit Post
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     {post.status === "scheduled" && (
                       <DropdownMenuItem
                         onClick={() =>

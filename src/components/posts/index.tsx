@@ -184,6 +184,8 @@ const Posts = () => {
         return "text-blue-700";
       case "threads":
         return "text-white-500 dark:text-white";
+      case "youtube":
+        return "text-red-500";
       default:
         return "text-gray-500";
     }
