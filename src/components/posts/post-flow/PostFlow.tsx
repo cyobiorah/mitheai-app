@@ -150,13 +150,13 @@ export default function PostFlow() {
 
     // For each platform, add the selected accounts and captions
     platforms.forEach((platform) => {
-      const platformAccountIds = selectedAccountsData
+      const accountIds = selectedAccountsData
         .filter((account) => account.platform === platform)
         .map((account) => account._id);
 
       platformData.push({
         platform,
-        accounts: platformAccountIds,
+        accounts: accountIds,
         caption: platformCaptions[platform] || globalCaption,
       });
     });
@@ -276,7 +276,7 @@ export default function PostFlow() {
             const postData: any = {
               caption,
               accountId: account.accountId,
-              platformAccountId: account.platformAccountId,
+              id: account._id,
               media: mediaUrls,
               accountName: account.accountName,
               accountType: account.accountType,

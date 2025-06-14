@@ -32,6 +32,8 @@ export function getSocialIcon(platform: string) {
       return "ri-threads-line";
     case "tiktok":
       return "ri-tiktok-line";
+    case "youtube":
+      return "ri-youtube-line";
     default:
       return "ri-global-line";
   }

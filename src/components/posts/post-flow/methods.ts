@@ -72,6 +72,8 @@ export const getPlatformColor = (platform: string): string => {
       return "bg-[#010101]";
     case "threads":
       return "bg-black dark:bg-white dark:text-black";
+    case "youtube":
+      return "bg-[#FF0000]";
     default:
       return "bg-gray-500";
   }

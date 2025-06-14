@@ -169,6 +169,30 @@ export default function SocialAccounts() {
     },
   });
 
+  const {
+    mutate: refreshYoutubeAccessToken,
+    isPending: isRefreshingYoutubePending,
+  } = useMutation({
+    mutationFn: async (accountId: string) => {
+      return await apiRequest(
+        "GET",
+        `/social-accounts/youtube/refresh/${accountId}`
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [`/social-accounts/${user?._id}`],
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Refresh failed",
+        description: "Failed to refresh the access token. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
     useMutation({
       mutationFn: async ({ skipWelcome }: { skipWelcome: boolean }) => {
@@ -334,6 +358,35 @@ export default function SocialAccounts() {
       },
     });
 
+  const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
+    useMutation({
+      mutationFn: async () => {
+        const response = await socialApi.connectYoutube();
+        window.location.href = response;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
+        toast({
+          title: "Youtube connection in progress",
+          description: "Your Youtube account is being connected",
+        });
+        // setIsAddingAccount(false);
+        form.reset();
+      },
+      onError: (error) => {
+        console.error({ error });
+        toast({
+          title: "Connection failed",
+          description:
+            "Failed to connect Youtube. It may already be connected or token is invalid.",
+          variant: "destructive",
+        });
+      },
+      onSettled: () => {
+        setIsAddingAccount(false);
+      },
+    });
+
   function onSubmit(data: SocialAccountFormData) {
     switch (data.platform) {
       case "twitter":
@@ -354,6 +407,9 @@ export default function SocialAccounts() {
       case "tiktok":
         connectTikTok();
         break;
+      case "youtube":
+        connectYoutube();
+        break;
       default:
         toast({
           title: "Connection failed",
@@ -372,7 +428,9 @@ export default function SocialAccounts() {
     isConnectingInstagramPending ||
     isConnectingFacebookPending ||
     isConnectingTikTokPending ||
+    isConnectingYoutubePending ||
     isRefreshingTwitterPending ||
+    isRefreshingYoutubePending ||
     isRefreshingTiktokPending;
 
   useEffect(() => {
@@ -522,12 +580,11 @@ export default function SocialAccounts() {
                       ID: {account.accountId?.substring(0, 8)}...
                     </span>
                   </div>
-                  {account.expiresAt && (
+                  {account.tokenExpiry && (
                     <div className="flex items-center text-xs text-muted-foreground mt-2">
                       <Clock className="h-3 w-3 mr-1" />
                       <span>
-                        Expires:{" "}
-                        {new Date(account.expiresAt).toLocaleDateString()}
+                        Expires: {formatDate(account.tokenExpiry, "PPP pp")}
                       </span>
                     </div>
                   )}
@@ -564,6 +621,8 @@ export default function SocialAccounts() {
                                 connectInstagram();
                               } else if (account.platform === "tiktok") {
                                 refreshTiktokAccessToken(account.accountId);
+                              } else if (account.platform === "youtube") {
+                                refreshYoutubeAccessToken(account._id);
                               }
                             }}
                           >
@@ -687,6 +746,7 @@ export default function SocialAccounts() {
                         <SelectItem value="instagram">Instagram</SelectItem>
                         <SelectItem value="facebook">Facebook</SelectItem>
                         <SelectItem value="tiktok">TikTok</SelectItem>
+                        <SelectItem value="youtube">YouTube</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

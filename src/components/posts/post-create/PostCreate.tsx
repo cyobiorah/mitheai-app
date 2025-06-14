@@ -138,13 +138,12 @@ export default function PostCreate() {
         mediaType: "TEXT",
       };
 
-      await socialApi.schedulePost(scheduledPost);
+      await socialApi.schedulePost(scheduledPost as any);
       toast({ title: "Success", description: "Post scheduled successfully!" });
     } else {
       const postData = {
         content: data.content,
         accountId: selectedAccount.accountId,
-        platformAccountId: selectedAccount.platformAccountId,
         media: mediaLinks,
         accountName: selectedAccount.accountName,
         accountType: selectedAccount.accountType,

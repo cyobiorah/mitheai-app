@@ -17,6 +17,7 @@ import {
   FaFacebook,
   FaTiktok,
   FaThreads,
+  FaYoutube,
 } from "react-icons/fa6";
 import {
   AccountSelectionProps,
@@ -100,6 +101,8 @@ export default function AccountSelection({
         return <FaTiktok className="h-4 w-4" />;
       case "threads":
         return <FaThreads className="h-4 w-4" />;
+      case "youtube":
+        return <FaYoutube className="h-4 w-4" />;
       default:
         return null;
     }
@@ -186,6 +189,17 @@ export default function AccountSelection({
                   <span className="hidden sm:inline">TikTok</span>
                   <Badge variant="secondary">
                     {platformCounts(accounts).threads}
+                  </Badge>
+                </div>
+              </TabsTrigger>
+            )}
+            {platformCounts(accounts).youtube && (
+              <TabsTrigger value="youtube" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <FaYoutube className="h-4 w-4" />
+                  <span className="hidden sm:inline">YouTube</span>
+                  <Badge variant="secondary">
+                    {platformCounts(accounts).youtube}
                   </Badge>
                 </div>
               </TabsTrigger>
