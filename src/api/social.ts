@@ -7,7 +7,6 @@ export interface SocialAccount {
   id: string;
   userId: string;
   platform: string;
-  platformAccountId: string; // Unique identifier from the platform (e.g., Twitter user ID)
   username: string;
   accountName?: string;
   accessToken: string;

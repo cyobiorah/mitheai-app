@@ -150,13 +150,13 @@ export default function PostFlow() {
 
     // For each platform, add the selected accounts and captions
     platforms.forEach((platform) => {
-      const platformAccountIds = selectedAccountsData
+      const accountIds = selectedAccountsData
         .filter((account) => account.platform === platform)
         .map((account) => account._id);
 
       platformData.push({
         platform,
-        accounts: platformAccountIds,
+        accounts: accountIds,
         caption: platformCaptions[platform] || globalCaption,
       });
     });
@@ -241,6 +241,22 @@ export default function PostFlow() {
               mediaType: postType,
             };
 
+            if (platform === "tiktok") {
+              const tiktokOpts = tiktokAccountOptions[account._id];
+              if (tiktokOpts) {
+                postData.tiktokAccountOptions = {
+                  title: tiktokOpts.title,
+                  privacy: tiktokOpts.privacy,
+                  allowComments: tiktokOpts.allowComments,
+                  allowDuet: tiktokOpts.allowDuet,
+                  allowStitch: tiktokOpts.allowStitch,
+                  isCommercial: tiktokOpts.isCommercial,
+                  brandType: tiktokOpts.brandType,
+                  agreedToPolicy: tiktokOpts.agreedToPolicy,
+                };
+              }
+            }
+
             const formData = await handleFormData(postData, media);
 
             try {
@@ -260,7 +276,7 @@ export default function PostFlow() {
             const postData: any = {
               caption,
               accountId: account.accountId,
-              platformAccountId: account.platformAccountId,
+              id: account._id,
               media: mediaUrls,
               accountName: account.accountName,
               accountType: account.accountType,

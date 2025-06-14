@@ -40,25 +40,29 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  const { data: posts } = useQuery({
+  const { data: posts, isLoading: postsLoading } = useQuery({
     queryKey: [`/social-posts/${user?._id}`],
     enabled: isAuthenticated,
-  }) as { data: { data: any[] } };
+  }) as { data: { data: any[] }; isLoading: boolean };
 
-  const { data: socialAccounts = [] } = useQuery({
-    queryKey: [`/social-accounts/${user?._id}`],
-    enabled: isAuthenticated,
-  }) as { data: any[] };
+  const { data: socialAccounts = [], isLoading: socialAccountsLoading } =
+    useQuery({
+      queryKey: [`/social-accounts/${user?._id}`],
+      enabled: isAuthenticated,
+    }) as { data: any[]; isLoading: boolean };
 
-  const { data: collections = { count: 0, data: [] } } = useQuery({
+  const {
+    data: collections = { count: 0, data: [] },
+    isLoading: collectionsLoading,
+  } = useQuery({
     queryKey: ["/collections"],
     enabled: isAuthenticated,
-  }) as { data: { count: number; data: any[] } };
+  }) as { data: { count: number; data: any[] }; isLoading: boolean };
 
-  const { data: scheduledPosts } = useQuery({
+  const { data: scheduledPosts, isLoading: scheduledPostsLoading } = useQuery({
     queryKey: ["/scheduled-posts"],
     enabled: isAuthenticated,
-  }) as { data: { data: any[] } };
+  }) as { data: { data: any[] }; isLoading: boolean };
 
   const recentPosts = posts?.data?.slice(0, 3);
   const recentScheduledPosts = scheduledPosts?.data?.slice(0, 3);
@@ -142,6 +146,12 @@ export default function DashboardPage() {
     );
   };
 
+  const getFooter = (loading: boolean, count: number, status: string) => {
+    if (loading) return "Loading...";
+    if (count > 0) return status;
+    return "No posts yet";
+  };
+
   return (
     <main className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto">
@@ -168,28 +178,44 @@ export default function DashboardPage() {
                 label: "Total Posts",
                 value: posts?.data?.length ?? 0,
                 icon: <Activity size={20} className="text-primary" />,
-                footer: posts?.data?.length > 0 ? "Active" : "No posts yet",
+                footer: getFooter(
+                  postsLoading,
+                  posts?.data?.length ?? 0,
+                  "Active"
+                ),
                 to: "/dashboard/posts",
               },
               {
                 label: "Scheduled Posts",
                 value: scheduledPosts?.data?.length ?? 0,
                 icon: <CalendarClock size={20} className="text-primary" />,
-                footer: "Upcoming posts",
+                footer: getFooter(
+                  scheduledPostsLoading,
+                  scheduledPosts?.data?.length ?? 0,
+                  "Upcoming posts"
+                ),
                 to: "/dashboard/scheduled",
               },
               {
                 label: "Connected Accounts",
                 value: socialAccounts?.length ?? 0,
                 icon: <Users size={20} className="text-primary" />,
-                footer: "Social profiles",
+                footer: getFooter(
+                  socialAccountsLoading,
+                  socialAccounts?.length ?? 0,
+                  "Social profiles"
+                ),
                 to: "/dashboard/accounts",
               },
               {
                 label: "Collections",
                 value: collections?.count ?? 0,
                 icon: <FolderPlus size={20} className="text-primary" />,
-                footer: "Content organization",
+                footer: getFooter(
+                  collectionsLoading,
+                  collections?.count ?? 0,
+                  "Content organization"
+                ),
                 to: "/dashboard/collections",
               },
             ].map(({ label, value, icon, footer, to }) => (
@@ -203,7 +229,9 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent className="pt-1">
                     <div className="text-4xl font-bold text-foreground">
-                      {value}
+                      {value ?? (
+                        <div className="h-8 w-12 bg-muted rounded animate-pulse" />
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {footer}

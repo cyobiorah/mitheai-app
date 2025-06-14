@@ -105,10 +105,6 @@ export default function ScheduledPosts() {
     });
   };
 
-  const filterPostsByStatus = (status: string) => {
-    return scheduledPosts.data.filter((post: any) => post.status === status);
-  };
-
   // Group posts by date for showing on the calendar
   const getPostsByDate = () => {
     const postsByDate: Record<string, number> = {};
@@ -223,17 +219,6 @@ export default function ScheduledPosts() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <CardTitle>All Posts</CardTitle>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    Scheduled ({filterPostsByStatus("scheduled").length})
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Completed ({filterPostsByStatus("completed").length})
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Failed ({filterPostsByStatus("failed").length})
-                  </Button>
-                </div>
               </div>
             </CardHeader>
             <CardContent>
