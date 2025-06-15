@@ -478,6 +478,19 @@ export default function SocialAccounts() {
     fetchData();
   }, [location]);
 
+  const getImageSrc = (account: any) => {
+    if (account.metadata?.profileImageUrl) {
+      return account.metadata.profileImageUrl;
+    }
+    if (account.metadata?.picture) {
+      return account.metadata.picture;
+    }
+    if (account.metadata?.profile?.threads_profile_picture_url) {
+      return account.metadata.profile.threads_profile_picture_url;
+    }
+    return "";
+  };
+
   const handleAccountsView = () => {
     if (isLoading) {
       return (
@@ -527,11 +540,7 @@ export default function SocialAccounts() {
                       account.metadata?.picture ||
                       account.metadata?.profile?.threads_profile_picture_url ? (
                         <img
-                          src={
-                            account.metadata.profileImageUrl ??
-                            account.metadata.picture ??
-                            account.metadata.profile.threads_profile_picture_url
-                          }
+                          src={getImageSrc(account)}
                           alt={`${account.accountName} profile`}
                           className="h-10 w-10 rounded-full object-cover"
                         />
