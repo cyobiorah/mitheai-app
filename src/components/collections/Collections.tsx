@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "../../lib/queryClient";
 import { useToast } from "../../hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -27,7 +27,6 @@ import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Loader2, Plus } from "lucide-react";
 import { getCollectionsView } from "./methods";
-import { useNavigate } from "react-router-dom";
 
 const collectionSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -37,7 +36,6 @@ const collectionSchema = z.object({
 type CollectionFormData = z.infer<typeof collectionSchema>;
 
 export default function Collections() {
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const [isCreating, setIsCreating] = useState(false);

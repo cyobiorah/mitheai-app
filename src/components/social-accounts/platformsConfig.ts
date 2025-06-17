@@ -20,7 +20,7 @@ export const platformConfigs = [
     },
     description: "Post tweets, schedule threads, and view basic profile info.",
     permissions: ["Read basic profile information", "Post tweets"],
-    constraints: "",
+    constraints: "Only text posts are supported for now.",
     scopes: ["tweet.read", "tweet.write", "users.read", "offline.access"],
     platformDocsUrl: "https://developer.twitter.com/en/docs/twitter-api",
     comingSoon: false,
@@ -37,7 +37,7 @@ export const platformConfigs = [
     description: "Schedule and publish videos to your connected channel.",
     permissions: ["Upload videos", "Edit metadata"],
     constraints:
-      "Requires a YouTube channel. Verification needed for videos >15 mins or custom thumbnails.",
+      'Requires a YouTube channel. Ensure to select <span class="font-bold">"Manage your YouTube videos"</span> in the following Google Auth Screen.',
     scopes: ["https://www.googleapis.com/auth/youtube.upload"],
     platformDocsUrl:
       "https://developers.google.com/youtube/registering_an_application",
