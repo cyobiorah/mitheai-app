@@ -48,7 +48,6 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import socialApi from "../../api/socialApi";
 import { useAuth } from "../../store/hooks";
 import { Skeleton } from "../ui/skeleton";
 import {
@@ -58,9 +57,24 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import DeleteDialog from "../dialog/DeleteDialog";
+import {
+  useConnectLinkedIn,
+  useConnectTwitter,
+  useConnectThreads,
+  useConnectInstagram,
+  useConnectFacebook,
+  useConnectTikTok,
+  useConnectYoutube,
+  useDeleteAccount,
+  useRefreshTwitterAccessToken,
+  useRefreshYoutubeAccessToken,
+  useRefreshTikTokAccessToken,
+  useGetSocialAccounts,
+} from "./api-mutation";
+import PlatformSelector from "./PlatformSelector";
 
 const socialAccountSchema = z.object({
-  platform: z.string().min(1, "Platform is required"),
+  platform: z.string().min(1, "Select One Platform"),
 });
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
@@ -76,43 +90,39 @@ export default function SocialAccounts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get social accounts
-  const { data: accounts = [], isLoading: isAccountsLoading } = useQuery({
-    queryKey: [`/social-accounts/${user?._id}`],
-  }) as { data: any[]; isLoading: boolean };
-
-  // Delete social account mutation
-  const { mutate: deleteAccount, isPending: isDeletingPending } = useMutation({
-    mutationFn: async () => {
-      const { id, platform } = deleteConfig;
-
-      if (platform === "tiktok") {
-        return await apiRequest(
-          "DELETE",
-          `/social-accounts/tiktok/revoke/${id}`
-        );
-      } else {
-        return await apiRequest("DELETE", `/social-accounts/disconnect/${id}`);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-accounts/${user?._id}`],
-      });
-      setDeleteConfig({ id: "", isOpen: false, platform: "" });
-      toast({
-        title: "Account removed",
-        description: "The social account has been disconnected",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Removal failed",
-        description: "Failed to remove the account. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const { mutate: connectLinkedIn, isPending: isConnectingLinkedInPending } =
+    useConnectLinkedIn();
+  const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
+    useConnectTwitter();
+  const { mutate: connectThreads, isPending: isConnectingThreadsPending } =
+    useConnectThreads();
+  const { mutate: connectInstagram, isPending: isConnectingInstagramPending } =
+    useConnectInstagram();
+  const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
+    useConnectFacebook();
+  const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
+    useConnectTikTok();
+  const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
+    useConnectYoutube();
+  const { mutate: deleteAccount, isPending: isDeletingPending } =
+    useDeleteAccount(deleteConfig);
+  const {
+    mutate: refreshTwitterAccessToken,
+    isPending: isRefreshingTwitterPending,
+  } = useRefreshTwitterAccessToken();
+  const {
+    mutate: refreshYoutubeAccessToken,
+    isPending: isRefreshingYoutubePending,
+  } = useRefreshYoutubeAccessToken();
+  const {
+    mutate: refreshTiktokAccessToken,
+    isPending: isRefreshingTiktokPending,
+  } = useRefreshTikTokAccessToken();
+  const {
+    data: accounts = [],
+    isPending: isAccountsLoading,
+    refetch: refetchAccounts,
+  } = useGetSocialAccounts(user?._id!);
 
   const form = useForm<SocialAccountFormData>({
     resolver: zodResolver(socialAccountSchema),
@@ -121,276 +131,11 @@ export default function SocialAccounts() {
     },
   });
 
-  const {
-    mutate: refreshTiktokAccessToken,
-    isPending: isRefreshingTiktokPending,
-  } = useMutation({
-    mutationFn: async (accountId: string) => {
-      return await apiRequest(
-        "GET",
-        `/social-accounts/tiktok/refresh/${accountId}`
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-accounts/${user?._id}`],
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Refresh failed",
-        description: "Failed to refresh the access token. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const {
-    mutate: refreshTwitterAccessToken,
-    isPending: isRefreshingTwitterPending,
-  } = useMutation({
-    mutationFn: async (accountId: string) => {
-      return await apiRequest(
-        "GET",
-        `/social-accounts/twitter/refresh/${accountId}`
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-accounts/${user?._id}`],
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Refresh failed",
-        description: "Failed to refresh the access token. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const {
-    mutate: refreshYoutubeAccessToken,
-    isPending: isRefreshingYoutubePending,
-  } = useMutation({
-    mutationFn: async (accountId: string) => {
-      return await apiRequest(
-        "GET",
-        `/social-accounts/youtube/refresh/${accountId}`
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-accounts/${user?._id}`],
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Refresh failed",
-        description: "Failed to refresh the access token. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const { mutate: connectTwitter, isPending: isConnectingTwitterPending } =
-    useMutation({
-      mutationFn: async ({ skipWelcome }: { skipWelcome: boolean }) => {
-        const response = await socialApi.connectTwitter({ skipWelcome });
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "Twitter connected in progress",
-          description: "Your Twitter account is being connected",
-        });
-        setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect Twitter. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-    });
-
-  const { mutate: connectThreads, isPending: isConnectingThreadsPending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectThreads();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "Threads connected in progress",
-          description: "Your Threads account is being connected",
-        });
-        setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect Threads. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-    });
-
-  const { mutate: connectLinkedIn, isPending: isConnectingLinkedInPending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectLinkedIn();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "LinkedIn connected in progress",
-          description: "Your LinkedIn account is being connected",
-        });
-        setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect LinkedIn. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-    });
-
-  const { mutate: connectInstagram, isPending: isConnectingInstagramPending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectInstagram();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "Instagram connection in progress",
-          description: "Your Instagram account is being connected",
-        });
-        // setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect Instagram. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-      onSettled: () => {
-        setIsAddingAccount(false);
-      },
-    });
-
-  const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectFacebook();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "Facebook connection in progress",
-          description: "Your Facebook account is being connected",
-        });
-        // setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect Facebook. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-      onSettled: () => {
-        setIsAddingAccount(false);
-      },
-    });
-
-  const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectTikTok();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "TikTok connection in progress",
-          description: "Your TikTok account is being connected",
-        });
-        // setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect TikTok. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-      onSettled: () => {
-        setIsAddingAccount(false);
-      },
-    });
-
-  const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
-    useMutation({
-      mutationFn: async () => {
-        const response = await socialApi.connectYoutube();
-        window.location.href = response;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/social-accounts"] });
-        toast({
-          title: "Youtube connection in progress",
-          description: "Your Youtube account is being connected",
-        });
-        // setIsAddingAccount(false);
-        form.reset();
-      },
-      onError: (error) => {
-        console.error({ error });
-        toast({
-          title: "Connection failed",
-          description:
-            "Failed to connect Youtube. It may already be connected or token is invalid.",
-          variant: "destructive",
-        });
-      },
-      onSettled: () => {
-        setIsAddingAccount(false);
-      },
-    });
-
   function onSubmit(data: SocialAccountFormData) {
+    console.log({ data });
     switch (data.platform) {
       case "twitter":
-        connectTwitter({ skipWelcome: true });
+        connectTwitter();
         break;
       case "threads":
         connectThreads();
@@ -489,6 +234,48 @@ export default function SocialAccounts() {
       return account.metadata.profile.threads_profile_picture_url;
     }
     return "";
+  };
+
+  const handleReauthorize = (account: any) => {
+    switch (account.platform) {
+      case "twitter":
+        refreshTwitterAccessToken(account._id, {
+          onSuccess: () => {
+            refetchAccounts();
+          },
+        });
+        break;
+      case "threads":
+        connectThreads();
+        break;
+      case "linkedin":
+        connectLinkedIn();
+        break;
+      case "instagram":
+        connectInstagram();
+        break;
+      case "tiktok":
+        refreshTiktokAccessToken(account.accountId, {
+          onSuccess: () => {
+            refetchAccounts();
+          },
+        });
+        break;
+      case "youtube":
+        refreshYoutubeAccessToken(account._id, {
+          onSuccess: () => {
+            refetchAccounts();
+          },
+        });
+        break;
+      default:
+        toast({
+          title: "Reauthorization failed",
+          description: "Failed to reauthorize social account",
+          variant: "destructive",
+        });
+        break;
+    }
   };
 
   const handleAccountsView = () => {
@@ -618,22 +405,7 @@ export default function SocialAccounts() {
                             variant="outline"
                             size="sm"
                             disabled={isLoading}
-                            onClick={() => {
-                              // Handle reauthorization
-                              if (account.platform === "twitter") {
-                                refreshTwitterAccessToken(account._id);
-                              } else if (account.platform === "threads") {
-                                connectThreads();
-                              } else if (account.platform === "linkedin") {
-                                connectLinkedIn();
-                              } else if (account.platform === "instagram") {
-                                connectInstagram();
-                              } else if (account.platform === "tiktok") {
-                                refreshTiktokAccessToken(account.accountId);
-                              } else if (account.platform === "youtube") {
-                                refreshYoutubeAccessToken(account._id);
-                              }
-                            }}
+                            onClick={() => handleReauthorize(account)}
                           >
                             <RefreshCw className="h-4 w-4 mr-2" />
                             Reauthorize
@@ -723,7 +495,7 @@ export default function SocialAccounts() {
       {handleAccountsView()}
 
       <Dialog open={isAddingAccount} onOpenChange={setIsAddingAccount}>
-        <DialogContent>
+        <DialogContent onClose={() => form.reset()} isLoading={isLoading}>
           <DialogHeader>
             <DialogTitle>Connect Social Account</DialogTitle>
             <DialogDescription>
@@ -737,29 +509,12 @@ export default function SocialAccounts() {
                 control={form.control}
                 name="platform"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Platform</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select platform" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="twitter">Twitter</SelectItem>
-                        <SelectItem value="threads">Threads</SelectItem>
-                        <SelectItem value="linkedin">LinkedIn</SelectItem>
-                        <SelectItem value="instagram">Instagram</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="tiktok">TikTok</SelectItem>
-                        <SelectItem value="youtube">YouTube</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                  <PlatformSelector
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={form.formState.errors.platform?.message}
+                    disabled={isLoading}
+                  />
                 )}
               />
 
@@ -767,11 +522,18 @@ export default function SocialAccounts() {
                 <Button
                   variant="outline"
                   type="button"
-                  onClick={() => setIsAddingAccount(false)}
+                  disabled={isLoading}
+                  onClick={() => {
+                    setIsAddingAccount(false);
+                    form.reset();
+                  }}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !form.watch("platform")}
+                >
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}

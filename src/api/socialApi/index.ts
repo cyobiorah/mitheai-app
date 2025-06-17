@@ -2,9 +2,9 @@ import { apiRequest } from "../../lib/queryClient";
 import axiosInstance from "../axios";
 
 export const socialApi = {
-  getAccounts: async () => {
+  getAccounts: async ({ id }: { id: string }) => {
     try {
-      const response = await axiosInstance.get("/social-accounts");
+      const response = await axiosInstance.get(`/social-accounts/${id}`);
       return response.data;
     } catch (error: any) {
       console.error("Failed to fetch social accounts:", error);
@@ -46,10 +46,10 @@ export const socialApi = {
     }
   },
 
-  connectTwitter: async ({ skipWelcome }: { skipWelcome: boolean }) => {
+  connectTwitter: async () => {
     const response = await apiRequest(
       "GET",
-      `/social-accounts/twitter/direct-auth?skipWelcome=${skipWelcome}`
+      `/social-accounts/twitter/direct-auth`
     );
     return response;
   },
@@ -104,7 +104,6 @@ export const socialApi = {
 
   disconnectSocialAccount: async ({ accountId }: { accountId: string }) => {
     try {
-      // Use DELETE method for a more RESTful approach
       const response = await axiosInstance.delete(
         `/social-accounts/disconnect/${accountId}`
       );
@@ -118,6 +117,72 @@ export const socialApi = {
       );
     }
   },
+
+  disconnectTikTok: async ({ accountId }: { accountId: string }) => {
+    try {
+      const response = await axiosInstance.delete(
+        `/social-accounts/tiktok/revoke/${accountId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to disconnect account:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to disconnect account"
+      );
+    }
+  },
+
+  refreshTwitterAccessToken: async ({ accountId }: { accountId: string }) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/twitter/refresh/${accountId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to refresh access token:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to refresh access token"
+      );
+    }
+  },
+
+  refreshYoutubeAccessToken: async ({ accountId }: { accountId: string }) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/youtube/refresh/${accountId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to refresh access token:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to refresh access token"
+      );
+    }
+  },
+
+  refreshTikTokAccessToken: async ({ accountId }: { accountId: string }) => {
+    try {
+      const response = await axiosInstance.get(
+        `/social-accounts/tiktok/refresh/${accountId}`
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to refresh access token:", error);
+      throw new Error(
+        error.response?.data?.message ??
+          error.message ??
+          "Failed to refresh access token"
+      );
+    }
+  },
+
+  // TODO: Verify methods below if still in use
 
   postToThreads: async (accountId: string, data: any) => {
     try {
