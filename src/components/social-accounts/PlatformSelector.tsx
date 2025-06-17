@@ -82,9 +82,10 @@ export default function PlatformSelector({
           {selectedConfig.constraints && (
             <div>
               <p className="text-sm font-semibold text-red-600">Constraints:</p>
-              <p className="text-sm text-red-500">
-                {selectedConfig.constraints}
-              </p>
+              <p
+                className="text-sm text-red-500"
+                dangerouslySetInnerHTML={{ __html: selectedConfig.constraints }}
+              />
             </div>
           )}
 

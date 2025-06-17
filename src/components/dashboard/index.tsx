@@ -15,13 +15,17 @@ import {
   Plus,
   Activity,
 } from "lucide-react";
-import { formatDate, getSocialIcon } from "../../lib/utils";
+import {
+  formatDate,
+  getClassName,
+  getSocialIcon,
+  getTextColor,
+} from "../../lib/utils";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../store/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "../ui/badge";
-import { getClassName, getTextColor } from "../social-accounts";
 import {
   Tooltip,
   TooltipContent,
