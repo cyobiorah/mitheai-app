@@ -149,6 +149,17 @@ export default function AccountSelection({
                 </div>
               </TabsTrigger>
             )}
+            {platformCounts(accounts).facebook && (
+              <TabsTrigger value="facebook" className="flex-1">
+                <div className="flex items-center gap-2">
+                  <FaFacebook className="h-4 w-4" />
+                  <span className="hidden sm:inline">Facebook</span>
+                  <Badge variant="secondary">
+                    {platformCounts(accounts).facebook}
+                  </Badge>
+                </div>
+              </TabsTrigger>
+            )}
             {platformCounts(accounts).twitter && (
               <TabsTrigger value="twitter" className="flex-1">
                 <div className="flex items-center gap-2">
