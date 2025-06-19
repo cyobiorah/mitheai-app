@@ -32,17 +32,11 @@ axiosInstance.interceptors.response.use(
         variant: "destructive",
       });
 
-      // setTimeout(() => {
-      //   window.location.href = "/login";
-      //   hasShownTokenExpiredToast = false; // reset on redirect
-      // }, 2000);
-
       return;
     }
 
     if (status === 403) {
       console.warn("[DEBUG] Access forbidden — user may lack permissions");
-      // window.location.href = "/unauthorized";
     }
 
     return Promise.reject(error as Error);

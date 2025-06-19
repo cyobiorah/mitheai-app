@@ -32,9 +32,12 @@ const registerSchema = z
     email: z.string().email("Please enter a valid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
-    terms: z.boolean().default(false).refine((value) => value, {
-      message: "You must agree to the terms and conditions",
-    }),
+    terms: z
+      .boolean()
+      .default(false)
+      .refine((value) => value, {
+        message: "You must agree to the terms and conditions",
+      }),
     userType: z.enum(["individual", "organization"], {
       required_error: "Please select a user type",
       invalid_type_error: "Invalid user type",
@@ -256,7 +259,7 @@ export default function RegisterForm({ onLogin }: Readonly<RegisterFormProps>) {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel>
+              <FormLabel style={{ marginTop: 0 }}>
                 I agree to the{" "}
                 <span className="text-primary-600 dark:text-primary-400">
                   <Link to="/terms"> Terms of Service </Link>

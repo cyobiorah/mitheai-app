@@ -199,7 +199,7 @@ export default function AccountSelection({
                   <FaTiktok className="h-4 w-4" />
                   <span className="hidden sm:inline">TikTok</span>
                   <Badge variant="secondary">
-                    {platformCounts(accounts).threads}
+                    {platformCounts(accounts).tiktok}
                   </Badge>
                 </div>
               </TabsTrigger>

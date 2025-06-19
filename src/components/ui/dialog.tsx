@@ -52,7 +52,7 @@ const DialogContent = React.forwardRef<
       )}
       {...props}
     >
-      <div className="max-h-[90vh] w-full overflow-y-auto bg-background p-6 shadow-lg relative">
+      <div className="max-h-[90vh] w-full overflow-y-auto bg-background p-6 shadow-lg relative rounded-lg">
         {children}
         <DialogPrimitive.Close
           disabled={isLoading}
