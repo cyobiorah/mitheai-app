@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React from "react";
+import * as React from "react";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
