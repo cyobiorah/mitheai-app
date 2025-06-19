@@ -1,4 +1,4 @@
-import * as React from "react";
+// import * as React from "react";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -9,73 +9,73 @@ import { Toaster } from "../components/ui/toaster";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 
-// import HomePage from "../pages";
-// import WaitlistPage from "../pages/waitlist";
-// import ForgotPasswordPage from "../pages/forgot-password";
-// import DashboardPage from "../components/dashboard";
-// import NotFound from "../pages/not-found";
+import HomePage from "../pages";
+import WaitlistPage from "../pages/waitlist";
+import ForgotPasswordPage from "../pages/forgot-password";
+import DashboardPage from "../components/dashboard";
+import NotFound from "../pages/not-found";
 
-// import LoginPage from "../pages/Login";
-// import RegisterPage from "../pages/Register";
-// import TermsOfService from "../pages/TermsOfService";
-// import PrivacyPolicy from "../pages/PrivacyPolicy";
-// import DashboardLayout from "../layouts/DashboardLayout";
-// import SocialAccounts from "../components/social-accounts";
-// import AnalyticsDashboard from "../components/analytics";
-// import TeamManagement from "../components/team-management";
-// import Collections from "../components/collections/Collections";
-// import Posts from "../components/posts";
-// import ScheduledPosts from "../components/posts/scheduled-posts/ScheduledPosts";
-// import PostFlow from "../components/posts/post-flow/PostFlow";
-// import Billing from "../components/billing";
-// import HelpSupport from "../components/help-support";
-// import PostCreate from "../components/posts/post-create/PostCreate";
-// import UserSettings from "../components/settings";
-// import ResetPasswordPage from "../pages/reset-password";
-// import Collection from "../components/collections/Collection";
-// import HelpArticlePage from "../components/help-support/platform/HelpArticlePage";
+import LoginPage from "../pages/Login";
+import RegisterPage from "../pages/Register";
+import TermsOfService from "../pages/TermsOfService";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import DashboardLayout from "../layouts/DashboardLayout";
+import SocialAccounts from "../components/social-accounts";
+import AnalyticsDashboard from "../components/analytics";
+import TeamManagement from "../components/team-management";
+import Collections from "../components/collections/Collections";
+import Posts from "../components/posts";
+import ScheduledPosts from "../components/posts/scheduled-posts/ScheduledPosts";
+import PostFlow from "../components/posts/post-flow/PostFlow";
+import Billing from "../components/billing";
+import HelpSupport from "../components/help-support";
+import PostCreate from "../components/posts/post-create/PostCreate";
+import UserSettings from "../components/settings";
+import ResetPasswordPage from "../pages/reset-password";
+import Collection from "../components/collections/Collection";
+import HelpArticlePage from "../components/help-support/platform/HelpArticlePage";
 
-const HomePage = React.lazy(() => import("../pages"));
-const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
-const ForgotPasswordPage = React.lazy(() => import("../pages/forgot-password"));
-const DashboardPage = React.lazy(() => import("../components/dashboard"));
-const NotFound = React.lazy(() => import("../pages/not-found"));
+// const HomePage = React.lazy(() => import("../pages"));
+// const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
+// const ForgotPasswordPage = React.lazy(() => import("../pages/forgot-password"));
+// const DashboardPage = React.lazy(() => import("../components/dashboard"));
+// const NotFound = React.lazy(() => import("../pages/not-found"));
 
-const LoginPage = React.lazy(() => import("../pages/Login"));
-const RegisterPage = React.lazy(() => import("../pages/Register"));
-const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
-const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
-const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
-const SocialAccounts = React.lazy(
-  () => import("../components/social-accounts")
-);
-const AnalyticsDashboard = React.lazy(() => import("../components/analytics"));
-const TeamManagement = React.lazy(
-  () => import("../components/team-management")
-);
-const Collections = React.lazy(
-  () => import("../components/collections/Collections")
-);
-const Posts = React.lazy(() => import("../components/posts"));
-const ScheduledPosts = React.lazy(
-  () => import("../components/posts/scheduled-posts/ScheduledPosts")
-);
-const PostFlow = React.lazy(
-  () => import("../components/posts/post-flow/PostFlow")
-);
-const Billing = React.lazy(() => import("../components/billing"));
-const HelpSupport = React.lazy(() => import("../components/help-support"));
-const PostCreate = React.lazy(
-  () => import("../components/posts/post-create/PostCreate")
-);
-const UserSettings = React.lazy(() => import("../components/settings"));
-const ResetPasswordPage = React.lazy(() => import("../pages/reset-password"));
-const Collection = React.lazy(
-  () => import("../components/collections/Collection")
-);
-const HelpArticlePage = React.lazy(
-  () => import("../components/help-support/platform/HelpArticlePage")
-);
+// const LoginPage = React.lazy(() => import("../pages/Login"));
+// const RegisterPage = React.lazy(() => import("../pages/Register"));
+// const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
+// const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
+// const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
+// const SocialAccounts = React.lazy(
+//   () => import("../components/social-accounts")
+// );
+// const AnalyticsDashboard = React.lazy(() => import("../components/analytics"));
+// const TeamManagement = React.lazy(
+//   () => import("../components/team-management")
+// );
+// const Collections = React.lazy(
+//   () => import("../components/collections/Collections")
+// );
+// const Posts = React.lazy(() => import("../components/posts"));
+// const ScheduledPosts = React.lazy(
+//   () => import("../components/posts/scheduled-posts/ScheduledPosts")
+// );
+// const PostFlow = React.lazy(
+//   () => import("../components/posts/post-flow/PostFlow")
+// );
+// const Billing = React.lazy(() => import("../components/billing"));
+// const HelpSupport = React.lazy(() => import("../components/help-support"));
+// const PostCreate = React.lazy(
+//   () => import("../components/posts/post-create/PostCreate")
+// );
+// const UserSettings = React.lazy(() => import("../components/settings"));
+// const ResetPasswordPage = React.lazy(() => import("../pages/reset-password"));
+// const Collection = React.lazy(
+//   () => import("../components/collections/Collection")
+// );
+// const HelpArticlePage = React.lazy(
+//   () => import("../components/help-support/platform/HelpArticlePage")
+// );
 
 const AppRoutes = () => {
   return (
