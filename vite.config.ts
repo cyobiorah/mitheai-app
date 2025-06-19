@@ -15,24 +15,6 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("react")) return "react-vendor";
-            if (id.includes("chart.js")) return "charts";
-            if (id.includes("react-query")) return "rq-vendor";
-            return "vendor";
-          }
-          if (id.includes("src/components/")) {
-            const match = id.match(/src\/components\/([^/]+)\//);
-            if (match) {
-              return `component-${match[1]}`;
-            }
-          }
-        },
-      },
-    },
   },
   server: {
     proxy: {
