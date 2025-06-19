@@ -9,32 +9,6 @@ import { Toaster } from "../components/ui/toaster";
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
 
-// import HomePage from "../pages";
-// import WaitlistPage from "../pages/waitlist";
-// import ForgotPasswordPage from "../pages/forgot-password";
-// import DashboardPage from "../components/dashboard";
-// import NotFound from "../pages/not-found";
-
-// import LoginPage from "../pages/Login";
-// import RegisterPage from "../pages/Register";
-// import TermsOfService from "../pages/TermsOfService";
-// import PrivacyPolicy from "../pages/PrivacyPolicy";
-// import DashboardLayout from "../layouts/DashboardLayout";
-// import SocialAccounts from "../components/social-accounts";
-// import AnalyticsDashboard from "../components/analytics";
-// import TeamManagement from "../components/team-management";
-// import Collections from "../components/collections/Collections";
-// import Posts from "../components/posts";
-// import ScheduledPosts from "../components/posts/scheduled-posts/ScheduledPosts";
-// import PostFlow from "../components/posts/post-flow/PostFlow";
-// import Billing from "../components/billing";
-// import HelpSupport from "../components/help-support";
-// import PostCreate from "../components/posts/post-create/PostCreate";
-// import UserSettings from "../components/settings";
-// import ResetPasswordPage from "../pages/reset-password";
-// import Collection from "../components/collections/Collection";
-// import HelpArticlePage from "../components/help-support/platform/HelpArticlePage";
-
 const HomePage = React.lazy(() => import("../pages"));
 const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/forgot-password"));
@@ -84,38 +58,10 @@ const AppRoutes = () => {
         <TooltipProvider>
           <Toaster />
           <Routes>
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <HomePage />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/terms"
-              element={
-                <PublicRoute>
-                  <TermsOfService />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/privacy"
-              element={
-                <PublicRoute>
-                  <PrivacyPolicy />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/waitlist"
-              element={
-                <PublicRoute>
-                  <WaitlistPage />
-                </PublicRoute>
-              }
-            />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/waitlist" element={<WaitlistPage />} />
             <Route
               path="/login"
               element={
