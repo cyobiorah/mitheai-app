@@ -30,12 +30,12 @@ export default function Hero() {
               teams, and enterprises.
             </p>
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
-              <Link to="/waitlist">
+              <Link to="/register">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto px-8 py-6 text-base rounded-xl shadow-lg shadow-primary-500/20 dark:shadow-none hover:scale-105 transition-transform"
                 >
-                  Join Waitlist
+                  Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -112,6 +112,10 @@ export default function Hero() {
                 <span>Advanced analytics</span>
               </div>
             </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+              * Requires card to begin. You won’t be charged until the 7-day
+              trial ends.
+            </p>
           </div>
 
           <div className="lg:w-1/2">
@@ -169,7 +173,12 @@ export default function Hero() {
 
               {/* Decorative element */}
               <div className="absolute -bottom-6 -right-6 bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-3 px-5 rounded-lg shadow-lg transform rotate-3">
-                <span className="text-sm font-medium">Early Access Soon!</span>
+                {/* <span className="text-sm font-medium">
+                  Free Trial Available
+                </span> */}
+                <span className="text-sm font-semibold">
+                  7-Day Trial – Full Access
+                </span>
               </div>
 
               {/* Mobile app preview */}

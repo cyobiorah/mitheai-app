@@ -8,6 +8,10 @@ import { Toaster } from "../components/ui/toaster";
 
 import { PublicRoute } from "./PublicRoute";
 import { ProtectedRoute } from "./ProtectedRoute";
+import Contact from "../pages/Contact";
+import Pricing from "../pages/Pricing";
+import Roadmap from "../pages/Roadmap";
+import Help from "../pages/Help";
 
 const HomePage = React.lazy(() => import("../pages"));
 const WaitlistPage = React.lazy(() => import("../pages/waitlist"));
@@ -19,6 +23,8 @@ const LoginPage = React.lazy(() => import("../pages/Login"));
 const RegisterPage = React.lazy(() => import("../pages/Register"));
 const TermsOfService = React.lazy(() => import("../pages/TermsOfService"));
 const PrivacyPolicy = React.lazy(() => import("../pages/PrivacyPolicy"));
+const About = React.lazy(() => import("../pages/About"));
+
 const DashboardLayout = React.lazy(() => import("../layouts/DashboardLayout"));
 const SocialAccounts = React.lazy(
   () => import("../components/social-accounts")
@@ -61,6 +67,11 @@ const AppRoutes = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/roadmap" element={<Roadmap />} />
+            <Route path="/help-center" element={<Help />} />
             <Route path="/waitlist" element={<WaitlistPage />} />
             <Route
               path="/login"

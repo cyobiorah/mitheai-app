@@ -48,8 +48,8 @@ export default function Solutions() {
       title: "Individuals",
       description:
         "Perfect for creators and solo professionals managing their online presence.",
-      price: "Free",
-      period: "beta",
+      price: "Free Trial",
+      period: "7 days",
       features: [
         "Manage up to 5 social profiles",
         "Schedule content weeks in advance",
@@ -58,8 +58,8 @@ export default function Solutions() {
         "Mobile app access",
       ],
       cta: {
-        text: "Join Waitlist",
-        href: "/waitlist",
+        text: "Start free trial",
+        href: "/register",
         variant: "outline",
       },
       gradientFrom: "from-blue-500",
@@ -81,8 +81,8 @@ export default function Solutions() {
         "Team roles & permissions",
       ],
       cta: {
-        text: "Join Waitlist",
-        href: "/waitlist",
+        text: "Start free trial",
+        href: "/register",
         variant: "default",
       },
       secondaryCta: {
@@ -112,7 +112,7 @@ export default function Solutions() {
       ],
       cta: {
         text: "Contact Sales",
-        href: "/waitlist?plan=enterprise",
+        href: "/contact",
         variant: "outline",
       },
       gradientFrom: "from-indigo-500",
