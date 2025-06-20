@@ -5,6 +5,7 @@ import {
   FaInstagram,
   FaLinkedin,
   FaFacebook,
+  FaYoutube,
 } from "react-icons/fa6";
 
 interface SocialPlatform {
@@ -17,6 +18,21 @@ interface SocialPlatform {
 export default function Integrations() {
   const platforms: SocialPlatform[] = [
     {
+      name: "YouTube",
+      icon: <FaYoutube className="h-6 w-6" />,
+      color: "bg-[#FF0000]",
+    },
+    {
+      name: "LinkedIn",
+      icon: <FaLinkedin className="h-6 w-6" />,
+      color: "bg-[#0A66C2]",
+    },
+    {
+      name: "TikTok",
+      icon: <FaTiktok className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
+    },
+    {
       name: "X (Twitter)",
       icon: <FaXTwitter className="h-6 w-6" />,
       color: "bg-[#1DA1F2]",
@@ -27,26 +43,14 @@ export default function Integrations() {
       color: "bg-black dark:bg-white dark:text-black",
     },
     {
-      name: "LinkedIn",
-      icon: <FaLinkedin className="h-6 w-6" />,
-      color: "bg-[#0A66C2]",
-    },
-    {
       name: "Instagram",
       icon: <FaInstagram className="h-6 w-6" />,
       color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
     },
     {
-      name: "TikTok",
-      icon: <FaTiktok className="h-6 w-6" />,
-      color: "bg-black dark:bg-white dark:text-black",
-      comingSoon: true,
-    },
-    {
       name: "Facebook",
       icon: <FaFacebook className="h-6 w-6" />,
       color: "bg-[#1877F2]",
-      comingSoon: true,
     },
   ];
 
@@ -70,7 +74,7 @@ export default function Integrations() {
 
         <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 lg:gap-8 max-w-4xl mx-auto">
           {platforms.map((platform) => (
-            <div key={platform.name} className="group relative">
+            <div key={platform.name} className="group relative cursor-pointer">
               <div
                 className={`flex items-center space-x-3 px-5 py-3 rounded-full ${
                   platform.comingSoon

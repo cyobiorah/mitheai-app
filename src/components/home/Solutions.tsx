@@ -48,8 +48,8 @@ export default function Solutions() {
       title: "Individuals",
       description:
         "Perfect for creators and solo professionals managing their online presence.",
-      price: "Free",
-      period: "beta",
+      price: "Free Trial",
+      period: "7 days",
       features: [
         "Manage up to 5 social profiles",
         "Schedule content weeks in advance",
@@ -58,8 +58,8 @@ export default function Solutions() {
         "Mobile app access",
       ],
       cta: {
-        text: "Join Waitlist",
-        href: "/waitlist",
+        text: "Start free trial",
+        href: "/register",
         variant: "outline",
       },
       gradientFrom: "from-blue-500",
@@ -81,8 +81,8 @@ export default function Solutions() {
         "Team roles & permissions",
       ],
       cta: {
-        text: "Join Waitlist",
-        href: "/waitlist",
+        text: "Start free trial",
+        href: "/register",
         variant: "default",
       },
       secondaryCta: {
@@ -112,7 +112,7 @@ export default function Solutions() {
       ],
       cta: {
         text: "Contact Sales",
-        href: "/waitlist?plan=enterprise",
+        href: "/contact",
         variant: "outline",
       },
       gradientFrom: "from-indigo-500",
@@ -144,9 +144,9 @@ export default function Solutions() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-y-10 md:gap-x-6 lg:gap-x-10">
-          {solutions.map((solution, index) => (
+          {solutions.map((solution) => (
             <div
-              key={index}
+              key={solution.title}
               className={`relative card-hover group ${
                 solution.highlighted ? "md:-mt-6 md:mb-6 md:pb-6 z-10" : ""
               }`}
@@ -207,8 +207,8 @@ export default function Solutions() {
                 <div className="mb-8">
                   <p className="text-sm font-medium mb-3">Includes:</p>
                   <ul className="space-y-3">
-                    {solution.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start">
+                    {solution.features.map((feature) => (
+                      <li key={feature} className="flex items-start">
                         <div
                           className={`mr-3 mt-1 rounded-full p-1 ${
                             solution.highlighted
