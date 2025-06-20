@@ -506,26 +506,28 @@ export default function SocialAccounts() {
               />
 
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => {
-                    setIsAddingAccount(false);
-                    form.reset();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading || !form.watch("platform")}
-                >
-                  {isLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Connect Account
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => {
+                      setIsAddingAccount(false);
+                      form.reset();
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading || !form.watch("platform")}
+                  >
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Connect Account
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           </Form>
