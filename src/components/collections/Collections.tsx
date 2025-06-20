@@ -317,7 +317,7 @@ export default function Collections() {
                     {isUpdatingPending && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    Create Collection
+                    Update Collection
                   </Button>
                 </div>
               </DialogFooter>
