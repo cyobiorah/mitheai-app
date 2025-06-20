@@ -234,19 +234,21 @@ export default function Collections() {
               />
 
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsCreating(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isCreatingPending}>
-                  {isCreatingPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Create Collection
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setIsCreating(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isCreatingPending}>
+                    {isCreatingPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Create Collection
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           </Form>
@@ -303,19 +305,21 @@ export default function Collections() {
               />
 
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isUpdatingPending}>
-                  {isUpdatingPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Save Changes
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isUpdatingPending}>
+                    {isUpdatingPending && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    Create Collection
+                  </Button>
+                </div>
               </DialogFooter>
             </form>
           </Form>
