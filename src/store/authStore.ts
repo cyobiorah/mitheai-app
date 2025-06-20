@@ -93,26 +93,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // logout: async () => {
-      //   try {
-      //     await authApi.logout();
-      //   } catch (error) {
-      //     console.error("Logout error:", error);
-      //   } finally {
-      //     localStorage.removeItem("auth_token");
-      //     set({
-      //       user: null,
-      //       token: null,
-      //       organization: null,
-      //       teams: [],
-      //     });
-      //     useTeamStore.setState({ activeTeam: null, teams: [] });
-      //     localStorage.removeItem("skedlii-storage");
-      //     localStorage.removeItem("skedlii-team-storage");
-      //     localStorage.removeItem("skedlii-theme");
-      //   }
-      // },
-
       logout: logoutUser,
 
       register: async (data) => {

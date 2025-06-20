@@ -6,6 +6,7 @@ import {
   Globe,
   ShieldCheck,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Feature {
   icon: React.ReactNode;
@@ -125,12 +126,13 @@ export default function Features() {
           <div className="inline-block glass-effect rounded-full px-8 py-2.5 shadow-lg">
             <p className="text-muted-foreground">
               Ready to streamline your social media workflow?{" "}
-              <a
-                href="#waitlist"
+              <Link
+                to="/register"
                 className="text-primary-600 dark:text-primary-400 font-medium hover:underline"
               >
-                Join our waitlist
-              </a>
+                Start your free trial
+              </Link>{" "}
+              — card required, cancel anytime.
             </p>
           </div>
         </div>
