@@ -23,12 +23,16 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { formatDate, getSocialIcon } from "../../../lib/utils";
+import { hasValidSubscription } from "../../../lib/access";
+import { toast } from "../../../hooks/use-toast";
 
 export function getScheduledPostCalendarView({
   isFetchingScheduledPosts,
   postsByDate = [],
   updatePostStatus,
   handleDeletePost,
+  navigate,
+  user,
 }: any) {
   if (isFetchingScheduledPosts) {
     return (
@@ -44,8 +48,21 @@ export function getScheduledPostCalendarView({
         <p className="text-muted-foreground">
           No posts scheduled for this date
         </p>
-        <Button variant="link" asChild className="mt-2">
-          <Link to="/dashboard/post-flow">Create a post</Link>
+        <Button
+          variant="link"
+          onClick={() => {
+            if (!hasValidSubscription(user?.paymentStatus)) {
+              toast({
+                variant: "destructive",
+                title: "Upgrade your plan to manage collections.",
+              });
+            } else {
+              navigate("/dashboard/post-flow");
+            }
+          }}
+          className="mt-2"
+        >
+          Create a post
         </Button>
       </div>
     );
@@ -127,7 +144,10 @@ export function getScheduledPostCalendarView({
                         {formatDate(post.scheduledFor, "p")}
                       </>
                     ) : (
-                      <>{platform.platform} at {formatDate(post.scheduledFor, "p")}</>
+                      <>
+                        {platform.platform} at{" "}
+                        {formatDate(post.scheduledFor, "p")}
+                      </>
                     )}
                   </span>
                 </div>

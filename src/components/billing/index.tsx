@@ -199,17 +199,6 @@ const Billing = () => {
               )}
             </div>
             <div className="text-right">
-              {/* <p className="text-2xl font-bold mb-1">
-                {user?.subscriptionTier === "free"
-                  ? "$0"
-                  : user?.subscriptionTier === "basic"
-                  ? "$29"
-                  : user?.subscriptionTier === "pro"
-                  ? "$99"
-                  : user?.subscriptionTier === "business"
-                  ? "$299"
-                  : "$0"}
-              </p> */}
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 per month
               </p>
