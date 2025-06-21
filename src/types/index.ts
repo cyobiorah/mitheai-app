@@ -57,6 +57,13 @@ export interface User {
   renewalDate?: string;
   paymentDescription?: string;
   productId?: string;
+  paymentStatus:
+    | "trialing"
+    | "active"
+    | "past_due"
+    | "canceled"
+    | "expired"
+    | "none";
 }
 
 export interface AuthState {

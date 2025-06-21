@@ -33,6 +33,8 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { getStatusBadge } from "../posts/scheduled-posts/listView";
+import { hasValidSubscription } from "../../lib/access";
+import { toast } from "../../hooks/use-toast";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -159,6 +161,14 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto">
+        {!hasValidSubscription(user?.paymentStatus) && (
+          <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 text-sm text-center rounded-md mb-4">
+            You're currently on a limited plan.{" "}
+            <Link to="/dashboard/billing" className="underline font-semibold">
+              Upgrade now to unlock full features.
+            </Link>
+          </div>
+        )}
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div>
@@ -170,6 +180,7 @@ export default function DashboardPage() {
             <Button
               onClick={() => navigate("/dashboard/post-flow")}
               className="w-full sm:w-auto"
+              disabled={!hasValidSubscription(user?.paymentStatus)}
             >
               <Plus size={16} className="mr-2" />
               Create Post
@@ -222,35 +233,42 @@ export default function DashboardPage() {
                 ),
                 to: "/dashboard/collections",
               },
-            ].map(({ label, value, icon, footer, to }) => (
-              <Link to={to} key={label}>
-                <Card className="hover:shadow-md cursor-pointer transition-shadow duration-200 rounded-xl">
-                  <CardHeader className="pb-1 flex flex-row items-center justify-between space-y-0">
-                    <CardDescription className="text-sm font-medium">
-                      {label}
-                    </CardDescription>
-                    {icon}
-                  </CardHeader>
-                  <CardContent className="pt-1">
-                    <div className="text-4xl font-bold text-foreground">
-                      {value ?? (
-                        <div className="h-8 w-12 bg-muted rounded animate-pulse" />
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {footer}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            ].map(({ label, value, icon, footer, to }) => {
+              if (!hasValidSubscription(user?.paymentStatus)) {
+                return null;
+              }
+              return (
+                <Link to={to} key={label}>
+                  <Card className="hover:shadow-md cursor-pointer transition-shadow duration-200 rounded-xl">
+                    <CardHeader className="pb-1 flex flex-row items-center justify-between space-y-0">
+                      <CardDescription className="text-sm font-medium">
+                        {label}
+                      </CardDescription>
+                      {icon}
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      <div className="text-4xl font-bold text-foreground">
+                        {value ?? (
+                          <div className="h-8 w-12 bg-muted rounded animate-pulse" />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {footer}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
 
           <Tabs defaultValue="recent">
             <TabsList>
               <TabsTrigger value="recent">Recent Posts</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              <TabsTrigger value="insights">Insights</TabsTrigger>
+              {hasValidSubscription(user?.paymentStatus) && (
+                <TabsTrigger value="insights">Insights</TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="recent" className="space-y-4">
@@ -401,26 +419,62 @@ export default function DashboardPage() {
                     {
                       label: "Create Post",
                       icon: <Plus className="h-5 w-5 mb-1 text-primary" />,
-                      onClick: () => navigate("/dashboard/post-flow"),
+                      onClick: () => {
+                        if (!hasValidSubscription(user?.paymentStatus)) {
+                          toast({
+                            variant: "destructive",
+                            title: "Upgrade your plan to post content.",
+                          });
+                        } else {
+                          navigate("/dashboard/post-flow");
+                        }
+                      },
                     },
                     {
                       label: "View Schedule",
                       icon: (
                         <CalendarClock className="h-5 w-5 mb-1 text-primary" />
                       ),
-                      onClick: () => navigate("/dashboard/scheduled"),
+                      onClick: () => {
+                        if (!hasValidSubscription(user?.paymentStatus)) {
+                          toast({
+                            variant: "destructive",
+                            title: "Upgrade your plan to view scheduled posts.",
+                          });
+                        } else {
+                          navigate("/dashboard/scheduled");
+                        }
+                      },
                     },
                     {
                       label: "Manage Accounts",
                       icon: <Users className="h-5 w-5 mb-1 text-primary" />,
-                      onClick: () => navigate("/dashboard/accounts"),
+                      onClick: () => {
+                        if (!hasValidSubscription(user?.paymentStatus)) {
+                          toast({
+                            variant: "destructive",
+                            title: "Upgrade your plan to manage accounts.",
+                          });
+                        } else {
+                          navigate("/dashboard/accounts");
+                        }
+                      },
                     },
                     {
                       label: "Collections",
                       icon: (
                         <FolderPlus className="h-5 w-5 mb-1 text-primary" />
                       ),
-                      onClick: () => navigate("/dashboard/collections"),
+                      onClick: () => {
+                        if (!hasValidSubscription(user?.paymentStatus)) {
+                          toast({
+                            variant: "destructive",
+                            title: "Upgrade your plan to manage collections.",
+                          });
+                        } else {
+                          navigate("/dashboard/collections");
+                        }
+                      },
                     },
                   ].map(({ label, icon, onClick }) => (
                     <button

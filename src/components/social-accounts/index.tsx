@@ -61,6 +61,7 @@ import {
   useGetSocialAccounts,
 } from "./api-mutation";
 import PlatformSelector from "./PlatformSelector";
+import { hasValidSubscription } from "../../lib/access";
 
 const socialAccountSchema = z.object({
   platform: z.string().min(1, "Select One Platform"),
@@ -454,7 +455,10 @@ export default function SocialAccounts() {
             You haven't created any accounts yet. Connect your first account to
             get started.
           </p>
-          <Button onClick={() => setIsAddingAccount(true)}>
+          <Button
+            onClick={() => setIsAddingAccount(true)}
+            disabled={!hasValidSubscription(user?.paymentStatus)}
+          >
             <Plus size={16} className="mr-2" />
             Connect Account
           </Button>
@@ -472,6 +476,7 @@ export default function SocialAccounts() {
           <Button
             onClick={() => setIsAddingAccount(true)}
             className="w-full sm:w-auto"
+            disabled={!hasValidSubscription(user?.paymentStatus)}
           >
             <Plus size={16} className="mr-2" />
             Connect Account
