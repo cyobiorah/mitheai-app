@@ -73,6 +73,7 @@ const Posts = () => {
   });
 
   const { user, isAuthenticated } = useAuth();
+  const { billing } = user;
   const navigate = useNavigate();
 
   const {
@@ -286,7 +287,7 @@ const Posts = () => {
         </p>
         <Button
           onClick={() => {
-            if (!hasValidSubscription(user?.paymentStatus)) {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
               toast({
                 variant: "destructive",
                 title: "Upgrade your plan to manage collections.",
@@ -326,7 +327,7 @@ const Posts = () => {
           </Button>
           <Button
             onClick={() => {
-              if (!hasValidSubscription(user?.paymentStatus)) {
+              if (!hasValidSubscription(billing?.paymentStatus)) {
                 toast({
                   variant: "destructive",
                   title: "Upgrade your plan to manage collections.",

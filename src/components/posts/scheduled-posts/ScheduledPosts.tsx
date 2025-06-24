@@ -30,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ScheduledPosts() {
   const { user } = useAuth();
+  const { billing } = user;
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
@@ -149,7 +150,7 @@ export default function ScheduledPosts() {
           </p>
         </div>
         <Button
-          disabled={!hasValidSubscription(user?.paymentStatus)}
+          disabled={!hasValidSubscription(billing?.paymentStatus)}
           onClick={() => navigate("/dashboard/post-flow")}
         >
           <Plus size={16} className="mr-2" />

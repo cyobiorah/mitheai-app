@@ -71,6 +71,7 @@ type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
 export default function SocialAccounts() {
   const { user } = useAuth();
+  const { billing } = user;
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
@@ -457,7 +458,7 @@ export default function SocialAccounts() {
           </p>
           <Button
             onClick={() => setIsAddingAccount(true)}
-            disabled={!hasValidSubscription(user?.paymentStatus)}
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
           >
             <Plus size={16} className="mr-2" />
             Connect Account
@@ -476,7 +477,7 @@ export default function SocialAccounts() {
           <Button
             onClick={() => setIsAddingAccount(true)}
             className="w-full sm:w-auto"
-            disabled={!hasValidSubscription(user?.paymentStatus)}
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
           >
             <Plus size={16} className="mr-2" />
             Connect Account

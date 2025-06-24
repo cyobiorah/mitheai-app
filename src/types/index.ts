@@ -50,6 +50,7 @@ export interface User {
   avatar?: string;
   username?: string;
   stripeCustomerId?: string;
+  subscriptionId?: string;
   subscriptionStatus?: "paid" | "trialing" | "cancelled" | "inactive";
   subscriptionTier?: "free" | "basic" | "pro" | "business";
   subscriptionRenewalDate?: string;

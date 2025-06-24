@@ -36,6 +36,8 @@ export function getScheduledPostListView(
   navigate: any,
   user: any
 ) {
+  const { billing } = user;
+
   if (isFetchingScheduledPosts) {
     return (
       <div className="flex justify-center p-8">
@@ -54,7 +56,7 @@ export function getScheduledPostListView(
           variant="link"
           className="mt-2"
           onClick={() => {
-            if (!hasValidSubscription(user?.paymentStatus)) {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
               toast({
                 variant: "destructive",
                 title: "Upgrade your plan to manage collections.",
