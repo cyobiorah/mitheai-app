@@ -95,7 +95,7 @@ export default function SocialAccounts() {
   const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
     useConnectYoutube();
   const { mutate: deleteAccount, isPending: isDeletingPending } =
-    useDeleteAccount(deleteConfig);
+    useDeleteAccount();
   const {
     mutate: refreshTwitterAccessToken,
     isPending: isRefreshingTwitterPending,
@@ -112,7 +112,7 @@ export default function SocialAccounts() {
     data: accounts = [],
     isPending: isAccountsLoading,
     refetch: refetchAccounts,
-  } = useGetSocialAccounts(user?._id!);
+  } = useGetSocialAccounts(user?._id);
 
   const form = useForm<SocialAccountFormData>({
     resolver: zodResolver(socialAccountSchema),
@@ -122,7 +122,6 @@ export default function SocialAccounts() {
   });
 
   function onSubmit(data: SocialAccountFormData) {
-    console.log({ data });
     switch (data.platform) {
       case "twitter":
         connectTwitter();
@@ -543,7 +542,13 @@ export default function SocialAccounts() {
       <DeleteDialog
         config={deleteConfig}
         setConfig={setDeleteConfig}
-        handleDelete={() => deleteAccount()}
+        handleDelete={() =>
+          deleteAccount(deleteConfig, {
+            onSuccess: () => {
+              refetchAccounts();
+            },
+          })
+        }
         message="Are you sure you want to delete this account?"
         title="Delete Account"
         loading={isDeletingPending}

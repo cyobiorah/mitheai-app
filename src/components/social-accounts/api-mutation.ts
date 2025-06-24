@@ -115,13 +115,9 @@ export const useConnectYoutube = () => {
   });
 };
 
-export const useDeleteAccount = (deleteConfig: {
-  id: string;
-  platform: string;
-}) => {
-  const { id, platform } = deleteConfig;
+export const useDeleteAccount = () => {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ id, platform }: { id: string; platform: string }) => {
       const disconnectFn =
         platform === "tiktok"
           ? socialApi.disconnectTikTok
