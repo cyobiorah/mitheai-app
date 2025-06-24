@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
-import { User, Organization, Team } from "../types";
+import { Organization, Team } from "../types";
 import { useTeamStore } from "./teamStore";
 
 interface AuthState {
   // State
-  user: User | null;
+  user: any;
   token: string | null;
   organization: Organization | null;
   teams: Team[];

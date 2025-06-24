@@ -34,6 +34,7 @@ export function getScheduledPostCalendarView({
   navigate,
   user,
 }: any) {
+  const { billing } = user;
   if (isFetchingScheduledPosts) {
     return (
       <div className="flex justify-center p-8">
@@ -51,7 +52,7 @@ export function getScheduledPostCalendarView({
         <Button
           variant="link"
           onClick={() => {
-            if (!hasValidSubscription(user?.paymentStatus)) {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
               toast({
                 variant: "destructive",
                 title: "Upgrade your plan to manage collections.",

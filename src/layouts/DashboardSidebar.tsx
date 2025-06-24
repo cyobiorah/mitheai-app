@@ -30,6 +30,7 @@ export default function DashboardSidebar({
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
+  const { billing } = user;
 
   const menuItems = useMemo(
     () => [
@@ -57,13 +58,13 @@ export default function DashboardSidebar({
         icon: <CalendarSync size={18} />,
         label: "Post Flow",
         href: "/dashboard/post-flow",
-        disabled: !hasValidSubscription(user?.paymentStatus),
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
       {
         icon: <Folder size={18} />,
         label: "Collections",
         href: "/dashboard/collections",
-        disabled: !hasValidSubscription(user?.paymentStatus),
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
       {
         icon: <Users size={18} />,
@@ -75,10 +76,10 @@ export default function DashboardSidebar({
         icon: <BarChart3 size={18} />,
         label: "Analytics",
         href: "/dashboard/analytics",
-        disabled: !hasValidSubscription(user?.paymentStatus),
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
     ],
-    [isAdmin, user]
+    [isAdmin, billing]
   );
 
   const bottomNavItems = [
@@ -130,7 +131,7 @@ export default function DashboardSidebar({
           <Button
             onClick={() => navigate("/dashboard/post-flow")}
             className="w-full sm:w-auto mb-8"
-            disabled={!hasValidSubscription(user?.paymentStatus)}
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
           >
             <Plus size={16} className="mr-2" />
             Create Post

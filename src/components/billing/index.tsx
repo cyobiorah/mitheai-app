@@ -36,6 +36,7 @@ import { formatDate } from "../../lib/utils";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
+  const { billing } = user;
   const { toast } = useToast();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("subscription");
@@ -85,8 +86,8 @@ const Billing = () => {
             userId: user?._id,
             email: user?.email,
             planId,
-            ...(user?.stripeCustomerId && {
-              stripeCustomerId: user?.stripeCustomerId,
+            ...(billing?.stripeCustomerId && {
+              stripeCustomerId: billing?.stripeCustomerId,
             }),
           }
         );
@@ -98,6 +99,33 @@ const Billing = () => {
         });
       },
     });
+
+  const { mutate: cancelSubscription, isPending: isCanceling } = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/billing/cancel-subscription", {
+        customerId: billing?.stripeCustomerId,
+        subscriptionId: billing?.subscriptionId,
+      });
+    },
+    onSuccess: () => {
+      fetchUserData(); // Refresh user state
+      toast({
+        title: "Subscription Cancelled",
+        description:
+          "Your subscription will remain active until the end of the billing period.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to cancel subscription",
+        description: "Something went wrong, please try again.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setShowCancelDialog(false);
+    },
+  });
 
   const { data: plans = [], isLoading: isPlansLoading } = useQuery({
     queryKey: [`/plans`],
@@ -116,7 +144,7 @@ const Billing = () => {
   }));
 
   const getStatusBadge = () => {
-    switch (user?.subscriptionStatus) {
+    switch (billing?.subscriptionStatus) {
       case "paid":
         return (
           <Badge className="bg-green-500 hover:bg-green-600">
@@ -155,17 +183,8 @@ const Billing = () => {
     createCheckoutSession({ planId });
   };
 
-  const handleCancelSubscription = () => {
-    // In a real app, this would call the API to cancel the subscription
-    setShowCancelDialog(false);
-    toast({
-      title: "Subscription cancelled",
-      description: "Your subscription will end at the current billing period.",
-    });
-  };
-
   const renderSubscriptionInfo = () => {
-    if (!user?.stripeCustomerId) {
+    if (!billing?.stripeCustomerId) {
       return (
         <div className="space-y-4">
           <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -186,15 +205,15 @@ const Billing = () => {
           <div className="flex flex-wrap justify-between gap-y-4">
             <div>
               <h3 className="text-lg font-medium mb-1">
-                {/* {user?.subscriptionTier ?? "Free"} Plan */}
-                {user?.paymentDescription}
+                {billing?.paymentDescription}
               </h3>
               <div className="flex items-center gap-2 mb-1">
                 {getStatusBadge()}
               </div>
-              {user?.renewalDate && (
+              {billing?.renewalDate && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Next billing date: {formatDate(user?.renewalDate, "PPP pp")}
+                  Next billing date:{" "}
+                  {formatDate(billing?.renewalDate, "PPP pp")}
                 </p>
               )}
             </div>
@@ -205,7 +224,7 @@ const Billing = () => {
             </div>
           </div>
 
-          {user?.subscriptionStatus === "paid" && (
+          {billing?.subscriptionStatus === "paid" && (
             <div className="mt-6 flex flex-wrap gap-2">
               <AlertDialog
                 open={showCancelDialog}
@@ -228,7 +247,7 @@ const Billing = () => {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancelSubscription}>
+                    <AlertDialogAction onClick={() => cancelSubscription()}>
                       Cancel Subscription
                     </AlertDialogAction>
                   </AlertDialogFooter>
@@ -289,12 +308,12 @@ const Billing = () => {
   };
 
   const getPlanActionText = (planId: string) => {
-    if (user?.productId === planId) {
+    if (billing?.productId === planId) {
       return "Current Plan";
     }
 
     const tiers = ["free", "basic", "pro", "business"];
-    const currentIndex = tiers.indexOf(user?.subscriptionTier ?? "free");
+    const currentIndex = tiers.indexOf(billing?.subscriptionTier ?? "free");
     const targetIndex = tiers.indexOf(planId);
 
     if (targetIndex > currentIndex) return "Upgrade";
@@ -424,8 +443,8 @@ const Billing = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>{renderInvoiceHistory()}</CardContent>
-            {user?.subscriptionStatus !== "inactive" &&
-              user?.invoices?.length && (
+            {billing?.subscriptionStatus !== "inactive" &&
+              billing?.invoices?.length && (
                 <CardFooter>
                   <Button variant="outline" className="ml-auto">
                     Download All Invoices

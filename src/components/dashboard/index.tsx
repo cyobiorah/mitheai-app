@@ -39,6 +39,7 @@ import { toast } from "../../hooks/use-toast";
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, authLoading } = useAuth();
+  const { billing } = user;
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -161,7 +162,7 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 overflow-auto">
       <div className="max-w-6xl mx-auto">
-        {!hasValidSubscription(user?.paymentStatus) && (
+        {!hasValidSubscription(billing?.paymentStatus) && (
           <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 text-sm text-center rounded-md mb-4">
             You're currently on a limited plan.{" "}
             <Link to="/dashboard/billing" className="underline font-semibold">
@@ -180,7 +181,7 @@ export default function DashboardPage() {
             <Button
               onClick={() => navigate("/dashboard/post-flow")}
               className="w-full sm:w-auto"
-              disabled={!hasValidSubscription(user?.paymentStatus)}
+              disabled={!hasValidSubscription(billing?.paymentStatus)}
             >
               <Plus size={16} className="mr-2" />
               Create Post
@@ -234,7 +235,7 @@ export default function DashboardPage() {
                 to: "/dashboard/collections",
               },
             ].map(({ label, value, icon, footer, to }) => {
-              if (!hasValidSubscription(user?.paymentStatus)) {
+              if (!hasValidSubscription(billing?.paymentStatus)) {
                 return null;
               }
               return (
@@ -266,7 +267,7 @@ export default function DashboardPage() {
             <TabsList>
               <TabsTrigger value="recent">Recent Posts</TabsTrigger>
               <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-              {hasValidSubscription(user?.paymentStatus) && (
+              {hasValidSubscription(billing?.paymentStatus) && (
                 <TabsTrigger value="insights">Insights</TabsTrigger>
               )}
             </TabsList>
@@ -420,7 +421,7 @@ export default function DashboardPage() {
                       label: "Create Post",
                       icon: <Plus className="h-5 w-5 mb-1 text-primary" />,
                       onClick: () => {
-                        if (!hasValidSubscription(user?.paymentStatus)) {
+                        if (!hasValidSubscription(billing?.paymentStatus)) {
                           toast({
                             variant: "destructive",
                             title: "Upgrade your plan to post content.",
@@ -436,7 +437,7 @@ export default function DashboardPage() {
                         <CalendarClock className="h-5 w-5 mb-1 text-primary" />
                       ),
                       onClick: () => {
-                        if (!hasValidSubscription(user?.paymentStatus)) {
+                        if (!hasValidSubscription(billing?.paymentStatus)) {
                           toast({
                             variant: "destructive",
                             title: "Upgrade your plan to view scheduled posts.",
@@ -450,7 +451,7 @@ export default function DashboardPage() {
                       label: "Manage Accounts",
                       icon: <Users className="h-5 w-5 mb-1 text-primary" />,
                       onClick: () => {
-                        if (!hasValidSubscription(user?.paymentStatus)) {
+                        if (!hasValidSubscription(billing?.paymentStatus)) {
                           toast({
                             variant: "destructive",
                             title: "Upgrade your plan to manage accounts.",
@@ -466,7 +467,7 @@ export default function DashboardPage() {
                         <FolderPlus className="h-5 w-5 mb-1 text-primary" />
                       ),
                       onClick: () => {
-                        if (!hasValidSubscription(user?.paymentStatus)) {
+                        if (!hasValidSubscription(billing?.paymentStatus)) {
                           toast({
                             variant: "destructive",
                             title: "Upgrade your plan to manage collections.",
