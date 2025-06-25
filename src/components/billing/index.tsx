@@ -144,7 +144,7 @@ const Billing = () => {
   }));
 
   const getStatusBadge = () => {
-    switch (billing?.subscriptionStatus) {
+    switch (billing?.paymentStatus) {
       case "paid":
         return (
           <Badge className="bg-green-500 hover:bg-green-600">
@@ -154,7 +154,7 @@ const Billing = () => {
       case "trialing":
         return (
           <Badge className="bg-blue-500 hover:bg-blue-600">
-            <ArrowRightCircle className="h-3 w-3 mr-1" /> Trial
+            <ArrowRightCircle className="h-3 w-3 mr-1" /> Trial Active
           </Badge>
         );
       case "cancelled":
@@ -182,6 +182,13 @@ const Billing = () => {
     }
     createCheckoutSession({ planId });
   };
+
+  function calculateDaysLeft(currentDate: Date, endDate: Date): number {
+    const diff = endDate.getTime() - currentDate.getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  console.log({ billing });
 
   const renderSubscriptionInfo = () => {
     if (!billing?.stripeCustomerId) {
@@ -216,6 +223,21 @@ const Billing = () => {
                   {formatDate(billing?.renewalDate, "PPP pp")}
                 </p>
               )}
+              {billing?.paymentStatus === "trialing" &&
+                billing?.renewalDate && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    )}{" "}
+                    day
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    ) !== 1 && "s"}{" "}
+                    left in your trial.
+                  </p>
+                )}
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">
