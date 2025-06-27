@@ -444,7 +444,7 @@ const Billing = () => {
                       disabled={plan.disabled}
                       onClick={() => {
                         if (plan.id === "free") return;
-                        handleUpgradeDowngrade(plan);
+                        createCheckoutSession({ planId: plan.id });
                       }}
                     >
                       {getPlanActionText(plan.productId)}
