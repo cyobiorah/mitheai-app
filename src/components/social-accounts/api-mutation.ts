@@ -9,9 +9,12 @@ export const useConnectLinkedIn = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      console.log({ err });
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to LinkedIn, try again!",
+        description:
+          err?.response?.data?.error ??
+          "Failed to connect to LinkedIn, try again!",
         variant: "destructive",
       });
     },
