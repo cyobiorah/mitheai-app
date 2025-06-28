@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../store/hooks";
 import { useToast } from "../../hooks/use-toast";
 import {
@@ -330,6 +330,7 @@ const Billing = () => {
   };
 
   const getPlanActionText = (planId: string) => {
+    console.log({ planId });
     if (billing?.productId === planId) {
       return "Current Plan";
     }
@@ -386,7 +387,7 @@ const Billing = () => {
               <CardDescription>
                 Choose the plan that works best for you
               </CardDescription>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
                 <Switch
                   checked={isYearly}
@@ -394,22 +395,20 @@ const Billing = () => {
                   aria-label="Toggle yearly billing"
                 />
                 <span className={isYearly ? "font-bold" : ""}>Yearly</span>
-              </div>
+              </div> */}
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
                 {displayedPlans.map((plan) => (
                   <div
                     key={plan.id}
-                    className={`border rounded-lg p-6 space-y-4 relative ${
-                      plan.isPopular ? "ring-2 ring-primary" : ""
-                    }`}
+                    className={`border rounded-lg p-6 space-y-4 relative`}
                   >
-                    {plan.isPopular && (
+                    {/* {plan.isPopular && (
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary px-3 py-1 rounded-full text-white text-xs font-medium">
                         Most Popular
                       </div>
-                    )}
+                    )} */}
                     <div className="flex items-center space-x-3">
                       <div>
                         <h3 className="font-bold text-lg capitalize">
