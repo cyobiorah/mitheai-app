@@ -546,6 +546,11 @@ export default function SocialAccounts() {
           deleteAccount(deleteConfig, {
             onSuccess: () => {
               refetchAccounts();
+              setDeleteConfig({
+                id: "",
+                isOpen: false,
+                platform: "",
+              });
             },
           })
         }

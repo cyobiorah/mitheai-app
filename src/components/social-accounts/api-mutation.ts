@@ -109,9 +109,12 @@ export const useConnectYoutube = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      console.log({ err });
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to Youtube, try again!",
+        description:
+          err?.response?.data?.error ??
+          "Failed to connect to Youtube, try again!",
         variant: "destructive",
       });
     },
