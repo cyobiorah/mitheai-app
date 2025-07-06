@@ -146,6 +146,7 @@ const Billing = () => {
   const getStatusBadge = () => {
     switch (billing?.paymentStatus) {
       case "paid":
+      case "active":
         return (
           <Badge className="bg-green-500 hover:bg-green-600">
             <CheckCircle2 className="h-3 w-3 mr-1" /> Active
@@ -241,12 +242,12 @@ const Billing = () => {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                per month
+                per {billing?.billingInterval}
               </p>
             </div>
           </div>
 
-          {billing?.subscriptionStatus === "paid" && (
+          {billing?.subscriptionStatus === "active" && (
             <div className="mt-6 flex flex-wrap gap-2">
               <AlertDialog
                 open={showCancelDialog}
