@@ -42,8 +42,6 @@ const Billing = () => {
   const [activeTab, setActiveTab] = useState("subscription");
   const [isYearly, setIsYearly] = useState(false);
 
-  console.log({ billing });
-
   const tabItems = [
     { value: "subscription", label: "Subscription" },
     { value: "plans", label: "Plans" },
@@ -53,10 +51,9 @@ const Billing = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const subscribed = searchParams.get("subscribed");
-    const canceled = searchParams.get("canceled");
     const error = searchParams.get("error");
 
-    const needsFetch = subscribed === "true" || canceled === "true" || error;
+    const needsFetch = subscribed === "true" || error;
 
     if (needsFetch) {
       fetchUserData();
@@ -81,26 +78,18 @@ const Billing = () => {
 
   const { mutate: createCheckoutSession, isPending: isCreatingPending } =
     useMutation({
-      mutationFn: async ({ priceId }: { priceId: string }) => {
-        let billingData: any = {
-          userId: user?._id,
-          email: user?.email,
-          priceId,
-        };
-
-        console.log({ billing });
-
-        if (billing?.stripeCustomerId) {
-          billingData = {
-            ...billingData,
-            stripeCustomerId: billing?.stripeCustomerId,
-          };
-        }
-
+      mutationFn: async ({ planId }: { planId: string }) => {
         const response = await apiRequest(
           "POST",
           "/checkout/create-checkout-session",
-          billingData
+          {
+            userId: user?._id,
+            email: user?.email,
+            planId,
+            ...(billing?.stripeCustomerId && {
+              stripeCustomerId: billing?.stripeCustomerId,
+            }),
+          }
         );
         window.location.href = response.url;
       },
@@ -119,7 +108,7 @@ const Billing = () => {
       });
     },
     onSuccess: () => {
-      fetchUserData();
+      fetchUserData(); // Refresh user state
       toast({
         title: "Subscription Cancelled",
         description:
@@ -186,29 +175,24 @@ const Billing = () => {
   };
 
   const handleUpgradeDowngrade = (plan: any) => {
-    const priceId = isYearly ? plan.priceYearlyId : plan.priceMonthlyId;
-    createCheckoutSession({ priceId });
-  };
-
-  const getPlanActionText = (planId: string) => {
-    if (!billing?.subscriptionTier) {
-      return "Choose Plan";
+    let planId: string;
+    if (isYearly) {
+      planId = plan.priceYearlyId;
+    } else {
+      planId = plan.priceMonthlyId;
     }
-
-    if (billing.subscriptionTier === planId) return "Current Plan";
-
-    const tiers = ["test", "creator", "pro"];
-    const currentIndex = tiers.indexOf(billing.subscriptionTier);
-    const targetIndex = tiers.indexOf(planId);
-
-    if (targetIndex > currentIndex) return "Upgrade";
-    if (targetIndex < currentIndex) return "Change Plan";
-
-    return "Current Plan";
+    createCheckoutSession({ planId });
   };
+
+  function calculateDaysLeft(currentDate: Date, endDate: Date): number {
+    const diff = endDate.getTime() - currentDate.getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  console.log({ billing });
 
   const renderSubscriptionInfo = () => {
-    if (!billing?.stripeCustomerId || !billing?.renewalDate) {
+    if (!billing?.stripeCustomerId) {
       return (
         <div className="space-y-4">
           <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -240,6 +224,21 @@ const Billing = () => {
                   {formatDate(billing?.renewalDate, "PPP pp")}
                 </p>
               )}
+              {billing?.paymentStatus === "trialing" &&
+                billing?.renewalDate && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    )}{" "}
+                    day
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    ) !== 1 && "s"}{" "}
+                    left in your trial.
+                  </p>
+                )}
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -331,6 +330,22 @@ const Billing = () => {
     );
   };
 
+  const getPlanActionText = (planId: string) => {
+    console.log({ planId });
+    if (billing?.productId === planId) {
+      return "Current Plan";
+    }
+
+    const tiers = ["free", "basic", "pro", "business"];
+    const currentIndex = tiers.indexOf(billing?.subscriptionTier ?? "free");
+    const targetIndex = tiers.indexOf(planId);
+
+    if (targetIndex > currentIndex) return "Upgrade";
+    if (targetIndex < currentIndex) return "Change Plan";
+
+    return "Current Plan";
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -373,26 +388,44 @@ const Billing = () => {
               <CardDescription>
                 Choose the plan that works best for you
               </CardDescription>
+              {/* <div className="flex items-center gap-2">
+                <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
+                <Switch
+                  checked={isYearly}
+                  onCheckedChange={setIsYearly}
+                  aria-label="Toggle yearly billing"
+                />
+                <span className={isYearly ? "font-bold" : ""}>Yearly</span>
+              </div> */}
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
                 {displayedPlans.map((plan) => (
                   <div
                     key={plan.id}
-                    className="border rounded-lg p-6 space-y-4"
+                    className={`border rounded-lg p-6 space-y-4 relative`}
                   >
+                    {/* {plan.isPopular && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary px-3 py-1 rounded-full text-white text-xs font-medium">
+                        Most Popular
+                      </div>
+                    )} */}
                     <div className="flex items-center space-x-3">
-                      <h3 className="font-bold text-lg capitalize">
-                        {plan.name}
-                      </h3>
+                      <div>
+                        <h3 className="font-bold text-lg capitalize">
+                          {plan.name}
+                        </h3>
+                      </div>
                     </div>
-                    <div className="flex items-baseline">
-                      <span className="text-3xl font-bold">
-                        ${plan.displayPrice}
-                      </span>
-                      <span className="ml-1 text-gray-500 dark:text-gray-400">
-                        {plan.displayPeriod}
-                      </span>
+                    <div>
+                      <div className="flex items-baseline">
+                        <span className="text-3xl font-bold">
+                          ${plan.displayPrice}
+                        </span>
+                        <span className="ml-1 text-gray-500 dark:text-gray-400">
+                          {plan.displayPeriod}
+                        </span>
+                      </div>
                     </div>
                     <ul className="space-y-2">
                       {plan.features.map((feature: string) => (
@@ -405,15 +438,14 @@ const Billing = () => {
                         </li>
                       ))}
                     </ul>
-                    {/* {plan.id === "test" ? (
-                      <Button disabled variant="outline" className="w-full">
-                        Testing Only
-                      </Button>
-                    ) : (
-                    )} */}
                     <Button
                       className="w-full"
-                      onClick={() => handleUpgradeDowngrade(plan)}
+                      variant={plan.disabled ? "outline" : "default"}
+                      disabled={plan.disabled}
+                      onClick={() => {
+                        if (plan.id === "free") return;
+                        createCheckoutSession({ planId: plan.id });
+                      }}
                     >
                       {getPlanActionText(plan.productId)}
                     </Button>
@@ -433,6 +465,14 @@ const Billing = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>{renderInvoiceHistory()}</CardContent>
+            {billing?.subscriptionStatus !== "inactive" &&
+              billing?.invoices?.length && (
+                <CardFooter>
+                  <Button variant="outline" className="ml-auto">
+                    Download All Invoices
+                  </Button>
+                </CardFooter>
+              )}
           </Card>
         </TabsContent>
       </Tabs>
