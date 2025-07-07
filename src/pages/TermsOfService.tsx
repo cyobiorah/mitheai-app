@@ -41,8 +41,8 @@ const TermsOfService = () => {
       </h2>
       <p className="mb-4">
         By connecting accounts, you grant Skedlii permission to act on your
-        behalf (e.g., posting, scheduling). You may disconnect accounts at any
-        time.
+        behalf (e.g., posting, scheduling) strictly within the scope of the
+        permissions you authorize. You may disconnect accounts at any time.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">4. Prohibited Use</h2>
@@ -58,8 +58,8 @@ const TermsOfService = () => {
 
       <h2 className="text-xl font-semibold mt-8 mb-2">5. Termination</h2>
       <p className="mb-4">
-        We may suspend or terminate your access for violating these terms or any
-        misuse of the platform.
+        We may suspend or terminate your access immediately and without prior
+        notice if you violate these Terms or misuse the platform.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">
@@ -74,14 +74,15 @@ const TermsOfService = () => {
         7. Limitation of Liability
       </h2>
       <p className="mb-4">
-        Skedlii is provided "as is". We are not liable for lost posts, downtime,
-        or third-party service failures.
+        To the maximum extent permitted by applicable law, Skedlii is provided
+        "as is" without warranties of any kind. We disclaim all liability for
+        lost posts, downtime, or failures caused by third-party services.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">8. Changes to Terms</h2>
       <p className="mb-4">
-        We may update these Terms. Continued use of the service means you accept
-        the changes.
+        We may update these Terms from time to time. Continued use of the
+        service means you accept the changes.
       </p>
 
       <h2 className="text-xl font-semibold mt-8 mb-2">9. Contact</h2>
@@ -93,6 +94,16 @@ const TermsOfService = () => {
         >
           hello@skedlii.xyz
         </a>
+      </p>
+
+      <h2 className="text-xl font-semibold mt-8 mb-2">
+        10. Governing Law and Jurisdiction
+      </h2>
+      <p className="mb-4">
+        These Terms are governed by and construed in accordance with the laws of
+        the State of Delaware, USA, without regard to its conflict of laws
+        principles. Any disputes arising under these Terms shall be subject to
+        the exclusive jurisdiction of the courts located in Delaware, USA.
       </p>
 
       <div className="mt-10">

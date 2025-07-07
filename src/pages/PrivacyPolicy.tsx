@@ -18,15 +18,14 @@ const PrivacyPolicy = () => {
       <p className="mb-4">
         Welcome to Skedlii ("we", "us", "our"). We are committed to protecting
         the privacy and security of your personal information. This Privacy
-        Policy describes how Ngote-Express, the owner and operator of Skedlii,
+        Policy describes how Ngote LLC., the owner and operator of Skedlii,
         collects, uses, processes, shares, and safeguards your information when
         you access or use our social media scheduling platform and related
         services (collectively, the "Service"). It also explains your data
         protection rights under applicable laws, including the EU General Data
-        Protection Regulation (GDPR), the Nigeria Data Protection Regulation
-        (NDPR), and principles relevant to regulations like the California
-        Consumer Privacy Act (CCPA) as amended by the California Privacy Rights
-        Act (CPRA).
+        Protection Regulation (GDPR) and principles relevant to regulations like
+        the California Consumer Privacy Act (CCPA) as amended by the California
+        Privacy Rights Act (CPRA).
       </p>
       <p className="mb-4">
         By using our Service, you acknowledge that you have read and understood
@@ -41,9 +40,9 @@ const PrivacyPolicy = () => {
         The data controller responsible for your personal information is:
       </p>
       <p className="mb-4">
-        <strong>Ngote-Express</strong>
+        <strong>Ngote LLC</strong>
         <br />
-        Registered in Nigeria
+        Incorporated in the State of Delaware, USA
         <br />
         Website:{" "}
         <a
@@ -56,10 +55,10 @@ const PrivacyPolicy = () => {
         </a>
       </p>
       <p className="mb-4">
-        Ngote-Express determines the purposes and means of processing personal
-        data collected through the Skedlii Service. While currently registered
-        in Nigeria, we aim for future incorporation in the United States and
-        strive to adhere to relevant international data protection standards.
+        Ngote LLC determines the purposes and means of processing personal data
+        collected through the Skedlii Service. We are committed to complying
+        with applicable international data protection standards, including GDPR,
+        CCPA/CPRA, and other relevant laws where required.
       </p>
 
       <h2 className="text-2xl font-semibold mt-10 mb-4 text-gray-900 dark:text-white">
