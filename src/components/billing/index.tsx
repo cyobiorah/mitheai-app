@@ -97,6 +97,13 @@ const Billing = () => {
           };
         }
 
+        if (billing?.hasUsedTrial) {
+          billingData = {
+            ...billingData,
+            usedTrial: true,
+          };
+        }
+
         const response = await apiRequest(
           "POST",
           "/checkout/create-checkout-session",
