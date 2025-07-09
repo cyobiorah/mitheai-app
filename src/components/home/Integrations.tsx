@@ -18,6 +18,11 @@ interface SocialPlatform {
 export default function Integrations() {
   const platforms: SocialPlatform[] = [
     {
+      name: "Threads",
+      icon: <FaThreads className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
+    },
+    {
       name: "YouTube",
       icon: <FaYoutube className="h-6 w-6" />,
       color: "bg-[#FF0000]",
@@ -28,21 +33,6 @@ export default function Integrations() {
       color: "bg-[#0A66C2]",
     },
     {
-      name: "TikTok",
-      icon: <FaTiktok className="h-6 w-6" />,
-      color: "bg-black dark:bg-white dark:text-black",
-    },
-    {
-      name: "X (Twitter)",
-      icon: <FaXTwitter className="h-6 w-6" />,
-      color: "bg-[#1DA1F2]",
-    },
-    {
-      name: "Threads",
-      icon: <FaThreads className="h-6 w-6" />,
-      color: "bg-black dark:bg-white dark:text-black",
-    },
-    {
       name: "Instagram",
       icon: <FaInstagram className="h-6 w-6" />,
       color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
@@ -51,6 +41,18 @@ export default function Integrations() {
       name: "Facebook",
       icon: <FaFacebook className="h-6 w-6" />,
       color: "bg-[#1877F2]",
+    },
+    {
+      name: "X (Twitter)",
+      icon: <FaXTwitter className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
+      comingSoon: true,
+    },
+    {
+      name: "TikTok",
+      icon: <FaTiktok className="h-6 w-6" />,
+      color: "bg-black dark:bg-white dark:text-black",
+      comingSoon: true,
     },
   ];
 
