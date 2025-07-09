@@ -61,6 +61,7 @@ import {
   useGetSocialAccounts,
 } from "./api-mutation";
 import PlatformSelector from "./PlatformSelector";
+import { hasValidSubscription } from "../../lib/access";
 
 const socialAccountSchema = z.object({
   platform: z.string().min(1, "Select One Platform"),
@@ -70,6 +71,7 @@ type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
 export default function SocialAccounts() {
   const { user } = useAuth();
+  const { billing } = user;
   const [isAddingAccount, setIsAddingAccount] = useState(false);
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
@@ -93,7 +95,7 @@ export default function SocialAccounts() {
   const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
     useConnectYoutube();
   const { mutate: deleteAccount, isPending: isDeletingPending } =
-    useDeleteAccount(deleteConfig);
+    useDeleteAccount();
   const {
     mutate: refreshTwitterAccessToken,
     isPending: isRefreshingTwitterPending,
@@ -110,7 +112,7 @@ export default function SocialAccounts() {
     data: accounts = [],
     isPending: isAccountsLoading,
     refetch: refetchAccounts,
-  } = useGetSocialAccounts(user?._id!);
+  } = useGetSocialAccounts(user?._id);
 
   const form = useForm<SocialAccountFormData>({
     resolver: zodResolver(socialAccountSchema),
@@ -120,7 +122,6 @@ export default function SocialAccounts() {
   });
 
   function onSubmit(data: SocialAccountFormData) {
-    console.log({ data });
     switch (data.platform) {
       case "twitter":
         connectTwitter();
@@ -454,7 +455,10 @@ export default function SocialAccounts() {
             You haven't created any accounts yet. Connect your first account to
             get started.
           </p>
-          <Button onClick={() => setIsAddingAccount(true)}>
+          <Button
+            onClick={() => setIsAddingAccount(true)}
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
+          >
             <Plus size={16} className="mr-2" />
             Connect Account
           </Button>
@@ -472,6 +476,7 @@ export default function SocialAccounts() {
           <Button
             onClick={() => setIsAddingAccount(true)}
             className="w-full sm:w-auto"
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
           >
             <Plus size={16} className="mr-2" />
             Connect Account
@@ -537,7 +542,18 @@ export default function SocialAccounts() {
       <DeleteDialog
         config={deleteConfig}
         setConfig={setDeleteConfig}
-        handleDelete={() => deleteAccount()}
+        handleDelete={() =>
+          deleteAccount(deleteConfig, {
+            onSuccess: () => {
+              refetchAccounts();
+              setDeleteConfig({
+                id: "",
+                isOpen: false,
+                platform: "",
+              });
+            },
+          })
+        }
         message="Are you sure you want to delete this account?"
         title="Delete Account"
         loading={isDeletingPending}

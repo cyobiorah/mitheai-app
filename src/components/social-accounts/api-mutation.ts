@@ -9,9 +9,12 @@ export const useConnectLinkedIn = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      console.log({ err });
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to LinkedIn, try again!",
+        description:
+          err?.response?.data?.error ??
+          "Failed to connect to LinkedIn, try again!",
         variant: "destructive",
       });
     },
@@ -106,22 +109,21 @@ export const useConnectYoutube = () => {
       window.location.href = response;
     },
     onError: (err: any) => {
+      console.log({ err });
       toast({
         title: "Connection Failed",
-        description: err.message ?? "Failed to connect to Youtube, try again!",
+        description:
+          err?.response?.data?.error ??
+          "Failed to connect to Youtube, try again!",
         variant: "destructive",
       });
     },
   });
 };
 
-export const useDeleteAccount = (deleteConfig: {
-  id: string;
-  platform: string;
-}) => {
-  const { id, platform } = deleteConfig;
+export const useDeleteAccount = () => {
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ id, platform }: { id: string; platform: string }) => {
       const disconnectFn =
         platform === "tiktok"
           ? socialApi.disconnectTikTok

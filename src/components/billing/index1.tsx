@@ -33,8 +33,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "../../lib/queryClient";
 import { Switch } from "../ui/switch";
 import { formatDate } from "../../lib/utils";
-import { InvoiceTable } from "./Invoice";
-import { InvoiceTableFallback } from "./InvoiceTableFallback";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
@@ -43,9 +41,6 @@ const Billing = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("subscription");
   const [isYearly, setIsYearly] = useState(false);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
-
-  console.log({ billing });
 
   const tabItems = [
     { value: "subscription", label: "Subscription" },
@@ -56,10 +51,9 @@ const Billing = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const subscribed = searchParams.get("subscribed");
-    const canceled = searchParams.get("canceled");
     const error = searchParams.get("error");
 
-    const needsFetch = subscribed === "true" || canceled === "true" || error;
+    const needsFetch = subscribed === "true" || error;
 
     if (needsFetch) {
       fetchUserData();
@@ -84,33 +78,18 @@ const Billing = () => {
 
   const { mutate: createCheckoutSession, isPending: isCreatingPending } =
     useMutation({
-      mutationFn: async ({ priceId }: { priceId: string }) => {
-        let billingData: any = {
-          userId: user?._id,
-          email: user?.email,
-          priceId,
-        };
-
-        console.log({ billing });
-
-        if (billing?.stripeCustomerId) {
-          billingData = {
-            ...billingData,
-            stripeCustomerId: billing?.stripeCustomerId,
-          };
-        }
-
-        if (billing?.hasUsedTrial) {
-          billingData = {
-            ...billingData,
-            usedTrial: true,
-          };
-        }
-
+      mutationFn: async ({ planId }: { planId: string }) => {
         const response = await apiRequest(
           "POST",
           "/checkout/create-checkout-session",
-          billingData
+          {
+            userId: user?._id,
+            email: user?.email,
+            planId,
+            ...(billing?.stripeCustomerId && {
+              stripeCustomerId: billing?.stripeCustomerId,
+            }),
+          }
         );
         window.location.href = response.url;
       },
@@ -129,7 +108,7 @@ const Billing = () => {
       });
     },
     onSuccess: () => {
-      fetchUserData();
+      fetchUserData(); // Refresh user state
       toast({
         title: "Subscription Cancelled",
         description:
@@ -196,47 +175,24 @@ const Billing = () => {
   };
 
   const handleUpgradeDowngrade = (plan: any) => {
-    const priceId = isYearly ? plan.priceYearlyId : plan.priceMonthlyId;
-    createCheckoutSession({ priceId });
-  };
-
-  // const getPlanActionText = (planId: string) => {
-  //   if (!billing?.subscriptionTier) {
-  //     return "Choose Plan";
-  //   }
-
-  //   if (billing.subscriptionTier === planId) return "Current Plan";
-
-  //   const tiers = ["test", "creator", "pro"];
-  //   const currentIndex = tiers.indexOf(billing.subscriptionTier);
-  //   const targetIndex = tiers.indexOf(planId);
-
-  //   if (targetIndex > currentIndex) return "Upgrade";
-  //   if (targetIndex < currentIndex) return "Change Plan";
-
-  //   return "Current Plan";
-  // };
-
-  const getPlanActionText = (planId: string) => {
-    console.log({ planId });
-    if (!billing?.planId) {
-      return "Choose Plan";
+    let planId: string;
+    if (isYearly) {
+      planId = plan.priceYearlyId;
+    } else {
+      planId = plan.priceMonthlyId;
     }
-
-    if (billing.planId === planId) return "Current Plan";
-
-    const tiers = ["test", "creator", "pro"];
-    const currentIndex = tiers.indexOf(billing.planId);
-    const targetIndex = tiers.indexOf(planId);
-
-    if (targetIndex > currentIndex) return "Upgrade";
-    if (targetIndex < currentIndex) return "Downgrade";
-
-    return "Current Plan";
+    createCheckoutSession({ planId });
   };
+
+  function calculateDaysLeft(currentDate: Date, endDate: Date): number {
+    const diff = endDate.getTime() - currentDate.getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  }
+
+  console.log({ billing });
 
   const renderSubscriptionInfo = () => {
-    if (!billing?.stripeCustomerId || !billing?.renewalDate) {
+    if (!billing?.stripeCustomerId) {
       return (
         <div className="space-y-4">
           <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -268,6 +224,21 @@ const Billing = () => {
                   {formatDate(billing?.renewalDate, "PPP pp")}
                 </p>
               )}
+              {billing?.paymentStatus === "trialing" &&
+                billing?.renewalDate && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    )}{" "}
+                    day
+                    {calculateDaysLeft(
+                      new Date(),
+                      new Date(billing.renewalDate)
+                    ) !== 1 && "s"}{" "}
+                    left in your trial.
+                  </p>
+                )}
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -312,52 +283,68 @@ const Billing = () => {
     );
   };
 
-  // const renderInvoiceHistory = () => {
-  //   if (invoices.length === 0 && !loading) {
-  //     return (
-  //       <div className="text-center p-6">
-  //         <p className="text-gray-500 dark:text-gray-400">
-  //           No invoices to display
-  //         </p>
-  //       </div>
-  //     );
-  //   }
+  const renderInvoiceHistory = () => {
+    if (invoices.length === 0 && !loading) {
+      return (
+        <div className="text-center p-6">
+          <p className="text-gray-500 dark:text-gray-400">
+            No invoices to display
+          </p>
+        </div>
+      );
+    }
 
-  //   return (
-  //     <div className="overflow-x-auto">
-  //       <table className="w-full">
-  //         <thead>
-  //           <tr className="border-b dark:border-gray-700">
-  //             <th className="py-3 px-4 text-left">Invoice</th>
-  //             <th className="py-3 px-4 text-left">Date</th>
-  //             <th className="py-3 px-4 text-left">Amount</th>
-  //             <th className="py-3 px-4 text-left">Status</th>
-  //             <th className="py-3 px-4 text-right">Action</th>
-  //           </tr>
-  //         </thead>
-  //         <tbody>
-  //           {invoices?.map((invoice: any) => (
-  //             <tr key={invoice._id} className="border-b dark:border-gray-700">
-  //               <td className="py-3 px-4">{invoice._id}</td>
-  //               <td className="py-3 px-4">
-  //                 {formatDate(invoice.createdAt, "PPP")}
-  //               </td>
-  //               <td className="py-3 px-4">${invoice.amountPaid}</td>
-  //               <td className="py-3 px-4">
-  //                 <Badge variant="outline">{invoice.status}</Badge>
-  //               </td>
-  //               <td className="py-3 px-4 text-right">
-  //                 <Button variant="ghost" size="sm">
-  //                   Download
-  //                 </Button>
-  //               </td>
-  //             </tr>
-  //           ))}
-  //         </tbody>
-  //       </table>
-  //     </div>
-  //   );
-  // };
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b dark:border-gray-700">
+              <th className="py-3 px-4 text-left">Invoice</th>
+              <th className="py-3 px-4 text-left">Date</th>
+              <th className="py-3 px-4 text-left">Amount</th>
+              <th className="py-3 px-4 text-left">Status</th>
+              <th className="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices?.map((invoice: any) => (
+              <tr key={invoice._id} className="border-b dark:border-gray-700">
+                <td className="py-3 px-4">{invoice._id}</td>
+                <td className="py-3 px-4">
+                  {formatDate(invoice.createdAt, "PPP")}
+                </td>
+                <td className="py-3 px-4">${invoice.amountPaid}</td>
+                <td className="py-3 px-4">
+                  <Badge variant="outline">{invoice.status}</Badge>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <Button variant="ghost" size="sm">
+                    Download
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  const getPlanActionText = (planId: string) => {
+    console.log({ planId });
+    if (billing?.productId === planId) {
+      return "Current Plan";
+    }
+
+    const tiers = ["free", "basic", "pro", "business"];
+    const currentIndex = tiers.indexOf(billing?.subscriptionTier ?? "free");
+    const targetIndex = tiers.indexOf(planId);
+
+    if (targetIndex > currentIndex) return "Upgrade";
+    if (targetIndex < currentIndex) return "Change Plan";
+
+    return "Current Plan";
+  };
 
   return (
     <div className="space-y-6">
@@ -401,7 +388,7 @@ const Billing = () => {
               <CardDescription>
                 Choose the plan that works best for you
               </CardDescription>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
                 <Switch
                   checked={isYearly}
@@ -409,27 +396,36 @@ const Billing = () => {
                   aria-label="Toggle yearly billing"
                 />
                 <span className={isYearly ? "font-bold" : ""}>Yearly</span>
-              </div>
+              </div> */}
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
                 {displayedPlans.map((plan) => (
                   <div
                     key={plan.id}
-                    className="border rounded-lg p-6 space-y-4"
+                    className={`border rounded-lg p-6 space-y-4 relative`}
                   >
+                    {/* {plan.isPopular && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary px-3 py-1 rounded-full text-white text-xs font-medium">
+                        Most Popular
+                      </div>
+                    )} */}
                     <div className="flex items-center space-x-3">
-                      <h3 className="font-bold text-lg capitalize">
-                        {plan.name}
-                      </h3>
+                      <div>
+                        <h3 className="font-bold text-lg capitalize">
+                          {plan.name}
+                        </h3>
+                      </div>
                     </div>
-                    <div className="flex items-baseline">
-                      <span className="text-3xl font-bold">
-                        ${plan.displayPrice}
-                      </span>
-                      <span className="ml-1 text-gray-500 dark:text-gray-400">
-                        {plan.displayPeriod}
-                      </span>
+                    <div>
+                      <div className="flex items-baseline">
+                        <span className="text-3xl font-bold">
+                          ${plan.displayPrice}
+                        </span>
+                        <span className="ml-1 text-gray-500 dark:text-gray-400">
+                          {plan.displayPeriod}
+                        </span>
+                      </div>
                     </div>
                     <ul className="space-y-2">
                       {plan.features.map((feature: string) => (
@@ -442,17 +438,16 @@ const Billing = () => {
                         </li>
                       ))}
                     </ul>
-                    {/* {plan.id === "test" ? (
-                      <Button disabled variant="outline" className="w-full">
-                        Testing Only
-                      </Button>
-                    ) : (
-                    )} */}
                     <Button
                       className="w-full"
-                      onClick={() => handleUpgradeDowngrade(plan)}
+                      variant={plan.disabled ? "outline" : "default"}
+                      disabled={plan.disabled}
+                      onClick={() => {
+                        if (plan.id === "free") return;
+                        createCheckoutSession({ planId: plan.id });
+                      }}
                     >
-                      {getPlanActionText(plan.id)}
+                      {getPlanActionText(plan.productId)}
                     </Button>
                   </div>
                 ))}
@@ -463,29 +458,21 @@ const Billing = () => {
 
         <TabsContent value="invoices">
           <Card>
-            <CardHeader className="relative">
+            <CardHeader>
               <CardTitle>Invoice History</CardTitle>
               <CardDescription>
                 View and download your past invoices
               </CardDescription>
-              <Button
-                onClick={() =>
-                  setViewMode(viewMode === "card" ? "table" : "card")
-                }
-                variant="default"
-                size="sm"
-                className="rounded-lg absolute top-3 right-7"
-              >
-                Switch to {viewMode === "card" ? "Table" : "Card"} View
-              </Button>
             </CardHeader>
-            <CardContent>
-              {viewMode === "card" ? (
-                <InvoiceTable invoices={invoices} />
-              ) : (
-                <InvoiceTableFallback invoices={invoices} />
+            <CardContent>{renderInvoiceHistory()}</CardContent>
+            {billing?.subscriptionStatus !== "inactive" &&
+              billing?.invoices?.length && (
+                <CardFooter>
+                  <Button variant="outline" className="ml-auto">
+                    Download All Invoices
+                  </Button>
+                </CardFooter>
               )}
-            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

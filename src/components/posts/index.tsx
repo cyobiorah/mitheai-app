@@ -51,6 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { hasValidSubscription } from "../../lib/access";
 
 const STATUS_ICONS = {
   published: CheckCircle2,
@@ -72,6 +73,7 @@ const Posts = () => {
   });
 
   const { user, isAuthenticated } = useAuth();
+  const { billing } = user;
   const navigate = useNavigate();
 
   const {
@@ -283,7 +285,18 @@ const Posts = () => {
           You haven't created any posts yet. Create your first post to get
           started.
         </p>
-        <Button onClick={() => navigate("/dashboard/post-flow")}>
+        <Button
+          onClick={() => {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
+              toast({
+                variant: "destructive",
+                title: "Upgrade your plan to manage collections.",
+              });
+            } else {
+              navigate("/dashboard/post-flow");
+            }
+          }}
+        >
           <Plus size={16} className="mr-2" />
           Create Post
         </Button>
@@ -313,7 +326,16 @@ const Posts = () => {
             Refresh
           </Button>
           <Button
-            onClick={() => navigate("/dashboard/post-flow")}
+            onClick={() => {
+              if (!hasValidSubscription(billing?.paymentStatus)) {
+                toast({
+                  variant: "destructive",
+                  title: "Upgrade your plan to manage collections.",
+                });
+              } else {
+                navigate("/dashboard/post-flow");
+              }
+            }}
             className="gap-2"
           >
             <Plus size={16} />

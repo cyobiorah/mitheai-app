@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../../lib/queryClient";
 import { useToast } from "../../../hooks/use-toast";
-import { Link } from "react-router-dom";
 import { formatDate, getDateKey } from "../../../lib/utils";
 import { Button } from "../../ui/button";
 import {
@@ -25,8 +24,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Loader2, Calendar as CalendarIcon, Plus } from "lucide-react";
 import { getScheduledPostListView } from "./listView";
 import { getScheduledPostCalendarView } from "./calendarView";
+import { hasValidSubscription } from "../../../lib/access";
+import { useAuth } from "../../../store/hooks";
+import { useNavigate } from "react-router-dom";
 
 export default function ScheduledPosts() {
+  const { user } = useAuth();
+  const { billing } = user;
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date()
   );
@@ -144,11 +149,12 @@ export default function ScheduledPosts() {
             Manage your scheduled social media posts
           </p>
         </div>
-        <Button asChild>
-          <Link to="/dashboard/post-flow">
-            <Plus size={16} className="mr-2" />
-            Create Post
-          </Link>
+        <Button
+          disabled={!hasValidSubscription(billing?.paymentStatus)}
+          onClick={() => navigate("/dashboard/post-flow")}
+        >
+          <Plus size={16} className="mr-2" />
+          Create Post
         </Button>
       </div>
 
@@ -207,6 +213,8 @@ export default function ScheduledPosts() {
                     postsByDate: filterPostsByDate(selectedDate),
                     updatePostStatus,
                     handleDeletePost,
+                    navigate,
+                    user,
                   })}
                 </CardContent>
               </Card>
@@ -226,7 +234,9 @@ export default function ScheduledPosts() {
                 isFetchingScheduledPosts,
                 scheduledPosts,
                 updatePostStatus,
-                handleDeletePost
+                handleDeletePost,
+                navigate,
+                user
               )}
             </CardContent>
           </Card>
