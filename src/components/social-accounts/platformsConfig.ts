@@ -1,5 +1,5 @@
 import {
-  FaTwitter,
+  FaXTwitter,
   FaYoutube,
   FaThreads,
   FaTiktok,
@@ -8,41 +8,9 @@ import {
   FaInstagram,
 } from "react-icons/fa6";
 
+const isDev = process.env.NODE_ENV === "development";
+
 export const platformConfigs = [
-  {
-    name: "Twitter",
-    label: "twitter",
-    logo: FaTwitter,
-    theme: {
-      bg: "bg-[#E8F5FD]",
-      border: "border-[#1DA1F2]",
-      text: "text-[#1DA1F2]",
-    },
-    description: "Post tweets, schedule threads, and view basic profile info.",
-    permissions: ["Read basic profile information", "Post tweets"],
-    constraints: "Only text posts are supported for now.",
-    scopes: ["tweet.read", "tweet.write", "users.read", "offline.access"],
-    platformDocsUrl: "https://developer.twitter.com/en/docs/twitter-api",
-    comingSoon: false,
-  },
-  {
-    name: "YouTube",
-    label: "youtube",
-    logo: FaYoutube,
-    theme: {
-      bg: "bg-[#FFEBEE]",
-      border: "border-[#FF0000]",
-      text: "text-[#FF0000]",
-    },
-    description: "Schedule and publish videos to your connected channel.",
-    permissions: ["Upload videos", "Edit metadata"],
-    constraints:
-      'Requires a YouTube channel. Ensure to select <span class="font-bold">"Manage your YouTube videos"</span> in the following Google Auth Screen.',
-    scopes: ["https://www.googleapis.com/auth/youtube.upload"],
-    platformDocsUrl:
-      "https://developers.google.com/youtube/registering_an_application",
-    comingSoon: false,
-  },
   {
     name: "Instagram",
     label: "instagram",
@@ -83,20 +51,37 @@ export const platformConfigs = [
     comingSoon: false,
   },
   {
-    name: "TikTok",
-    label: "tiktok",
-    logo: FaTiktok,
+    name: "Threads",
+    label: "threads",
+    logo: FaThreads,
     theme: {
-      bg: "bg-[#F9F5FF]",
-      border: "border-[#010101]",
-      text: "text-[#010101]",
+      bg: "bg-[#EDEDED]",
+      border: "border-black",
+      text: "text-black",
     },
-    description: "Schedule and publish video posts to your TikTok account.",
-    permissions: ["Upload videos", "Publish videos"],
-    constraints: "Requires a business or creator account.",
-    scopes: ["video.upload", "video.publish"],
+    description: "Schedule and publish threads to your connected account.",
+    permissions: ["Post threads", "Upload media"],
+    constraints: "Requires a Threads account connected to Instagram.",
+    scopes: [], // currently non-public API
+    platformDocsUrl: "https://developers.facebook.com/docs/threads",
+    comingSoon: false,
+  },
+  {
+    name: "YouTube",
+    label: "youtube",
+    logo: FaYoutube,
+    theme: {
+      bg: "bg-[#FFEBEE]",
+      border: "border-[#FF0000]",
+      text: "text-[#FF0000]",
+    },
+    description: "Schedule and publish videos to your connected channel.",
+    permissions: ["Upload videos", "Edit metadata"],
+    constraints:
+      'Requires a YouTube channel. Ensure to select <span class="font-bold">"Manage your YouTube videos"</span> in the following Google Auth Screen.',
+    scopes: ["https://www.googleapis.com/auth/youtube.upload"],
     platformDocsUrl:
-      "https://developers.tiktok.com/doc/login-kit-manage-user-access-token",
+      "https://developers.google.com/youtube/registering_an_application",
     comingSoon: false,
   },
   {
@@ -117,19 +102,41 @@ export const platformConfigs = [
     comingSoon: false,
   },
   {
-    name: "Threads",
-    label: "threads",
-    logo: FaThreads,
+    name: "TikTok",
+    label: "tiktok",
+    logo: FaTiktok,
     theme: {
-      bg: "bg-[#EDEDED]",
-      border: "border-black",
-      text: "text-black",
+      bg: "bg-[#F9F5FF]",
+      border: "border-[#010101]",
+      text: "text-[#010101]",
     },
-    description: "Schedule and publish threads to your connected account.",
-    permissions: ["Post threads", "Upload media"],
-    constraints: "Requires a Threads account connected to Instagram.",
-    scopes: [], // currently non-public API
-    platformDocsUrl: "https://developers.facebook.com/docs/threads",
-    comingSoon: false,
+    description: "Schedule and publish video posts to your TikTok account.",
+    permissions: ["Upload videos", "Publish videos"],
+    constraints: "Requires a business or creator account.",
+    scopes: ["video.upload", "video.publish"],
+    platformDocsUrl:
+      "https://developers.tiktok.com/doc/login-kit-manage-user-access-token",
+    comingSoon: !isDev,
+  },
+  {
+    name: "X(Twitter)",
+    label: "twitter",
+    logo: FaXTwitter,
+    // theme: {
+    //   bg: "bg-[#E8F5FD]",
+    //   border: "border-[#1DA1F2]",
+    //   text: "text-[#1DA1F2]",
+    // },
+    theme: {
+      bg: "bg-[#F9F5FF]",
+      border: "border-[#010101]",
+      text: "text-[#010101]",
+    },
+    description: "Post tweets, schedule threads, and view basic profile info.",
+    permissions: ["Read basic profile information", "Post tweets"],
+    constraints: "Only text posts are supported for now.",
+    scopes: ["tweet.read", "tweet.write", "users.read", "offline.access"],
+    platformDocsUrl: "https://developer.twitter.com/en/docs/twitter-api",
+    comingSoon: !isDev,
   },
 ];
