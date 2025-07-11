@@ -65,6 +65,7 @@ const Posts = () => {
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
     isOpen: false,
+    postAccountId: "",
   });
   const [collectionConfig, setCollectionConfig] = useState({
     collectionId: "",
@@ -99,28 +100,41 @@ const Posts = () => {
     refetch: () => void;
   };
 
-  const { mutate: deletePost, isPending: isDeletingPending } = useMutation({
-    mutationFn: async (id: string) => {
-      return await apiRequest("DELETE", `/social-posts/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-posts/${user?._id}`],
-      });
-      setDeleteConfig({ id: "", isOpen: false });
-      toast({
-        title: "Post removed",
-        description: "The post has been deleted",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Removal failed",
-        description: "Failed to remove the post. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const useDeletePost = () => {
+    return useMutation({
+      mutationFn: async ({
+        postId,
+        accountId,
+      }: {
+        postId: string;
+        accountId: string;
+      }) => {
+        return await apiRequest(
+          "DELETE",
+          `/social-posts/${postId}/${accountId}`
+        );
+      },
+      // onSuccess: () => {
+      //   queryClient.invalidateQueries({
+      //     queryKey: [`/social-posts/${user?._id}`],
+      //   });
+      //   setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
+      //   toast({
+      //     title: "Post removed",
+      //     description: "The post has been deleted",
+      //   });
+      // },
+      onError: () => {
+        toast({
+          title: "Removal failed",
+          description: "Failed to remove the post. Please try again.",
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const { mutate: deletePost, isPending: isDeletingPending } = useDeletePost();
 
   const { mutate: addToCollection, isPending: isAddingToCollection } =
     useMutation({
@@ -453,6 +467,7 @@ const Posts = () => {
                               setDeleteConfig({
                                 id: post._id,
                                 isOpen: true,
+                                postAccountId: post.socialAccountId,
                               })
                             }
                           >
@@ -524,7 +539,12 @@ const Posts = () => {
       <DeleteDialog
         config={deleteConfig}
         setConfig={setDeleteConfig}
-        handleDelete={() => deletePost(deleteConfig.id)}
+        handleDelete={() =>
+          deletePost({
+            postId: deleteConfig.id,
+            accountId: deleteConfig.postAccountId,
+          })
+        }
         message="Are you sure you want to delete this post?"
         title="Delete Post"
       />
