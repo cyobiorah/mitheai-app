@@ -12,9 +12,9 @@ import { Button } from "../components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 
 export default function HomePage() {
-  const { data: plans = [] } = useQuery({
+  const { data: plans = [], isLoading: plansLoading } = useQuery({
     queryKey: [`/plans`],
-  }) as { data: any[] };
+  }) as { data: any[]; isLoading: boolean };
 
   return (
     <div className="min-h-screen flex flex-col" id="home">
@@ -24,7 +24,7 @@ export default function HomePage() {
         <Hero />
         <Integrations />
         <Features />
-        <Solutions skedliiPlans={plans} />
+        <Solutions skedliiPlans={plans} loading={plansLoading} />
         <Testimonials />
 
         <section
