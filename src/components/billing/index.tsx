@@ -200,23 +200,6 @@ const Billing = () => {
     createCheckoutSession({ priceId });
   };
 
-  // const getPlanActionText = (planId: string) => {
-  //   if (!billing?.subscriptionTier) {
-  //     return "Choose Plan";
-  //   }
-
-  //   if (billing.subscriptionTier === planId) return "Current Plan";
-
-  //   const tiers = ["test", "creator", "pro"];
-  //   const currentIndex = tiers.indexOf(billing.subscriptionTier);
-  //   const targetIndex = tiers.indexOf(planId);
-
-  //   if (targetIndex > currentIndex) return "Upgrade";
-  //   if (targetIndex < currentIndex) return "Change Plan";
-
-  //   return "Current Plan";
-  // };
-
   const getPlanActionText = (planId: string) => {
     console.log({ planId });
     if (!billing?.planId) {
@@ -312,53 +295,6 @@ const Billing = () => {
     );
   };
 
-  // const renderInvoiceHistory = () => {
-  //   if (invoices.length === 0 && !loading) {
-  //     return (
-  //       <div className="text-center p-6">
-  //         <p className="text-gray-500 dark:text-gray-400">
-  //           No invoices to display
-  //         </p>
-  //       </div>
-  //     );
-  //   }
-
-  //   return (
-  //     <div className="overflow-x-auto">
-  //       <table className="w-full">
-  //         <thead>
-  //           <tr className="border-b dark:border-gray-700">
-  //             <th className="py-3 px-4 text-left">Invoice</th>
-  //             <th className="py-3 px-4 text-left">Date</th>
-  //             <th className="py-3 px-4 text-left">Amount</th>
-  //             <th className="py-3 px-4 text-left">Status</th>
-  //             <th className="py-3 px-4 text-right">Action</th>
-  //           </tr>
-  //         </thead>
-  //         <tbody>
-  //           {invoices?.map((invoice: any) => (
-  //             <tr key={invoice._id} className="border-b dark:border-gray-700">
-  //               <td className="py-3 px-4">{invoice._id}</td>
-  //               <td className="py-3 px-4">
-  //                 {formatDate(invoice.createdAt, "PPP")}
-  //               </td>
-  //               <td className="py-3 px-4">${invoice.amountPaid}</td>
-  //               <td className="py-3 px-4">
-  //                 <Badge variant="outline">{invoice.status}</Badge>
-  //               </td>
-  //               <td className="py-3 px-4 text-right">
-  //                 <Button variant="ghost" size="sm">
-  //                   Download
-  //                 </Button>
-  //               </td>
-  //             </tr>
-  //           ))}
-  //         </tbody>
-  //       </table>
-  //     </div>
-  //   );
-  // };
-
   return (
     <div className="space-y-6">
       <div>
@@ -394,7 +330,7 @@ const Billing = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="plans">
+        {/* <TabsContent value="plans">
           <Card>
             <CardHeader>
               <CardTitle>Available Plans</CardTitle>
@@ -442,12 +378,6 @@ const Billing = () => {
                         </li>
                       ))}
                     </ul>
-                    {/* {plan.id === "test" ? (
-                      <Button disabled variant="outline" className="w-full">
-                        Testing Only
-                      </Button>
-                    ) : (
-                    )} */}
                     <Button
                       className="w-full"
                       onClick={() => handleUpgradeDowngrade(plan)}
@@ -456,6 +386,90 @@ const Billing = () => {
                     </Button>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent> */}
+
+        <TabsContent value="plans">
+          <Card>
+            <CardHeader>
+              <CardTitle>Available Plans</CardTitle>
+              <CardDescription>
+                Choose the plan that works best for you
+              </CardDescription>
+              <div className="flex items-center gap-2 mt-4">
+                <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
+                <Switch
+                  checked={isYearly}
+                  onCheckedChange={setIsYearly}
+                  aria-label="Toggle yearly billing"
+                />
+                <span className={isYearly ? "font-bold" : ""}>Yearly</span>
+              </div>
+            </CardHeader>
+
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-3">
+                {displayedPlans.map((plan) => {
+                  const displayPrice = isYearly
+                    ? plan.priceYearly
+                    : plan.priceMonthly;
+                  const displayPeriod = isYearly ? "yearly" : "monthly";
+                  const isCurrentPlan = billing?.productId === plan.productId;
+
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`border rounded-lg p-6 space-y-4 ${
+                        plan.isPopular
+                          ? "border-primary-500 shadow-lg"
+                          : "border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <h3 className="font-bold text-lg capitalize">
+                          {plan.name}
+                        </h3>
+                        {plan.badge && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300">
+                            {plan.badge}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-baseline">
+                        <span className="text-3xl font-bold">
+                          ${displayPrice}
+                        </span>
+                        <span className="ml-1 text-gray-500 dark:text-gray-400">
+                          {displayPeriod}
+                        </span>
+                      </div>
+
+                      <ul className="space-y-2">
+                        {plan.features.map((feature: string) => (
+                          <li
+                            key={feature}
+                            className="flex items-center space-x-2"
+                          >
+                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <Button
+                        className="w-full"
+                        variant={isCurrentPlan ? "secondary" : "default"}
+                        onClick={() => handleUpgradeDowngrade(plan)}
+                        disabled={isCurrentPlan}
+                      >
+                        {getPlanActionText(plan.id)}
+                      </Button>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

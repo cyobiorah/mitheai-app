@@ -9,8 +9,13 @@ import Testimonials from "../components/home/Testimonials";
 import FrequentlyAskedQuestions from "../components/home/FAQ";
 import CallToAction from "../components/home/CTA";
 import { Button } from "../components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HomePage() {
+  const { data: plans = [] } = useQuery({
+    queryKey: [`/plans`],
+  }) as { data: any[] };
+
   return (
     <div className="min-h-screen flex flex-col" id="home">
       <Header />
@@ -19,7 +24,7 @@ export default function HomePage() {
         <Hero />
         <Integrations />
         <Features />
-        <Solutions />
+        <Solutions skedliiPlans={plans} />
         <Testimonials />
 
         <section
