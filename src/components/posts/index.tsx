@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { apiRequest, queryClient } from "../../lib/queryClient";
+import { apiRequest } from "../../lib/queryClient";
 import { toast } from "../../hooks/use-toast";
 import DeleteDialog from "../dialog/DeleteDialog";
 import {
@@ -114,16 +114,6 @@ const Posts = () => {
           `/social-posts/${postId}/${accountId}`
         );
       },
-      // onSuccess: () => {
-      //   queryClient.invalidateQueries({
-      //     queryKey: [`/social-posts/${user?._id}`],
-      //   });
-      //   setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
-      //   toast({
-      //     title: "Post removed",
-      //     description: "The post has been deleted",
-      //   });
-      // },
       onError: () => {
         toast({
           title: "Removal failed",
