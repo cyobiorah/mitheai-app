@@ -28,7 +28,6 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
-import AuthModal from "../../components/auth/AuthModal";
 import { useMobileMenuStore } from "../../store/layout";
 
 export default function Header() {
@@ -36,13 +35,14 @@ export default function Header() {
   const navigate = useNavigate();
 
   const { user, isAuthenticated, logout } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState<
-    "login" | "register" | null
-  >(null);
   const [scrolled, setScrolled] = useState(false);
 
-  const handleLogin = () => setShowAuthModal("login");
-  const handleCloseModal = () => setShowAuthModal(null);
+  const handleLogin = () => {
+    if (mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+    navigate("/login");
+  };
 
   const mobileMenuOpen = useMobileMenuStore(
     (state: any) => state.mobileMenuOpen
@@ -208,10 +208,10 @@ export default function Header() {
                     Sign In
                   </Button>
                   <Link
-                    to="/waitlist"
+                    to="/register"
                     className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-medium shadow-lg shadow-primary-500/20 dark:shadow-none rounded-full px-6 p-1.5"
                   >
-                    Join Waitlist
+                    Start Free Trial
                   </Link>
                 </>
               )}
@@ -371,21 +371,18 @@ export default function Header() {
                         <Button
                           variant="outline"
                           className="w-full justify-start"
-                          onClick={() => {
-                            setShowAuthModal("login");
-                            setMobileMenuOpen(false);
-                          }}
+                          onClick={handleLogin}
                         >
                           Sign In
                         </Button>
                         <Button
                           className="w-full justify-start bg-gradient-to-r from-primary-500 to-primary-600"
                           onClick={() => {
-                            navigate("/waitlist");
+                            navigate("/register");
                             setMobileMenuOpen(false);
                           }}
                         >
-                          Join Waitlist
+                          Start Free Trial
                         </Button>
                       </div>
                     )}
@@ -485,14 +482,6 @@ export default function Header() {
           </SheetContent>
         </Sheet>
       </div>
-
-      {showAuthModal && (
-        <AuthModal
-          type={showAuthModal}
-          isOpen={!!showAuthModal}
-          onClose={handleCloseModal}
-        />
-      )}
     </header>
   );
 }

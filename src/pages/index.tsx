@@ -9,8 +9,13 @@ import Testimonials from "../components/home/Testimonials";
 import FrequentlyAskedQuestions from "../components/home/FAQ";
 import CallToAction from "../components/home/CTA";
 import { Button } from "../components/ui/button";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HomePage() {
+  const { data: plans = [], isLoading: plansLoading } = useQuery({
+    queryKey: [`/plans`],
+  }) as { data: any[]; isLoading: boolean };
+
   return (
     <div className="min-h-screen flex flex-col" id="home">
       <Header />
@@ -19,28 +24,28 @@ export default function HomePage() {
         <Hero />
         <Integrations />
         <Features />
-        <Solutions />
+        <Solutions skedliiPlans={plans} loading={plansLoading} />
         <Testimonials />
 
         <section
-          id="waitlist"
+          id="trial-cta"
           className="py-16 bg-primary-600 text-white dark:bg-primary-900"
         >
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4">
-              Join Our Waitlist
+              Start Your Free Trial
             </h2>
             <p className="text-lg text-primary-100 mb-8">
-              Be among the first to experience Skedlii. Early access members
-              receive extended trial periods and special pricing.
+              Full access for 7 days. Card required. Cancel anytime during
+              trial.
             </p>
-            <Link to="/waitlist">
+            <Link to="/register">
               <Button
                 size="lg"
                 variant="secondary"
                 className="bg-white text-primary-600 hover:bg-gray-100"
               >
-                Get Early Access
+                Start Free Trial
               </Button>
             </Link>
           </div>

@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { apiRequest, queryClient } from "../../lib/queryClient";
+import { apiRequest } from "../../lib/queryClient";
 import { toast } from "../../hooks/use-toast";
 import DeleteDialog from "../dialog/DeleteDialog";
 import {
@@ -51,6 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { hasValidSubscription } from "../../lib/access";
 
 const STATUS_ICONS = {
   published: CheckCircle2,
@@ -64,6 +65,7 @@ const Posts = () => {
   const [deleteConfig, setDeleteConfig] = useState({
     id: "",
     isOpen: false,
+    postAccountId: "",
   });
   const [collectionConfig, setCollectionConfig] = useState({
     collectionId: "",
@@ -72,6 +74,7 @@ const Posts = () => {
   });
 
   const { user, isAuthenticated } = useAuth();
+  const { billing } = user;
   const navigate = useNavigate();
 
   const {
@@ -97,28 +100,39 @@ const Posts = () => {
     refetch: () => void;
   };
 
-  const { mutate: deletePost, isPending: isDeletingPending } = useMutation({
-    mutationFn: async (id: string) => {
-      return await apiRequest("DELETE", `/social-posts/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`/social-posts/${user?._id}`],
-      });
-      setDeleteConfig({ id: "", isOpen: false });
-      toast({
-        title: "Post removed",
-        description: "The post has been deleted",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Removal failed",
-        description: "Failed to remove the post. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const useDeletePost = () => {
+    return useMutation({
+      mutationFn: async ({
+        postId,
+        accountId,
+      }: {
+        postId: string;
+        accountId: string;
+      }) => {
+        return await apiRequest(
+          "DELETE",
+          `/social-posts/${postId}/${accountId}`
+        );
+      },
+      onSuccess: () => {
+        setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
+        toast({
+          title: "Post deleted",
+          description: "The post has been removed successfully.",
+        });
+        refetchPosts();
+      },
+      onError: () => {
+        toast({
+          title: "Removal failed",
+          description: "Failed to remove the post. Please try again.",
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const { mutate: deletePost, isPending: isDeletingPending } = useDeletePost();
 
   const { mutate: addToCollection, isPending: isAddingToCollection } =
     useMutation({
@@ -283,7 +297,18 @@ const Posts = () => {
           You haven't created any posts yet. Create your first post to get
           started.
         </p>
-        <Button onClick={() => navigate("/dashboard/post-flow")}>
+        <Button
+          onClick={() => {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
+              toast({
+                variant: "destructive",
+                title: "Upgrade your plan to manage collections.",
+              });
+            } else {
+              navigate("/dashboard/post-flow");
+            }
+          }}
+        >
           <Plus size={16} className="mr-2" />
           Create Post
         </Button>
@@ -313,7 +338,16 @@ const Posts = () => {
             Refresh
           </Button>
           <Button
-            onClick={() => navigate("/dashboard/post-flow")}
+            onClick={() => {
+              if (!hasValidSubscription(billing?.paymentStatus)) {
+                toast({
+                  variant: "destructive",
+                  title: "Upgrade your plan to manage collections.",
+                });
+              } else {
+                navigate("/dashboard/post-flow");
+              }
+            }}
             className="gap-2"
           >
             <Plus size={16} />
@@ -431,6 +465,7 @@ const Posts = () => {
                               setDeleteConfig({
                                 id: post._id,
                                 isOpen: true,
+                                postAccountId: post.socialAccountId,
                               })
                             }
                           >
@@ -502,7 +537,12 @@ const Posts = () => {
       <DeleteDialog
         config={deleteConfig}
         setConfig={setDeleteConfig}
-        handleDelete={() => deletePost(deleteConfig.id)}
+        handleDelete={() =>
+          deletePost({
+            postId: deleteConfig.id,
+            accountId: deleteConfig.postAccountId,
+          })
+        }
         message="Are you sure you want to delete this post?"
         title="Delete Post"
       />

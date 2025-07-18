@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
-import { User, Organization, Team } from "../types";
+import { Organization, Team } from "../types";
 import { useTeamStore } from "./teamStore";
 
 interface AuthState {
   // State
-  user: User | null;
+  user: any;
   token: string | null;
   organization: Organization | null;
   teams: Team[];
@@ -92,26 +92,6 @@ export const useAuthStore = create<AuthState>()(
           return { success: false, status, message };
         }
       },
-
-      // logout: async () => {
-      //   try {
-      //     await authApi.logout();
-      //   } catch (error) {
-      //     console.error("Logout error:", error);
-      //   } finally {
-      //     localStorage.removeItem("auth_token");
-      //     set({
-      //       user: null,
-      //       token: null,
-      //       organization: null,
-      //       teams: [],
-      //     });
-      //     useTeamStore.setState({ activeTeam: null, teams: [] });
-      //     localStorage.removeItem("skedlii-storage");
-      //     localStorage.removeItem("skedlii-team-storage");
-      //     localStorage.removeItem("skedlii-theme");
-      //   }
-      // },
 
       logout: logoutUser,
 

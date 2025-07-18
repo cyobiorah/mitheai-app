@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import {
   Card,
@@ -9,12 +8,7 @@ import {
   CardTitle,
 } from "../../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
-import { toast } from "../../../hooks/use-toast";
 import { Loader2, Save, Clock, Send } from "lucide-react";
-import AccountSelection from "./AccountSelection";
-import PlatformCaptions from "./PlatformCaption";
-import MediaUpload from "./MediaUpload";
-import SchedulingOptions from "./SchedulingOptions";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../../store/hooks";
 import {
@@ -24,17 +18,21 @@ import {
   handleSchedulingChange,
 } from "./methods";
 import { MediaItem } from "./mediaUploadComponents";
-import socialApi from "../../../api/socialApi";
-import { getImageDimensions, getMediaDimensions } from "../../posting/methods";
 import TikTokSettingsDrawer, {
   isValidTikTokOptions,
   TikTokOptions,
 } from "./TikTokSettingsDrawer";
 import { getTikTokAccountsInfo } from "../../../api/query";
+import { useInitializeTikTokDrawer } from "./hooks/useInitializeTikTokDrawer";
+
+import AccountSelection from "./AccountSelection";
+import PlatformCaptions from "./PlatformCaption";
+import MediaUpload from "./MediaUpload";
+import SchedulingOptions from "./SchedulingOptions";
+import { usePostSubmission } from "./hooks/usePostSubmission";
 
 export default function PostFlow() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("accounts");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,299 +95,30 @@ export default function PostFlow() {
     },
   ];
 
-  // Submit the post
-  const handleSubmit = async () => {
-    if (selectedAccounts.length === 0) {
-      toast({
-        title: "Error",
-        description: "Select at least one account to post to",
-        variant: "destructive",
-      });
-      return;
-    }
+  const { handleSubmit } = usePostSubmission({
+    selectedAccounts,
+    globalCaption,
+    platformCaptions,
+    socialAccounts,
+    tiktokAccountOptions,
+    filledTikTokAccounts,
+    media,
+    isScheduled,
+    scheduledDate,
+    setIsSubmitting,
+  });
 
-    if (globalCaption.trim().length === 0) {
-      toast({
-        title: "Error",
-        description: "Caption cannot be empty",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Generate platformData with selected accounts and platform-specific captions
-    const platformData: Array<{
-      platform: string;
-      accounts: string[];
-      caption: string;
-    }> = [];
-
-    // Get unique platforms from selected accounts
-    const selectedAccountsData = socialAccounts.filter((account) =>
-      selectedAccounts.includes(account._id)
-    );
-    const platforms = Array.from(
-      new Set(selectedAccountsData.map((account) => account.platform))
-    );
-
-    const allValid = Object.entries(tiktokAccountOptions).every(
-      ([id, opts]) =>
-        filledTikTokAccounts.includes(id) && isValidTikTokOptions(opts)
-    );
-    if (platforms.includes("tiktok") && !allValid) {
-      toast({
-        title: "TikTok settings incomplete",
-        description:
-          "Go to media tab, select TikTok Settings and fill out all required fields to complete your post.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // For each platform, add the selected accounts and captions
-    platforms.forEach((platform) => {
-      const accountIds = selectedAccountsData
-        .filter((account) => account.platform === platform)
-        .map((account) => account._id);
-
-      platformData.push({
-        platform,
-        accounts: accountIds,
-        caption: platformCaptions[platform] || globalCaption,
-      });
-    });
-
-    // Type of post
-    const mediaTypes = Array.from(new Set(media.map((item) => item.type)));
-
-    let postType: "image" | "video" | "text" | "mixed";
-
-    if (media.length === 0) {
-      postType = "text";
-    } else if (mediaTypes.length === 1) {
-      postType = mediaTypes[0]; // 'image' or 'video'
-    } else {
-      postType = "mixed"; // handle this case if needed
-    }
-
-    if (postType === "mixed") {
-      toast({
-        title: "Unsupported media combination",
-        description: "Please upload only images or only videos, not both.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Prepare media URLs (In a real app, these would be uploaded to a server)
-    const mediaUrls = media.map((item) => item.url);
-
-    try {
-      // Simulate posting delay with success messages
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      toast({
-        title: "Processing",
-        description: "Preparing your content...",
-      });
-
-      if (media.length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        toast({
-          title: "Processing",
-          description: "Warming up your hashtags...",
-        });
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      if (isScheduled && scheduledDate) {
-        toast({
-          title: "Processing",
-          description: "Skedlii is lining up your post...",
-        });
-      } else {
-        toast({
-          title: "Processing",
-          description: "Queueing your awesomeness...",
-        });
-      }
-
-      if (isScheduled) {
-        for (const { platform, accounts, caption } of platformData) {
-          const platformAccounts = selectedAccountsData.filter(
-            (acc) => acc.platform === platform && accounts.includes(acc._id)
-          );
-
-          for (const account of platformAccounts) {
-            const postData: any = {
-              content: caption,
-              platforms: [
-                {
-                  platform,
-                  accountId: account.accountId,
-                  accountName: account.accountName,
-                  accountType: account.accountType,
-                },
-              ],
-              media: mediaUrls,
-              scheduledFor: new Date(scheduledDate as Date),
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-              mediaType: postType,
-            };
-
-            if (platform === "tiktok") {
-              const tiktokOpts = tiktokAccountOptions[account._id];
-              if (tiktokOpts) {
-                postData.tiktokAccountOptions = {
-                  title: tiktokOpts.title,
-                  privacy: tiktokOpts.privacy,
-                  allowComments: tiktokOpts.allowComments,
-                  allowDuet: tiktokOpts.allowDuet,
-                  allowStitch: tiktokOpts.allowStitch,
-                  isCommercial: tiktokOpts.isCommercial,
-                  brandType: tiktokOpts.brandType,
-                  agreedToPolicy: tiktokOpts.agreedToPolicy,
-                };
-              }
-            }
-
-            const formData = await handleFormData(postData, media);
-
-            try {
-              await socialApi.schedulePost(formData);
-            } catch (error) {
-              console.error("Failed to schedule post:", error);
-            }
-          }
-        }
-      } else {
-        for (const { platform, accounts, caption } of platformData) {
-          const platformAccounts = selectedAccountsData.filter(
-            (acc) => acc.platform === platform && accounts.includes(acc._id)
-          );
-
-          for (const account of platformAccounts) {
-            const postData: any = {
-              caption,
-              accountId: account.accountId,
-              id: account._id,
-              media: mediaUrls,
-              accountName: account.accountName,
-              accountType: account.accountType,
-              platform: platform,
-              platformId: account.platformId,
-              mediaType: postType,
-            };
-
-            if (platform === "tiktok") {
-              const tiktokOpts = tiktokAccountOptions[account._id];
-              if (tiktokOpts) {
-                postData.tiktokAccountOptions = {
-                  title: tiktokOpts.title,
-                  privacy: tiktokOpts.privacy,
-                  allowComments: tiktokOpts.allowComments,
-                  allowDuet: tiktokOpts.allowDuet,
-                  allowStitch: tiktokOpts.allowStitch,
-                  isCommercial: tiktokOpts.isCommercial,
-                  brandType: tiktokOpts.brandType,
-                  agreedToPolicy: tiktokOpts.agreedToPolicy,
-                };
-              }
-            }
-
-            const formData = await handleFormData(postData, media);
-
-            await socialApi.postToMultiPlatform(formData);
-          }
-        }
-      }
-
-      toast({
-        title: "Success",
-        description: isScheduled
-          ? "Your post has been scheduled!"
-          : "Your post has been published!",
-      });
-
-      navigate(`/dashboard/${isScheduled ? "scheduled" : "posts"}`);
-    } catch (error) {
-      console.error("Failed to create post:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFormData = async (postData: any, media: any) => {
-    const formData = new FormData();
-    formData.append("postData", JSON.stringify(postData));
-
-    for (const item of media) {
-      const dimensions =
-        item.type === "image"
-          ? await getImageDimensions(item.file)
-          : await getMediaDimensions(item.file);
-      formData.append("media", item.file, item.id);
-      formData.append(
-        "dimensions[]",
-        JSON.stringify({
-          id: item.id,
-          width: dimensions.width,
-          height: dimensions.height,
-        })
-      );
-    }
-
-    return formData;
-  };
-
-  useEffect(() => {
-    const tiktokAccounts = socialAccounts.filter(
-      (account) =>
-        selectedAccounts.includes(account._id) && account.platform === "tiktok"
-    );
-
-    if (tiktokAccounts.length > 0 && media.length > 0) {
-      setTiktokSelected(true);
-
-      const newOptions = { ...tiktokAccountOptions };
-      let anyMissing = false;
-
-      const caption = platformCaptions["tiktok"] || globalCaption || "";
-
-      for (const account of tiktokAccounts) {
-        if (!newOptions[account._id]) {
-          newOptions[account._id] = {
-            title: caption,
-            privacy: "",
-            allowComments: false,
-            allowDuet: false,
-            allowStitch: false,
-            isCommercial: false,
-            agreedToPolicy: false,
-            accountName: account.accountName,
-          };
-          anyMissing = true;
-        }
-      }
-
-      setTiktokAccountOptions(newOptions);
-
-      if (anyMissing) {
-        setOpenTikTokDrawer(true);
-      }
-    } else {
-      setTiktokSelected(false);
-    }
-  }, [selectedAccounts, media]);
+  useInitializeTikTokDrawer({
+    selectedAccounts,
+    media,
+    socialAccounts,
+    platformCaptions,
+    globalCaption,
+    tiktokAccountOptions,
+    setTiktokSelected,
+    setTiktokAccountOptions,
+    setOpenTikTokDrawer,
+  });
 
   const tiktokAccountIdsToFetch = useMemo(() => {
     return openTikTokDrawer && tiktokSelected

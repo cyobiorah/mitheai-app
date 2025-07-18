@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import {
@@ -18,6 +18,7 @@ import {
 import { useAuth } from "../store/hooks";
 import { useMemo } from "react";
 import { ScrollArea } from "../components/ui/scroll-area";
+import { hasValidSubscription } from "../lib/access";
 
 export default function DashboardSidebar({
   closeMenu,
@@ -27,7 +28,9 @@ export default function DashboardSidebar({
   readonly isMobile?: boolean;
 }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAdmin, user } = useAuth();
+  const { billing } = user;
 
   const menuItems = useMemo(
     () => [
@@ -55,11 +58,13 @@ export default function DashboardSidebar({
         icon: <CalendarSync size={18} />,
         label: "Post Flow",
         href: "/dashboard/post-flow",
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
       {
         icon: <Folder size={18} />,
         label: "Collections",
         href: "/dashboard/collections",
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
       {
         icon: <Users size={18} />,
@@ -71,9 +76,10 @@ export default function DashboardSidebar({
         icon: <BarChart3 size={18} />,
         label: "Analytics",
         href: "/dashboard/analytics",
+        disabled: !hasValidSubscription(billing?.paymentStatus),
       },
     ],
-    [isAdmin, user]
+    [isAdmin, billing]
   );
 
   const bottomNavItems = [
@@ -122,11 +128,13 @@ export default function DashboardSidebar({
           </div>
         )}
         <div className="flex flex-col gap-2 p-4">
-          <Button asChild className="mb-4">
-            <Link to="/dashboard/post-flow" onClick={handleNavigation}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Post
-            </Link>
+          <Button
+            onClick={() => navigate("/dashboard/post-flow")}
+            className="w-full sm:w-auto mb-8"
+            disabled={!hasValidSubscription(billing?.paymentStatus)}
+          >
+            <Plus size={16} className="mr-2" />
+            Create Post
           </Button>
           <nav className="space-y-1">
             {menuItems.map((item) => (

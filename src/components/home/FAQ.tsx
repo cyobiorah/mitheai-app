@@ -13,29 +13,34 @@ interface FAQItem {
 export default function FrequentlyAskedQuestions() {
   const faqs: FAQItem[] = [
     {
-      question: "When will Skedlii be available?",
+      question: "Is Skedlii available now?",
       answer:
-        "We're currently in private beta with a limited number of users. We plan to launch publicly in Q1 2023. Join our waitlist to be notified when we launch!",
+        "Yes! Skedlii is live and available to all users. You can start your free trial today — with full access and no feature restrictions during the trial.",
+    },
+    {
+      question: "Do I need a credit card to start the trial?",
+      answer:
+        "Yes. We require a valid credit card to begin your 7-day free trial. You won’t be charged until the trial ends, and you can cancel anytime.",
     },
     {
       question: "Which social media platforms do you support?",
       answer:
-        "We currently support Twitter, Instagram, LinkedIn, Facebook, and Threads. We're actively working on adding more platforms based on user demand.",
+        "Skedlii currently supports Twitter, Instagram, LinkedIn, Facebook, and Threads. We're actively working to add TikTok and more based on demand.",
     },
     {
       question: "How does pricing work?",
       answer:
-        "Skedlii will offer tiered pricing for individuals, teams, and enterprises. Full pricing details will be announced closer to our public launch. Early waitlist members will receive special discounts.",
+        "Skedlii offers simple, transparent pricing. After your trial, you can choose from plans designed for individuals, teams, and agencies — all billed monthly.",
     },
     {
-      question: "How do teams and permissions work?",
+      question: "Can I migrate from another social media tool?",
       answer:
-        "Skedlii offers flexible team structures with customizable permissions. Admins can create teams, assign members, and set permissions for content creation, approval, and publishing.",
+        "Yes. While full migration tools are in progress, our support team can assist with manual content transfers and setup during onboarding.",
     },
     {
-      question: "Can I migrate from another social media management tool?",
+      question: "What happens after my trial ends?",
       answer:
-        "Yes! We're building migration tools to help you easily transfer your content and settings from other platforms. Our support team will also be available to assist with the transition.",
+        "At the end of your 7-day trial, your selected subscription plan will automatically begin unless you cancel beforehand. You can manage your billing or cancel anytime from your account settings.",
     },
   ];
 
@@ -55,7 +60,7 @@ export default function FrequentlyAskedQuestions() {
           <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem
-                key={index}
+                key={`${faq.question}-${index}`}
                 value={`item-${index}`}
                 className="border border-gray-200 dark:border-gray-700 rounded-lg px-6"
               >

@@ -25,13 +25,19 @@ import {
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { formatDate, getSocialIcon } from "../../../lib/utils";
+import { hasValidSubscription } from "../../../lib/access";
+import { toast } from "../../../hooks/use-toast";
 
 export function getScheduledPostListView(
   isFetchingScheduledPosts: boolean,
   scheduledPosts: any,
   updatePostStatus: any,
-  handleDeletePost: any
+  handleDeletePost: any,
+  navigate: any,
+  user: any
 ) {
+  const { billing } = user;
+
   if (isFetchingScheduledPosts) {
     return (
       <div className="flex justify-center p-8">
@@ -46,8 +52,21 @@ export function getScheduledPostListView(
         <p className="text-muted-foreground">
           You haven't created any posts yet
         </p>
-        <Button variant="link" asChild className="mt-2">
-          <Link to="/dashboard/post-flow">Create your first post</Link>
+        <Button
+          variant="link"
+          className="mt-2"
+          onClick={() => {
+            if (!hasValidSubscription(billing?.paymentStatus)) {
+              toast({
+                variant: "destructive",
+                title: "Upgrade your plan to manage collections.",
+              });
+            } else {
+              navigate("/dashboard/post-flow");
+            }
+          }}
+        >
+          Create your first post
         </Button>
       </div>
     );

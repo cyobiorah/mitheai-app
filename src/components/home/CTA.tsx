@@ -9,12 +9,11 @@ export default function CallToAction() {
           Ready to Transform Your Social Media Workflow?
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
-          Join thousands of creators, teams, and enterprises already on our
-          waitlist.
+          Start your 7-day free trial and experience Skedlii's full power. Card required. Cancel anytime.
         </p>
-        <Link to="/waitlist">
+        <Link to="/register">
           <Button size="lg" className="text-lg px-8">
-            Get Early Access
+            Start Free Trial
           </Button>
         </Link>
       </div>

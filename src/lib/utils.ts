@@ -64,6 +64,38 @@ export function getInitials(name: string): string {
     .substring(0, 2);
 }
 
+export function getClassName(platform: string) {
+  switch (platform) {
+    case "twitter":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "instagram":
+      return "bg-pink-50 dark:bg-pink-900/20";
+    case "linkedin":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "facebook":
+      return "bg-blue-50 dark:bg-blue-900/20";
+    case "threads":
+      return "bg-black dark:bg-white dark:text-black";
+    default:
+      return "bg-gray-50 dark:bg-gray-800";
+  }
+}
+
+export function getTextColor(platform: string) {
+  switch (platform) {
+    case "twitter":
+      return "text-blue-500";
+    case "instagram":
+      return "text-pink-500";
+    case "linkedin":
+      return "text-blue-600";
+    case "threads":
+      return "text-black dark:text-white";
+    default:
+      return "text-gray-500";
+  }
+}
+
 export type UploadedMedia = {
   url: string;
   publicId: string;
