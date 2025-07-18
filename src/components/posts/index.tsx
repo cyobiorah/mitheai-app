@@ -114,6 +114,14 @@ const Posts = () => {
           `/social-posts/${postId}/${accountId}`
         );
       },
+      onSuccess: () => {
+        setDeleteConfig({ id: "", isOpen: false, postAccountId: "" });
+        toast({
+          title: "Post deleted",
+          description: "The post has been removed successfully.",
+        });
+        refetchPosts();
+      },
       onError: () => {
         toast({
           title: "Removal failed",
