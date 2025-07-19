@@ -8,7 +8,9 @@ import {
   FaInstagram,
 } from "react-icons/fa6";
 
-const isDev = process.env.VITE_APP_ENV === "development";
+const isDev = import.meta.env.VITE_APP_ENV === "development";
+
+console.log({ isDev });
 
 export const platformConfigs = [
   {
