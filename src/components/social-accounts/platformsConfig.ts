@@ -8,7 +8,9 @@ import {
   FaInstagram,
 } from "react-icons/fa6";
 
-const isDev = process.env.NODE_ENV === "development";
+const isDev = import.meta.env.VITE_APP_ENV === "development";
+
+console.log({ isDev });
 
 export const platformConfigs = [
   {
@@ -116,17 +118,12 @@ export const platformConfigs = [
     scopes: ["video.upload", "video.publish"],
     platformDocsUrl:
       "https://developers.tiktok.com/doc/login-kit-manage-user-access-token",
-    comingSoon: !isDev,
+    comingSoon: false,
   },
   {
     name: "X(Twitter)",
     label: "twitter",
     logo: FaXTwitter,
-    // theme: {
-    //   bg: "bg-[#E8F5FD]",
-    //   border: "border-[#1DA1F2]",
-    //   text: "text-[#1DA1F2]",
-    // },
     theme: {
       bg: "bg-[#F9F5FF]",
       border: "border-[#010101]",
