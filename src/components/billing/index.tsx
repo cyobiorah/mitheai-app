@@ -44,8 +44,6 @@ const Billing = () => {
   const [isYearly, setIsYearly] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
 
-  console.log({ billing });
-
   const tabItems = [
     { value: "subscription", label: "Subscription" },
     { value: "plans", label: "Plans" },
@@ -88,8 +86,6 @@ const Billing = () => {
         email: user?.email,
           priceId,
         };
-
-        console.log({ billing });
 
         if (billing?.stripeCustomerId) {
           billingData = {
@@ -197,7 +193,6 @@ const Billing = () => {
   };
 
   const getPlanActionText = (planId: string) => {
-    console.log({ planId });
     if (!billing?.planId) {
       return "Choose Plan";
     }
