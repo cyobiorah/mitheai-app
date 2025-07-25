@@ -71,10 +71,25 @@ import {
   SelectValue,
 } from "../ui/select";
 
-const socialAccountSchema = z.object({
-  platform: z.string().min(1, "Select One Platform"),
-  instagramAccountType: z.string().min(1, "Select One Platform"),
-});
+// const socialAccountSchema = z.object({
+//   platform: z.string().min(1, "Select One Platform"),
+//   instagramAccountType: z.string().min(1, "Select One Platform"),
+// });
+
+const socialAccountSchema = z
+  .object({
+    platform: z.string().min(1, "Select One Platform"),
+    instagramAccountType: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      data.platform !== "instagram" ||
+      (data.platform === "instagram" && data.instagramAccountType),
+    {
+      message: "Please select a login method for Instagram",
+      path: ["instagramAccountType"],
+    }
+  );
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
