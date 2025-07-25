@@ -53,6 +53,28 @@ export const useConnectThreads = () => {
   });
 };
 
+export const useConnectMeta = () => {
+  return useMutation({
+    mutationFn: async ({
+      platform,
+    }: {
+      platform: "facebook" | "instagram";
+    }) => {
+      const response = await socialApi.connectViaMeta({
+        platform,
+      });
+      window.location.href = response;
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Connection Failed",
+        description: err.message ?? "Failed to connect to Meta, try again!",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useConnectInstagram = () => {
   return useMutation({
     mutationFn: async () => {
