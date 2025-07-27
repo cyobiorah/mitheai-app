@@ -80,40 +80,48 @@ const Billing = () => {
   }, []);
 
   const { mutate: createCheckoutSession } = useMutation({
-    mutationFn: async ({ priceId }: { priceId: string }) => {
+    mutationFn: async ({
+      priceId,
+      action,
+    }: {
+      priceId: string;
+      action: string;
+    }) => {
       let billingData: any = {
         userId: user?._id,
         email: user?.email,
-          priceId,
+        priceId,
+        action,
+        usedTrial: false,
+      };
+
+      if (billing?.stripeCustomerId) {
+        billingData = {
+          ...billingData,
+          stripeCustomerId: billing?.stripeCustomerId,
         };
+      }
 
-        if (billing?.stripeCustomerId) {
-          billingData = {
-            ...billingData,
-            stripeCustomerId: billing?.stripeCustomerId,
-          };
-        }
+      if (billing?.hasUsedTrial || billing?.lastInvoiceStatus === "paid") {
+        billingData = {
+          ...billingData,
+          usedTrial: true,
+        };
+      }
 
-        if (billing?.hasUsedTrial) {
-          billingData = {
-            ...billingData,
-            usedTrial: true,
-          };
-        }
-
-        const response = await apiRequest(
-          "POST",
-          "/checkout/create-checkout-session",
-          billingData
-        );
-        window.location.href = response.url;
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["/checkout/create-checkout-session"],
-        });
-      },
-    });
+      const response = await apiRequest(
+        "POST",
+        "/checkout/create-checkout-session",
+        billingData
+      );
+      window.location.href = response.url;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/checkout/create-checkout-session"],
+      });
+    },
+  });
 
   const { mutate: cancelSubscription } = useMutation({
     mutationFn: async () => {
@@ -122,12 +130,14 @@ const Billing = () => {
         subscriptionId: billing?.subscriptionId,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log({ data });
       fetchUserData();
       toast({
         title: "Subscription Cancelled",
-        description:
-          "Your subscription will remain active until the end of the billing period.",
+        // description:
+        //   "Your subscription will remain active until the end of the billing period.",
+        description: data.message,
       });
     },
     onError: () => {
@@ -187,9 +197,56 @@ const Billing = () => {
     }
   };
 
+  function determineSubscriptionAction({
+    billing,
+    currentPlan,
+    targetPlan,
+  }: {
+    billing: any;
+    currentPlan: number;
+    targetPlan: number;
+  }) {
+    console.log({ billing, currentPlan, targetPlan });
+    let action;
+
+    // If no existing billing, it's always a new subscription
+    if (!billing) {
+      action = "new_subscription";
+      return action;
+    }
+
+    // Compare plans to determine action type
+    if (targetPlan > currentPlan) {
+      action = "upgrade";
+    } else if (targetPlan < currentPlan) {
+      action = "downgrade";
+    } else {
+      // Same plan level - treat as new subscription
+      action = "new_subscription";
+    }
+
+    return action;
+  }
+
   const handleUpgradeDowngrade = (plan: any) => {
     const priceId = isYearly ? plan.priceYearlyId : plan.priceMonthlyId;
-    createCheckoutSession({ priceId });
+
+    let action: string = "";
+    const planId = plan.id;
+    const tiers = ["test", "creator", "pro", "enterprise"];
+
+    const currentPlan = tiers.indexOf(billing?.planId);
+    const targetPlan = tiers.indexOf(planId);
+
+    action = determineSubscriptionAction({
+      billing,
+      currentPlan,
+      targetPlan,
+    });
+
+    console.log({ action });
+
+    createCheckoutSession({ priceId, action });
   };
 
   const getPlanActionText = (planId: string) => {
@@ -199,7 +256,7 @@ const Billing = () => {
 
     if (billing.planId === planId) return "Current Plan";
 
-    const tiers = ["test", "creator", "pro"];
+    const tiers = ["test", "creator", "pro", "enterprise"];
     const currentIndex = tiers.indexOf(billing.planId);
     const targetIndex = tiers.indexOf(planId);
 
