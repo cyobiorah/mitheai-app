@@ -246,6 +246,11 @@ const Billing = () => {
 
     console.log({ action });
 
+    if (action === "upgrade") {
+      console.log("upgrading");
+      return;
+    }
+
     createCheckoutSession({ priceId, action });
   };
 
@@ -428,7 +433,8 @@ const Billing = () => {
                     ? plan.priceYearly
                     : plan.priceMonthly;
                   const displayPeriod = isYearly ? "yearly" : "monthly";
-                  const isCurrentPlan: boolean = billing?.productId === plan.productId;
+                  const isCurrentPlan: boolean =
+                    billing?.productId === plan.productId;
 
                   return (
                     <div
