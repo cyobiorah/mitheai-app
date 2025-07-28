@@ -282,6 +282,36 @@ const Billing = () => {
       );
     }
 
+    const renderBillingStatus = () => {
+      switch (billing?.subscriptionStatus) {
+        case "active":
+          return (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Next billing date: {formatDate(billing?.renewalDate, "PPP pp")}
+            </p>
+          );
+        case "trialing":
+          return (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Trial ends at: {formatDate(billing?.trialEndsAt, "PPP pp")}
+            </p>
+          );
+        case "cancelled":
+          return (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Cancelled at: {formatDate(billing?.cancelAt, "PPP pp")}
+            </p>
+          );
+        case "inactive":
+        default:
+          return (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Inactive</p>
+          );
+      }
+    };
+
+    console.log({ billing });
+
     return (
       <div className="space-y-4">
         <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
@@ -293,18 +323,13 @@ const Billing = () => {
               <div className="flex items-center gap-2 mb-1">
                 {getStatusBadge()}
               </div>
-              {billing?.renewalDate && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Next billing date:{" "}
-                  {formatDate(billing?.renewalDate, "PPP pp")}
-                </p>
-              )}
+              {renderBillingStatus()}
             </div>
-            <div className="text-right">
+            {/* <div className="text-right">
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 per {billing?.billingInterval}
               </p>
-            </div>
+            </div> */}
           </div>
 
           {billing?.subscriptionStatus === "active" && (
@@ -403,7 +428,7 @@ const Billing = () => {
                     ? plan.priceYearly
                     : plan.priceMonthly;
                   const displayPeriod = isYearly ? "yearly" : "monthly";
-                  const isCurrentPlan = billing?.productId === plan.productId;
+                  const isCurrentPlan: boolean = billing?.productId === plan.productId;
 
                   return (
                     <div
@@ -448,7 +473,7 @@ const Billing = () => {
 
                       <Button
                         className="w-full"
-                        variant={isCurrentPlan ? "secondary" : "default"}
+                        variant={isCurrentPlan ? "outline" : "default"}
                         onClick={() => handleUpgradeDowngrade(plan)}
                         disabled={isCurrentPlan}
                       >
