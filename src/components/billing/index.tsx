@@ -10,30 +10,13 @@ import {
 } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Button } from "../ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Badge } from "../ui/badge";
-import {
-  CheckCircle2,
-  AlertCircle,
-  PauseCircle,
-  ArrowRightCircle,
-} from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "../../lib/queryClient";
 import { Switch } from "../ui/switch";
-import { formatDate } from "../../lib/utils";
-import { InvoiceTable } from "./Invoice";
+import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
+import Subscriptions from "./Subscriptions";
+import Plans from "./Plans";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
@@ -41,8 +24,8 @@ const Billing = () => {
   const { toast } = useToast();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [activeTab, setActiveTab] = useState("subscription");
-  const [isYearly, setIsYearly] = useState(false);
-  const [viewMode, setViewMode] = useState<"card" | "table">("card");
+  const [billingInterval, setBillingInterval] = useState("monthly");
+  const [viewMode, setViewMode] = useState<"card" | "table">("table");
 
   const tabItems = [
     { value: "subscription", label: "Subscription" },
@@ -93,6 +76,7 @@ const Billing = () => {
         priceId,
         action,
         usedTrial: false,
+        billingInterval,
       };
 
       if (billing?.stripeCustomerId) {
@@ -135,8 +119,6 @@ const Billing = () => {
       fetchUserData();
       toast({
         title: "Subscription Cancelled",
-        // description:
-        //   "Your subscription will remain active until the end of the billing period.",
         description: data.message,
       });
     },
@@ -162,40 +144,10 @@ const Billing = () => {
 
   const displayedPlans = plans.map((plan) => ({
     ...plan,
-    displayPrice: isYearly ? plan.priceYearly : plan.priceMonthly,
-    displayPeriod: isYearly ? "yearly" : "monthly",
+    displayPrice:
+      billingInterval === "yearly" ? plan.priceYearly : plan.priceMonthly,
+    displayPeriod: billingInterval,
   }));
-
-  const getStatusBadge = () => {
-    switch (billing?.paymentStatus) {
-      case "paid":
-      case "active":
-        return (
-          <Badge className="bg-green-500 hover:bg-green-600">
-            <CheckCircle2 className="h-3 w-3 mr-1" /> Active
-          </Badge>
-        );
-      case "trialing":
-        return (
-          <Badge className="bg-blue-500 hover:bg-blue-600">
-            <ArrowRightCircle className="h-3 w-3 mr-1" /> Trial Active
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge className="bg-yellow-500 hover:bg-yellow-600">
-            <PauseCircle className="h-3 w-3 mr-1" /> Cancelled
-          </Badge>
-        );
-      case "inactive":
-      default:
-        return (
-          <Badge className="bg-gray-500 hover:bg-gray-600">
-            <AlertCircle className="h-3 w-3 mr-1" /> Inactive
-          </Badge>
-        );
-    }
-  };
 
   function determineSubscriptionAction({
     billing,
@@ -229,7 +181,8 @@ const Billing = () => {
   }
 
   const handleUpgradeDowngrade = (plan: any) => {
-    const priceId = isYearly ? plan.priceYearlyId : plan.priceMonthlyId;
+    const priceId =
+      billingInterval === "yearly" ? plan.priceYearlyId : plan.priceMonthlyId;
 
     let action: string = "";
     const planId = plan.id;
@@ -246,132 +199,15 @@ const Billing = () => {
 
     console.log({ action });
 
-    if (action === "upgrade") {
-      console.log("upgrading");
-      return;
-    }
+    // if (action === "upgrade") {
+    //   console.log("upgrading");
+    //   return;
+    // }
 
     createCheckoutSession({ priceId, action });
   };
 
-  const getPlanActionText = (planId: string) => {
-    if (!billing?.planId) {
-      return "Choose Plan";
-    }
-
-    if (billing.planId === planId) return "Current Plan";
-
-    const tiers = ["test", "creator", "pro", "enterprise"];
-    const currentIndex = tiers.indexOf(billing.planId);
-    const targetIndex = tiers.indexOf(planId);
-
-    if (targetIndex > currentIndex) return "Upgrade";
-    if (targetIndex < currentIndex) return "Downgrade";
-
-    return "Current Plan";
-  };
-
-  const renderSubscriptionInfo = () => {
-    if (!billing?.stripeCustomerId || !billing?.renewalDate) {
-      return (
-        <div className="space-y-4">
-          <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
-            <h3 className="text-lg font-medium mb-2">No Active Subscription</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              You're currently on the Free plan. Upgrade to unlock premium
-              features.
-            </p>
-            <Button onClick={() => setActiveTab("plans")}>Upgrade Now</Button>
-          </div>
-        </div>
-      );
-    }
-
-    const renderBillingStatus = () => {
-      switch (billing?.subscriptionStatus) {
-        case "active":
-          return (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Next billing date: {formatDate(billing?.renewalDate, "PPP pp")}
-            </p>
-          );
-        case "trialing":
-          return (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Trial ends at: {formatDate(billing?.trialEndsAt, "PPP pp")}
-            </p>
-          );
-        case "cancelled":
-          return (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Cancelled at: {formatDate(billing?.cancelAt, "PPP pp")}
-            </p>
-          );
-        case "inactive":
-        default:
-          return (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Inactive</p>
-          );
-      }
-    };
-
-    console.log({ billing });
-
-    return (
-      <div className="space-y-4">
-        <div className="p-6 border rounded-lg bg-gray-50 dark:bg-gray-800">
-          <div className="flex flex-wrap justify-between gap-y-4">
-            <div>
-              <h3 className="text-lg font-medium mb-1">
-                {billing?.paymentDescription}
-              </h3>
-              <div className="flex items-center gap-2 mb-1">
-                {getStatusBadge()}
-              </div>
-              {renderBillingStatus()}
-            </div>
-            {/* <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                per {billing?.billingInterval}
-              </p>
-            </div> */}
-          </div>
-
-          {billing?.subscriptionStatus === "active" && (
-            <div className="mt-6 flex flex-wrap gap-2">
-              <AlertDialog
-                open={showCancelDialog}
-                onOpenChange={setShowCancelDialog}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
-                    <PauseCircle className="h-4 w-4 mr-2" />
-                    Cancel Subscription
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Your subscription will remain active until the end of your
-                      current billing period, after which your account will
-                      revert to the Basic plan with limited features.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => cancelSubscription()}>
-                      Cancel Subscription
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  console.log({ billing });
 
   return (
     <div className="space-y-6">
@@ -404,7 +240,15 @@ const Billing = () => {
                 View and manage your current subscription
               </CardDescription>
             </CardHeader>
-            <CardContent>{renderSubscriptionInfo()}</CardContent>
+            <CardContent>
+              <Subscriptions
+                billing={billing || {}}
+                showCancelDialog={showCancelDialog}
+                setShowCancelDialog={setShowCancelDialog}
+                cancelSubscription={cancelSubscription}
+                setActiveTab={setActiveTab}
+              />
+            </CardContent>
           </Card>
         </TabsContent>
 
@@ -416,79 +260,33 @@ const Billing = () => {
                 Choose the plan that works best for you
               </CardDescription>
               <div className="flex items-center gap-2 mt-4">
-                <span className={!isYearly ? "font-bold" : ""}>Monthly</span>
+                <span
+                  className={billingInterval === "monthly" ? "font-bold" : ""}
+                >
+                  Monthly
+                </span>
                 <Switch
-                  checked={isYearly}
-                  onCheckedChange={setIsYearly}
+                  checked={billingInterval === "yearly"}
+                  onCheckedChange={(value) =>
+                    setBillingInterval(value ? "yearly" : "monthly")
+                  }
                   aria-label="Toggle yearly billing"
                 />
-                <span className={isYearly ? "font-bold" : ""}>Yearly</span>
+                <span
+                  className={billingInterval === "yearly" ? "font-bold" : ""}
+                >
+                  Yearly
+                </span>
               </div>
             </CardHeader>
 
             <CardContent>
-              <div className="grid gap-6 md:grid-cols-3">
-                {displayedPlans.map((plan) => {
-                  const displayPrice = isYearly
-                    ? plan.priceYearly
-                    : plan.priceMonthly;
-                  const displayPeriod = isYearly ? "yearly" : "monthly";
-                  const isCurrentPlan: boolean =
-                    billing?.productId === plan.productId;
-
-                  return (
-                    <div
-                      key={plan.id}
-                      className={`border rounded-lg p-6 space-y-4 ${
-                        plan.isPopular
-                          ? "border-primary-500 shadow-lg"
-                          : "border-gray-200 dark:border-gray-700"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <h3 className="font-bold text-lg capitalize">
-                          {plan.name}
-                        </h3>
-                        {plan.badge && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-secondary-100 text-secondary-800 dark:bg-secondary-900/30 dark:text-secondary-300">
-                            {plan.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-baseline">
-                        <span className="text-3xl font-bold">
-                          ${displayPrice}
-                        </span>
-                        <span className="ml-1 text-gray-500 dark:text-gray-400">
-                          {displayPeriod}
-                        </span>
-                      </div>
-
-                      <ul className="space-y-2">
-                        {plan.features.map((feature: string) => (
-                          <li
-                            key={feature}
-                            className="flex items-center space-x-2"
-                          >
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      <Button
-                        className="w-full"
-                        variant={isCurrentPlan ? "outline" : "default"}
-                        onClick={() => handleUpgradeDowngrade(plan)}
-                        disabled={isCurrentPlan}
-                      >
-                        {getPlanActionText(plan.id)}
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
+              <Plans
+                displayedPlans={displayedPlans}
+                isYearly={billingInterval === "yearly"}
+                billing={billing}
+                handleUpgradeDowngrade={handleUpgradeDowngrade}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -506,14 +304,14 @@ const Billing = () => {
                 }
                 variant="default"
                 size="sm"
-                className="rounded-lg absolute top-3 right-7"
+                className="hidden lg:block rounded-lg absolute top-3 right-7"
               >
                 Switch to {viewMode === "card" ? "Table" : "Card"} View
               </Button>
             </CardHeader>
             <CardContent>
               {viewMode === "card" ? (
-                <InvoiceTable invoices={invoices} />
+                <InvoiceGrid invoices={invoices} />
               ) : (
                 <InvoiceTableFallback invoices={invoices} />
               )}
