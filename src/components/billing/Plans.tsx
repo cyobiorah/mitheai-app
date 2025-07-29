@@ -26,7 +26,7 @@ const Plans = ({
     if (targetIndex > currentIndex) return "Upgrade";
     if (targetIndex < currentIndex) return "Downgrade";
 
-    return "Current Plan";
+    return "Choose Plan";
   };
 
   return (
