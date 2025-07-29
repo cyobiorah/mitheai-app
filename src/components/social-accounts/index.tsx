@@ -59,13 +59,37 @@ import {
   useRefreshYoutubeAccessToken,
   useRefreshTikTokAccessToken,
   useGetSocialAccounts,
+  useConnectMeta,
 } from "./api-mutation";
 import PlatformSelector from "./PlatformSelector";
 import { hasValidSubscription } from "../../lib/access";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
-const socialAccountSchema = z.object({
-  platform: z.string().min(1, "Select One Platform"),
-});
+// const socialAccountSchema = z.object({
+//   platform: z.string().min(1, "Select One Platform"),
+//   instagramAccountType: z.string().min(1, "Select One Platform"),
+// });
+
+const socialAccountSchema = z
+  .object({
+    platform: z.string().min(1, "Select One Platform"),
+    instagramAccountType: z.string().optional(),
+  })
+  .refine(
+    (data) =>
+      data.platform !== "instagram" ||
+      (data.platform === "instagram" && data.instagramAccountType),
+    {
+      message: "Please select a login method for Instagram",
+      path: ["instagramAccountType"],
+    }
+  );
 
 type SocialAccountFormData = z.infer<typeof socialAccountSchema>;
 
@@ -90,6 +114,8 @@ export default function SocialAccounts() {
     useConnectInstagram();
   const { mutate: connectFacebook, isPending: isConnectingFacebookPending } =
     useConnectFacebook();
+  const { mutate: connectMeta, isPending: isConnectingMetaPending } =
+    useConnectMeta();
   const { mutate: connectTikTok, isPending: isConnectingTikTokPending } =
     useConnectTikTok();
   const { mutate: connectYoutube, isPending: isConnectingYoutubePending } =
@@ -118,6 +144,7 @@ export default function SocialAccounts() {
     resolver: zodResolver(socialAccountSchema),
     defaultValues: {
       platform: "",
+      instagramAccountType: "",
     },
   });
 
@@ -132,9 +159,15 @@ export default function SocialAccounts() {
       case "linkedin":
         connectLinkedIn();
         break;
-      case "instagram":
-        connectInstagram();
+      case "instagram": {
+        console.log({ data });
+        if (data.instagramAccountType === "facebook")
+          connectMeta({
+            platform: "instagram",
+          });
+        else connectInstagram();
         break;
+      }
       case "facebook":
         connectFacebook();
         break;
@@ -165,7 +198,8 @@ export default function SocialAccounts() {
     isConnectingYoutubePending ||
     isRefreshingTwitterPending ||
     isRefreshingYoutubePending ||
-    isRefreshingTiktokPending;
+    isRefreshingTiktokPending ||
+    isConnectingMetaPending;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -523,15 +557,83 @@ export default function SocialAccounts() {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !form.watch("platform")}
-                  >
-                    {isLoading && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Connect Account
-                  </Button>
+                  {/* {form.watch("platform") === "instagram" && (
+                    <Select
+                      disabled={isLoading}
+                      value={form.watch("instagramAccountType")}
+                      onValueChange={(value) => {
+                        form.setValue("instagramAccountType", value);
+                      }}
+                    >
+                      <SelectTrigger className="bg-primary text-primary-foreground">
+                        <SelectValue placeholder="Connect Account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="instagram">
+                          Instagram Login
+                        </SelectItem>
+                        <SelectItem value="facebook">Facebook Login</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {form.watch("platform") !== "instagram" && (
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !form.watch("platform")}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Connect Account
+                    </Button>
+                  )} */}
+
+                  {form.watch("platform") === "instagram" ? (
+                    <div className="flex gap-2 items-center">
+                      <Select
+                        disabled={isLoading}
+                        value={form.watch("instagramAccountType")}
+                        onValueChange={(value) => {
+                          form.setValue("instagramAccountType", value);
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Login Method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="instagram">
+                            Instagram Login
+                          </SelectItem>
+                          <SelectItem value="facebook">
+                            Facebook Login
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="submit"
+                        disabled={
+                          isLoading ||
+                          !form.watch("platform") ||
+                          !form.watch("instagramAccountType")
+                        }
+                      >
+                        {isLoading && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Connect Account
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={isLoading || !form.watch("platform")}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Connect Account
+                    </Button>
+                  )}
                 </div>
               </DialogFooter>
             </form>

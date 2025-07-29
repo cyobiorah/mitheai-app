@@ -25,7 +25,14 @@ export const platformConfigs = [
     description:
       "Schedule and publish media content to your connected account.",
     permissions: ["Post content", "Upload media"],
-    constraints: "Requires a business or creator account.",
+    // constraints: "Requires Instagram Business or Creator account profile.",
+    constraints: `
+  <strong>Requirements:</strong><br />
+  • Instagram account must be a <strong>Business</strong> or <strong>Creator</strong> profile.<br />
+  • If using <strong>Facebook Login</strong>: your Instagram account must be connected to a Facebook Page.<br />
+  <br />
+  <em>We recommend using <strong>Instagram Login</strong> for simpler setup and better reliability.</em>
+`,
     scopes: [
       "instagram_basic",
       "pages_show_list",
