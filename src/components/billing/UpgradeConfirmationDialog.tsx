@@ -65,15 +65,21 @@ export function UpgradeConfirmationDialog({
   if (!previewData) return null;
 
   const formatCurrency = (amount: number, currency: string) => {
+    // Ensure amount is a number and handle edge cases
+    const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+    const dollarAmount = Math.round(numericAmount) / 100; // Ensure proper division
+    
     try {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: currency.toUpperCase(),
-      }).format(amount / 100);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(dollarAmount);
     } catch (error) {
       // Fallback for older browsers/devices
       const currencySymbol = currency.toUpperCase() === 'USD' ? '$' : currency.toUpperCase();
-      const formattedAmount = (amount / 100).toFixed(2);
+      const formattedAmount = dollarAmount.toFixed(2);
       return `${currencySymbol}${formattedAmount}`;
     }
   };
