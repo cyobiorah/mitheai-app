@@ -17,6 +17,7 @@ import { InvoiceGrid } from "./InvoiceGrid";
 import { InvoiceTableFallback } from "./InvoiceTableFallback";
 import Subscriptions from "./Subscriptions";
 import Plans from "./Plans";
+import { UpgradeConfirmationDialog } from "./UpgradeConfirmationDialog";
 
 const Billing = () => {
   const { user, fetchUserData } = useAuth();
@@ -26,6 +27,12 @@ const Billing = () => {
   const [activeTab, setActiveTab] = useState("subscription");
   const [billingInterval, setBillingInterval] = useState("monthly");
   const [viewMode, setViewMode] = useState<"card" | "table">("table");
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [upgradePreviewData, setUpgradePreviewData] = useState<any>(null);
+  const [pendingUpgrade, setPendingUpgrade] = useState<{
+    priceId: string;
+    planName: string;
+  } | null>(null);
 
   const tabItems = [
     { value: "subscription", label: "Subscription" },
@@ -134,6 +141,95 @@ const Billing = () => {
     },
   });
 
+  const { mutate: previewSubscriptionChange } = useMutation({
+    mutationFn: async ({
+      priceId,
+      action,
+    }: {
+      priceId: string;
+      action: string;
+    }) => {
+      return await apiRequest("POST", "/subscriptions/preview", {
+        priceId,
+        action,
+      });
+    },
+    onSuccess: (data) => {
+      console.log({ data });
+
+      if (data.data?.error) {
+        toast({
+          title: "Preview Error",
+          description: data.data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.success && data.data) {
+        // Show preview information to user
+        const previewData = data.data;
+
+        // Show confirmation dialog with preview data
+        setUpgradePreviewData(previewData);
+        setShowUpgradeDialog(true);
+      } else {
+        fetchUserData();
+        toast({
+          title: "Subscription Updated",
+          description:
+            data.message || "Subscription has been updated successfully",
+        });
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to process subscription change",
+        description:
+          error?.response?.data?.error ||
+          "Something went wrong, please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { mutate: performUpgrade, isPending: isUpgrading } = useMutation({
+    mutationFn: async ({
+      priceId,
+      action,
+    }: {
+      priceId: string;
+      action: string;
+    }) => {
+      return await apiRequest("POST", "/subscriptions/preview", {
+        priceId,
+        action,
+      });
+    },
+    onSuccess: (data) => {
+      console.log("Upgrade success:", data);
+      setShowUpgradeDialog(false);
+      setUpgradePreviewData(null);
+      setPendingUpgrade(null);
+      fetchUserData();
+
+      toast({
+        title: "Subscription Upgraded!",
+        description:
+          data.message || "Your subscription has been upgraded successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upgrade Failed",
+        description:
+          error?.response?.data?.error ||
+          "Failed to upgrade subscription. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const { data: plans = [] } = useQuery({
     queryKey: [`/plans`],
   }) as { data: any[] };
@@ -162,7 +258,7 @@ const Billing = () => {
     let action;
 
     // If no existing billing, it's always a new subscription
-    if (!billing) {
+    if (!billing || !billing?.lastInvoiceStatus) {
       action = "new_subscription";
       return action;
     }
@@ -199,15 +295,30 @@ const Billing = () => {
 
     console.log({ action });
 
-    // if (action === "upgrade") {
-    //   console.log("upgrading");
-    //   return;
-    // }
-
-    createCheckoutSession({ priceId, action });
+    if (action === "upgrade") {
+      console.log("upgrading - showing preview first");
+      // Store the pending upgrade info for the dialog
+      setPendingUpgrade({ priceId, planName: plan.name || plan.id });
+      previewSubscriptionChange({ priceId, action: "preview" });
+      return;
+    } else {
+      createCheckoutSession({ priceId, action });
+    }
   };
 
   console.log({ billing });
+
+  const handleUpgradeConfirm = () => {
+    if (pendingUpgrade) {
+      performUpgrade({ priceId: pendingUpgrade.priceId, action: "upgrade" });
+    }
+  };
+
+  const handleUpgradeCancel = () => {
+    setShowUpgradeDialog(false);
+    setUpgradePreviewData(null);
+    setPendingUpgrade(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -319,6 +430,15 @@ const Billing = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <UpgradeConfirmationDialog
+        isOpen={showUpgradeDialog}
+        onClose={handleUpgradeCancel}
+        onConfirm={handleUpgradeConfirm}
+        previewData={upgradePreviewData}
+        isLoading={isUpgrading}
+        planName={pendingUpgrade?.planName}
+      />
     </div>
   );
 };
