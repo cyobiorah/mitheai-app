@@ -9,7 +9,13 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { Badge } from "../ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Separator } from "../ui/separator";
 
 interface PreviewData {
@@ -66,45 +72,62 @@ export function UpgradeConfirmationDialog({
 
   const formatCurrency = (amount: number, currency: string) => {
     // Debug logging for production vs local differences
-    console.log('formatCurrency input:', { amount, currency, type: typeof amount });
-    
+    console.log("formatCurrency input:", {
+      amount,
+      currency,
+      type: typeof amount,
+    });
+
     // Ensure amount is a number and handle edge cases
-    const numericAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
-    console.log('numericAmount:', numericAmount);
-    
+    let numericAmount =
+      typeof amount === "number" ? amount : parseFloat(amount) || 0;
+    console.log("numericAmount:", numericAmount);
+
+    // TEMPORARY: Detect if amount seems 10x too large (production bug)
+    if (numericAmount > 10000 && numericAmount % 10 === 7) {
+      console.warn(
+        "Detected 10x inflated amount, correcting:",
+        numericAmount,
+        "→",
+        numericAmount / 10
+      );
+      numericAmount = numericAmount / 10;
+    }
+
     const dollarAmount = Math.round(numericAmount) / 100; // Ensure proper division
-    console.log('dollarAmount:', dollarAmount);
-    
+    console.log("dollarAmount:", dollarAmount);
+
     try {
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
         currency: currency.toUpperCase(),
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(dollarAmount);
-      console.log('formatted result:', formatted);
+      console.log("formatted result:", formatted);
       return formatted;
     } catch (error) {
-      console.log('Intl.NumberFormat failed, using fallback:', error);
+      console.log("Intl.NumberFormat failed, using fallback:", error);
       // Fallback for older browsers/devices
-      const currencySymbol = currency.toUpperCase() === 'USD' ? '$' : currency.toUpperCase();
+      const currencySymbol =
+        currency.toUpperCase() === "USD" ? "$" : currency.toUpperCase();
       const formattedAmount = dollarAmount.toFixed(2);
       const fallbackResult = `${currencySymbol}${formattedAmount}`;
-      console.log('fallback result:', fallbackResult);
+      console.log("fallback result:", fallbackResult);
       return fallbackResult;
     }
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
-  const prorationItems = previewData.lines.filter(line => line.proration);
-  const regularItems = previewData.lines.filter(line => !line.proration);
+  const prorationItems = previewData.lines.filter((line) => line.proration);
+  const regularItems = previewData.lines.filter((line) => !line.proration);
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -131,19 +154,32 @@ export function UpgradeConfirmationDialog({
               <CardContent>
                 <div className="flex justify-between items-center">
                   <div>
-                    <div className="text-sm text-muted-foreground">Current Plan</div>
-                    <div className="font-medium">{previewData.billingInfo.currentPlan}</div>
-                    <div className="text-sm">${previewData.billingInfo.currentPrice}/month</div>
+                    <div className="text-sm text-muted-foreground">
+                      Current Plan
+                    </div>
+                    <div className="font-medium">
+                      {previewData.billingInfo.currentPlan}
+                    </div>
+                    <div className="text-sm">
+                      ${previewData.billingInfo.currentPrice}/month
+                    </div>
                   </div>
                   <div className="text-2xl text-muted-foreground">→</div>
                   <div className="text-right">
-                    <div className="text-sm text-muted-foreground">New Plan</div>
-                    <div className="font-medium">{previewData.billingInfo.newPlan}</div>
-                    <div className="text-sm">${previewData.billingInfo.newPrice}/month</div>
+                    <div className="text-sm text-muted-foreground">
+                      New Plan
+                    </div>
+                    <div className="font-medium">
+                      {previewData.billingInfo.newPlan}
+                    </div>
+                    <div className="text-sm">
+                      ${previewData.billingInfo.newPrice}/month
+                    </div>
                   </div>
                 </div>
                 <div className="mt-3 text-xs text-muted-foreground">
-                  {previewData.billingInfo.remainingDays} days remaining in current billing period
+                  {previewData.billingInfo.remainingDays} days remaining in
+                  current billing period
                 </div>
               </CardContent>
             </Card>
@@ -189,12 +225,16 @@ export function UpgradeConfirmationDialog({
             <CardContent className="space-y-3">
               {/* Regular Items */}
               {regularItems.map((line, index) => (
-                <div key={`regular-${index}`} className="flex justify-between items-start">
+                <div
+                  key={`regular-${index}`}
+                  className="flex justify-between items-start"
+                >
                   <div className="flex-1">
                     <div className="font-medium">{line.description}</div>
                     {line.period && (
                       <div className="text-xs text-muted-foreground">
-                        {formatDate(line.period.start)} - {formatDate(line.period.end)}
+                        {formatDate(line.period.start)} -{" "}
+                        {formatDate(line.period.end)}
                       </div>
                     )}
                   </div>
@@ -212,7 +252,10 @@ export function UpgradeConfirmationDialog({
                     Prorated Adjustments
                   </div>
                   {prorationItems.map((line, index) => (
-                    <div key={`proration-${index}`} className="flex justify-between items-start">
+                    <div
+                      key={`proration-${index}`}
+                      className="flex justify-between items-start"
+                    >
                       <div className="flex-1">
                         <div className="font-medium flex items-center gap-2">
                           {line.description}
@@ -222,7 +265,8 @@ export function UpgradeConfirmationDialog({
                         </div>
                         {line.period && (
                           <div className="text-xs text-muted-foreground">
-                            {formatDate(line.period.start)} - {formatDate(line.period.end)}
+                            {formatDate(line.period.start)} -{" "}
+                            {formatDate(line.period.end)}
                           </div>
                         )}
                       </div>
@@ -235,11 +279,13 @@ export function UpgradeConfirmationDialog({
               )}
 
               <Separator />
-              
+
               {/* Total */}
               <div className="flex justify-between items-center font-bold text-lg">
                 <span>Total</span>
-                <span>{formatCurrency(previewData.total, previewData.currency)}</span>
+                <span>
+                  {formatCurrency(previewData.total, previewData.currency)}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -250,7 +296,10 @@ export function UpgradeConfirmationDialog({
               <div className="font-medium mb-1">Important:</div>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                 <li>Your subscription will be upgraded immediately</li>
-                <li>You'll be charged the prorated amount for the remainder of your current billing period</li>
+                <li>
+                  You'll be charged the prorated amount for the remainder of
+                  your current billing period
+                </li>
                 <li>Your next billing date remains the same</li>
                 <li>You can cancel or downgrade at any time</li>
               </ul>
