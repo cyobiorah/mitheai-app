@@ -122,7 +122,6 @@ const Billing = () => {
       });
     },
     onSuccess: (data) => {
-      console.log({ data });
       fetchUserData();
       toast({
         title: "Subscription Cancelled",
@@ -155,8 +154,6 @@ const Billing = () => {
       });
     },
     onSuccess: (data) => {
-      console.log({ data });
-
       if (data.data?.error) {
         toast({
           title: "Preview Error",
@@ -254,7 +251,6 @@ const Billing = () => {
     currentPlan: number;
     targetPlan: number;
   }) {
-    console.log({ billing, currentPlan, targetPlan });
     let action;
 
     // If no existing billing, it's always a new subscription
@@ -293,10 +289,7 @@ const Billing = () => {
       targetPlan,
     });
 
-    console.log({ action });
-
     if (action === "upgrade") {
-      console.log("upgrading - showing preview first");
       // Store the pending upgrade info for the dialog
       setPendingUpgrade({ priceId, planName: plan.name || plan.id });
       previewSubscriptionChange({ priceId, action: "preview" });
@@ -305,8 +298,6 @@ const Billing = () => {
       createCheckoutSession({ priceId, action });
     }
   };
-
-  console.log({ billing });
 
   const handleUpgradeConfirm = () => {
     if (pendingUpgrade) {
