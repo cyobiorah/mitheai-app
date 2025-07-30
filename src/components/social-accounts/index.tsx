@@ -160,7 +160,6 @@ export default function SocialAccounts() {
         connectLinkedIn();
         break;
       case "instagram": {
-        console.log({ data });
         if (data.instagramAccountType === "facebook")
           connectMeta({
             platform: "instagram",
