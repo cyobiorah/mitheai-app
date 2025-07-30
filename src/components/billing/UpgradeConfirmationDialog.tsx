@@ -70,20 +70,68 @@ export function UpgradeConfirmationDialog({
 }: UpgradeConfirmationDialogProps) {
   if (!previewData) return null;
 
-  const formatCurrency = (amount: number, currency: string) => {
-    // Debug logging for production vs local differences
+  // const formatCurrency = (amount: number, currency: string) => {
+  //   // Debug logging for production vs local differences
+  //   console.log("formatCurrency input:", {
+  //     amount,
+  //     currency,
+  //     type: typeof amount,
+  //   });
+
+  //   // Ensure amount is a number and handle edge cases
+  //   let numericAmount =
+  //     typeof amount === "number" ? amount : parseFloat(amount) || 0;
+  //   console.log("numericAmount:", numericAmount);
+
+  //   // TEMPORARY: Detect if amount seems 10x too large (production bug)
+  //   if (numericAmount > 10000 && numericAmount % 10 === 7) {
+  //     console.warn(
+  //       "Detected 10x inflated amount, correcting:",
+  //       numericAmount,
+  //       "→",
+  //       numericAmount / 10
+  //     );
+  //     numericAmount = numericAmount / 10;
+  //   }
+
+  //   const dollarAmount = Math.round(numericAmount) / 100; // Ensure proper division
+  //   console.log("dollarAmount:", dollarAmount);
+
+  //   try {
+  //     const formatted = new Intl.NumberFormat("en-US", {
+  //       style: "currency",
+  //       currency: currency.toUpperCase(),
+  //       minimumFractionDigits: 2,
+  //       maximumFractionDigits: 2,
+  //     }).format(dollarAmount);
+  //     console.log("formatted result:", formatted);
+  //     return formatted;
+  //   } catch (error) {
+  //     console.log("Intl.NumberFormat failed, using fallback:", error);
+  //     // Fallback for older browsers/devices
+  //     const currencySymbol =
+  //       currency.toUpperCase() === "USD" ? "$" : currency.toUpperCase();
+  //     const formattedAmount = dollarAmount.toFixed(2);
+  //     const fallbackResult = `${currencySymbol}${formattedAmount}`;
+  //     console.log("fallback result:", fallbackResult);
+  //     return fallbackResult;
+  //   }
+  // };
+
+  const formatCurrency = (
+    amount: number | string,
+    currency: string = "USD"
+  ) => {
     console.log("formatCurrency input:", {
       amount,
       currency,
       type: typeof amount,
     });
 
-    // Ensure amount is a number and handle edge cases
     let numericAmount =
-      typeof amount === "number" ? amount : parseFloat(amount) || 0;
+      typeof amount === "number" ? amount : parseFloat(`${amount}`) || 0;
     console.log("numericAmount:", numericAmount);
 
-    // TEMPORARY: Detect if amount seems 10x too large (production bug)
     if (numericAmount > 10000 && numericAmount % 10 === 7) {
       console.warn(
         "Detected 10x inflated amount, correcting:",
@@ -94,25 +142,23 @@ export function UpgradeConfirmationDialog({
       numericAmount = numericAmount / 10;
     }
 
-    const dollarAmount = Math.round(numericAmount) / 100; // Ensure proper division
+    const dollarAmount = Math.round(numericAmount) / 100;
     console.log("dollarAmount:", dollarAmount);
 
     try {
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: currency.toUpperCase(),
+        currency: currency?.toUpperCase() || "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(dollarAmount);
       console.log("formatted result:", formatted);
       return formatted;
     } catch (error) {
-      console.log("Intl.NumberFormat failed, using fallback:", error);
-      // Fallback for older browsers/devices
-      const currencySymbol =
-        currency.toUpperCase() === "USD" ? "$" : currency.toUpperCase();
-      const formattedAmount = dollarAmount.toFixed(2);
-      const fallbackResult = `${currencySymbol}${formattedAmount}`;
+      console.error("Intl.NumberFormat failed:", error);
+      const fallbackSymbol =
+        currency?.toUpperCase() === "USD" ? "$" : currency?.toUpperCase() || "";
+      const fallbackResult = `${fallbackSymbol}${dollarAmount.toFixed(2)}`;
       console.log("fallback result:", fallbackResult);
       return fallbackResult;
     }
