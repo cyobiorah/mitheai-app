@@ -70,54 +70,6 @@ export function UpgradeConfirmationDialog({
 }: UpgradeConfirmationDialogProps) {
   if (!previewData) return null;
 
-  // const formatCurrency = (amount: number, currency: string) => {
-  //   // Debug logging for production vs local differences
-  //   console.log("formatCurrency input:", {
-  //     amount,
-  //     currency,
-  //     type: typeof amount,
-  //   });
-
-  //   // Ensure amount is a number and handle edge cases
-  //   let numericAmount =
-  //     typeof amount === "number" ? amount : parseFloat(amount) || 0;
-  //   console.log("numericAmount:", numericAmount);
-
-  //   // TEMPORARY: Detect if amount seems 10x too large (production bug)
-  //   if (numericAmount > 10000 && numericAmount % 10 === 7) {
-  //     console.warn(
-  //       "Detected 10x inflated amount, correcting:",
-  //       numericAmount,
-  //       "→",
-  //       numericAmount / 10
-  //     );
-  //     numericAmount = numericAmount / 10;
-  //   }
-
-  //   const dollarAmount = Math.round(numericAmount) / 100; // Ensure proper division
-  //   console.log("dollarAmount:", dollarAmount);
-
-  //   try {
-  //     const formatted = new Intl.NumberFormat("en-US", {
-  //       style: "currency",
-  //       currency: currency.toUpperCase(),
-  //       minimumFractionDigits: 2,
-  //       maximumFractionDigits: 2,
-  //     }).format(dollarAmount);
-  //     console.log("formatted result:", formatted);
-  //     return formatted;
-  //   } catch (error) {
-  //     console.log("Intl.NumberFormat failed, using fallback:", error);
-  //     // Fallback for older browsers/devices
-  //     const currencySymbol =
-  //       currency.toUpperCase() === "USD" ? "$" : currency.toUpperCase();
-  //     const formattedAmount = dollarAmount.toFixed(2);
-  //     const fallbackResult = `${currencySymbol}${formattedAmount}`;
-  //     console.log("fallback result:", fallbackResult);
-  //     return fallbackResult;
-  //   }
-  // };
-
   const formatCurrency = (
     amount: number | string,
     currency: string = "USD"
@@ -339,12 +291,14 @@ export function UpgradeConfirmationDialog({
           {/* Important Notice */}
           <div className="bg-muted/50 p-4 rounded-lg">
             <div className="text-sm">
-              <div className="font-medium mb-1">Important:</div>
+              <div className="font-medium mb-1">Next Steps:</div>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>Your subscription will be upgraded immediately</li>
                 <li>
-                  You'll be charged the prorated amount for the remainder of
-                  your current billing period
+                  Click "Continue to Checkout" to proceed to secure payment
+                </li>
+                <li>You'll be charged the prorated amount shown above</li>
+                <li>
+                  Your subscription will be upgraded after successful payment
                 </li>
                 <li>Your next billing date remains the same</li>
                 <li>You can cancel or downgrade at any time</li>
@@ -358,9 +312,9 @@ export function UpgradeConfirmationDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="min-w-[120px]"
+            className="min-w-[140px]"
           >
-            {isLoading ? "Upgrading..." : "Confirm Upgrade"}
+            {isLoading ? "Redirecting..." : "Continue to Checkout"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
