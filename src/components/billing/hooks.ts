@@ -12,6 +12,7 @@ export const useUrlParams = () => {
 
   return {
     subscribed: searchParams.get("subscribed") === "true",
+    subscriptionUpdated: searchParams.get("subscription_updated") === "true",
     canceled: searchParams.get("canceled") === "true",
     error: searchParams.get("error"),
     message: searchParams.get("message"),
@@ -105,39 +106,6 @@ export const useBillingMutations = (
     },
   });
 
-  // Keep old implementation for reference - performUpgradeOld
-  const performUpgradeOld = useMutation({
-    mutationFn: async ({
-      priceId,
-      action,
-    }: {
-      priceId: string;
-      action: string;
-    }) => {
-      return await apiRequest("POST", "/subscriptions/preview", {
-        priceId,
-        action,
-      });
-    },
-    onSuccess: (data) => {
-      fetchUserData();
-      toast({
-        title: "Subscription Upgraded!",
-        description:
-          data.message || "Your subscription has been upgraded successfully",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Upgrade Failed",
-        description:
-          error?.response?.data?.error ||
-          "Failed to upgrade subscription. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   // New implementation using hosted checkout
   const performUpgrade = useMutation({
     mutationFn: async ({
@@ -163,40 +131,12 @@ export const useBillingMutations = (
         billingData.stripeCustomerId = billing.stripeCustomerId;
       }
 
-      // return await apiRequest(
-      //   "POST",
-      //   "/checkout/create-checkout-session",
-      //   billingData
-      // );
-
       const response = await apiRequest(
         "POST",
         "/checkout/create-checkout-session",
         billingData
       );
-
-      console.log({ response });
-      return response;
-    },
-    onSuccess: (res: any) => {
-      fetchUserData();
-      toast({
-        title: "Checkout Success!",
-        description:
-          res.message || "Your subscription has been upgraded successfully",
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["/checkout/create-checkout-session"],
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Checkout Failed",
-        description:
-          error?.response?.data?.error ||
-          "Failed to create checkout session. Please try again.",
-        variant: "destructive",
-      });
+      window.location.href = response.url;
     },
   });
 
