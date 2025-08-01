@@ -53,8 +53,23 @@ const Billing = () => {
   } = useBillingMutations(user, billing, billingInterval, fetchUserData, toast);
 
   useEffect(() => {
-    const { subscribed, canceled, error, message, upgrade, downgrade, plan } = urlParams;
-    const needsFetch = subscribed || canceled || error || upgrade || downgrade;
+    const {
+      subscribed,
+      subscriptionUpdated,
+      canceled,
+      error,
+      message,
+      upgrade,
+      downgrade,
+      plan,
+    } = urlParams;
+    const needsFetch =
+      subscribed ||
+      subscriptionUpdated ||
+      canceled ||
+      error ||
+      upgrade ||
+      downgrade;
 
     if (needsFetch) {
       fetchUserData();
@@ -65,20 +80,30 @@ const Billing = () => {
         title: "Subscription created",
         description: "Your subscription has been created successfully",
       });
+    } else if (subscriptionUpdated) {
+      toast({
+        title: "Subscription updated",
+        description: "Your subscription has been updated successfully",
+      });
     } else if (upgrade === "success") {
       toast({
         title: "Subscription upgraded successfully!",
-        description: plan ? `Welcome to ${plan}!` : "Your subscription has been upgraded",
+        description: plan
+          ? `Welcome to ${plan}!`
+          : "Your subscription has been upgraded",
       });
     } else if (downgrade === "success") {
       toast({
         title: "Subscription downgraded",
-        description: plan ? `Changed to ${plan}` : "Your subscription has been downgraded",
+        description: plan
+          ? `Changed to ${plan}`
+          : "Your subscription has been downgraded",
       });
     } else if (upgrade === "canceled" || downgrade === "canceled") {
       toast({
         title: "Subscription change canceled",
-        description: "Your subscription change was canceled. No changes were made.",
+        description:
+          "Your subscription change was canceled. No changes were made.",
         variant: "destructive",
       });
     } else if (error) {

@@ -74,15 +74,8 @@ export function UpgradeConfirmationDialog({
     amount: number | string,
     currency: string = "USD"
   ) => {
-    console.log("formatCurrency input:", {
-      amount,
-      currency,
-      type: typeof amount,
-    });
-
     let numericAmount =
       typeof amount === "number" ? amount : parseFloat(`${amount}`) || 0;
-    console.log("numericAmount:", numericAmount);
 
     if (numericAmount > 10000 && numericAmount % 10 === 7) {
       console.warn(
@@ -95,7 +88,6 @@ export function UpgradeConfirmationDialog({
     }
 
     const dollarAmount = Math.round(numericAmount) / 100;
-    console.log("dollarAmount:", dollarAmount);
 
     try {
       const formatted = new Intl.NumberFormat("en-US", {
@@ -104,14 +96,12 @@ export function UpgradeConfirmationDialog({
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(dollarAmount);
-      console.log("formatted result:", formatted);
       return formatted;
     } catch (error) {
       console.error("Intl.NumberFormat failed:", error);
       const fallbackSymbol =
         currency?.toUpperCase() === "USD" ? "$" : currency?.toUpperCase() || "";
       const fallbackResult = `${fallbackSymbol}${dollarAmount.toFixed(2)}`;
-      console.log("fallback result:", fallbackResult);
       return fallbackResult;
     }
   };
